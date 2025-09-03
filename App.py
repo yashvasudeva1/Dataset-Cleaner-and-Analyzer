@@ -78,6 +78,7 @@ if file is not None:
             st.subheader("Cleaned Dataset")
             st.write(temp_df)
     with tab4:
+        column=df.columns
         dataset_choice=st.selectbox("Choose the Type of Data you uploaded",["Numeric Type","Classification Type"])
         if dataset_choice=="Numeric Type":
             model_selection = st.selectbox("Choose the Machine Learning Model you want the prediction from :", [
@@ -94,6 +95,7 @@ if file is not None:
     "AdaBoost Regression",
     "Neural Network Regression"
 ])
+            target_column=st.selectbox("Select the Target Column:",column)
         elif dataset_choice=="Classification Type":
             model_selection = st.selectbox("Choose the Machine Learning Model you want the prediction from :",
                 [
@@ -110,7 +112,8 @@ if file is not None:
                     "XGBoost Classifier",
                     "LightGBM Classifier",
                     "Neural Network (MLPClassifier)"
-                ])   
+                ])
+            target_column=st.selectbox("Select the Target Column:",column)
     with tab5:
         numeric_cols = st.session_state["clean_df"].select_dtypes(include=np.number).columns
         for col in numeric_cols:
