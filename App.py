@@ -6,10 +6,11 @@ st.write("This app helps you in making your dataset cleaner, outlier free and re
 file=st.file_uploader("Upload Your CSV File")
 if file is not None:
     df = pd.read_csv(file)
+    df_num=df[include='number]
     column=df.columns
     st.write(df)
     tab0,tab1,tab2,tab3,tab4=st.tabs(["General Analysis","Visual Representation","Facts", "Outlier Abalysis","Make Predictions"])
     if tab0:
         st.write(df.describe())
     if tab1:
-        st.line_chart(df)
+        st.line_chart(df_num)
