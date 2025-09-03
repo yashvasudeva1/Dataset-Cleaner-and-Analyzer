@@ -46,7 +46,7 @@ if file is not None:
         for col in numeric_cols:
             st.subheader(f"Histogram and KDE for '{col}'")
             fig, ax = plt.subplots()
-            sns.histplot(df[col].dropna(), kde=True, bins=20, color="skyblue", ax=ax)
+            sns.histplot(df[col].dropna(), kde=True, bins=20, color="grey", ax=ax)
             ax.set_title(f"Histogram and KDE of {col}")
             ax.set_xlabel(col)
             ax.set_ylabel("Frequency")
