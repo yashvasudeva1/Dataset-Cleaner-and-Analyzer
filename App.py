@@ -12,4 +12,4 @@ if file is not None:
     if tab0:
         st.write(df.describe())
     if tab1:
-        st.line_graph(df)
+        st.line_chart(df)
