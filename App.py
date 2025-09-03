@@ -1,6 +1,7 @@
 import streamlit as st
 import numpy as np
 import pandas as pd
+import matplotlib.pyplot as plt
 
 st.title("Dataset Cleaner and Analyser")
 st.write("This app helps you in making your dataset cleaner, outlier free and ready for training")
@@ -20,7 +21,15 @@ if file is not None:
     tab0, tab1, tab2, tab3, tab4 , tab5 = st.tabs(
         ["General Analysis", "Visual Representation", "Facts", "Outlier Analysis", "Make Predictions","Check the Type of Distribution"]
     )
+    data = np.random.normal(0, 1, size=100)  # Use your real column here
 
+    fig, ax = plt.subplots()
+    ax.hist(data, bins=20, color='skyblue', edgecolor='black')
+    ax.set_title('Histogram Example')
+    ax.set_xlabel('Value')
+    ax.set_ylabel('Frequency')
+    
+    st.pyplot(fig)
     with tab0:
         st.write(df.describe())
 
