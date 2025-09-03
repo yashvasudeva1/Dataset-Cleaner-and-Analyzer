@@ -10,5 +10,6 @@ if file is not None:
     st.write(df)
     tab0,tab1,tab2,tab3,tab4=st.tabs(["General Analysis","Visual Representation","Facts", "Outlier Abalysis","Make Predictions"])
     if tab0:
-      st.write(df.describe())
-  
+        st.write(df.describe())
+    if tab1:
+        st.line_graph(df)
