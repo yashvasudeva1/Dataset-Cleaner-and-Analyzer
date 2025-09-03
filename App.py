@@ -21,8 +21,8 @@ if file is not None:
     st.write("Preview of your dataset:")
     st.dataframe(st.session_state["clean_df"], use_container_width=True)
     
-    tab0, tab1, tab2, tab3, tab4, tab5 = st.tabs(
-        ["Analysis", "Visualisation", "Facts", "Outliers", "Predictor", "Distribution"]
+    tab0, tab1, tab3, tab4, tab5 = st.tabs(
+        ["Analysis", "Visualisation", "Outliers", "Predictor", "Distribution"]
     )
 
     with tab0:
@@ -36,50 +36,6 @@ if file is not None:
                 st.line_chart(st.session_state["clean_df"][selected_columns], height=250, use_container_width=True)
             else:
                 st.info("Please select at least one column to display the chart.")
-    with tab2:
-        def dataset_facts(df):
-            st.header("🧩 Facts About Your Dataset")
-            st.write(f"**Shape:** {df.shape[0]} rows × {df.shape[1]} columns")
-    
-            st.subheader("🥇 General Information")
-            st.write(f"**Total missing cells:** {df.isnull().sum().sum()}")
-            st.write(f"**Columns with missing values:** {[c for c in df.columns if df[c].isnull().any()]}")
-    
-            st.subheader("📊 Column-specific Facts")
-            for col in df.columns:
-                st.markdown(f"**• {col}**")
-                n_missing = df[col].isnull().sum()
-                st.write(f"- Missing: {n_missing} ({n_missing/len(df)*100:.1f}%)")
-    
-                n_unique = df[col].nunique(dropna=True)
-                st.write(f"- Unique values: {n_unique}")
-    
-                if pd.api.types.is_numeric_dtype(df[col]):
-                    minv = df[col].min()
-                    maxv = df[col].max()
-                    meanv = df[col].mean()
-                    st.write(f"- Min: {minv}, Max: {maxv}, Mean: {meanv:.2f}")
-                    mostval = df[col].mode().iloc[0] if not df[col].mode().empty else "N/A"
-                    st.write(f"- Most frequent: {mostval}")
-                else:
-                    mostval = df[col].mode().iloc[0] if not df[col].mode().empty else "N/A"
-                    top_count = df[col].value_counts().max()
-                    st.write(f"- Most frequent: '{mostval}' ({top_count} times)")
-                    if n_unique < 10:
-                        st.write(f"- All unique: {df[col].unique()}")
-    
-            st.subheader("🎯 Interesting Numeric Facts")
-            numeric_cols = df.select_dtypes(include=np.number).columns
-            if len(numeric_cols) > 0:
-                max_sum_col = df[numeric_cols].sum().idxmax()
-                st.write(f"- Column with highest total sum: **{max_sum_col}**")
-                most_var_col = df[numeric_cols].std().idxmax()
-                st.write(f"- Most variable column: **{most_var_col}** (std: {df[most_var_col].std():.2f})")
-            else:
-                st.write("- No numeric columns to summarize.")
-    
-        # Add this line so facts are shown!
-        dataset_facts(st.session_state["clean_df"])
 
     with tab3:
         columns = st.session_state["clean_df"].select_dtypes(include=[np.number]).columns
