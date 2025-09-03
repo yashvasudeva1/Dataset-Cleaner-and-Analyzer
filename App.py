@@ -17,8 +17,8 @@ if file is not None:
     st.write("Preview of your dataset:")
     st.dataframe(df, use_container_width=True)
 
-    tab0, tab1, tab2, tab3, tab4 = st.tabs(
-        ["General Analysis", "Visual Representation", "Facts", "Outlier Analysis", "Make Predictions"]
+    tab0, tab1, tab2, tab3, tab4 , tab5 = st.tabs(
+        ["General Analysis", "Visual Representation", "Facts", "Outlier Analysis", "Make Predictions","Check the Type of Distribution"]
     )
 
     with tab0:
@@ -35,6 +35,7 @@ if file is not None:
             lower = q1 - (1.5 * iqr)
             upper = q3 + (1.5 * iqr)
             n_outliers = ((df[col] < lower) | (df[col] > upper)).sum()
-            outlier_report.append({"column": col, "num_outliers": n_outliers})
+            outlier_report.append({"Column Name": col, "Number of Outliers": n_outliers})
         outliers = pd.DataFrame(outlier_report)
         st.write(outliers)
+        st.button("Remove the Outliers")
