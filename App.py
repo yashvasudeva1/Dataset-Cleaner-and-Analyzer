@@ -1,8 +1,6 @@
 import streamlit as st
 import numpy as np
 import pandas as pd
-import seaborn as sns
-import matplotlib.pyplot as plt
 st.title("Dataset Cleaner and Analyser")
 st.write("This app helps you in making your dataset cleaner, outlier free and ready for training")
 file=st.file_uploader("Upload Your CSV File")
