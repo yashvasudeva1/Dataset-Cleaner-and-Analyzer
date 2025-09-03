@@ -79,7 +79,7 @@ if file is not None:
             st.write(temp_df)
     with tab4:
         column=df.columns
-        dataset_choice=st.selectbox("Choose the Type of Data you uploaded",["Numeric Type","Classification Type"])
+        dataset_choice=st.selectbox("Choose the Type of Data you uploaded",["Numeric Type","Classification Type","None"])
         if dataset_choice=="Numeric Type":
             model_selection = st.selectbox("Choose the Machine Learning Model you want the prediction from :", [
     "Linear Regression",
@@ -114,6 +114,8 @@ if file is not None:
                     "Neural Network (MLPClassifier)"
                 ])
             target_column=st.selectbox("Select the Target Column:",column)
+        else:
+            st.warning("Please Select your Data Type First")
     with tab5:
         numeric_cols = st.session_state["clean_df"].select_dtypes(include=np.number).columns
         for col in numeric_cols:
