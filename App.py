@@ -78,26 +78,36 @@ if file is not None:
             st.subheader("Cleaned Dataset")
             st.write(temp_df)
     with tab4:
-        column=df.columns
-        dataset_choice=st.selectbox("Choose the Type of Data you uploaded",["Numeric Type","Classification Type","None"])
-        if dataset_choice=="Numeric Type":
-            model_selection = st.selectbox("Choose the Machine Learning Model you want the prediction from :", [
-    "Linear Regression",
-    "Polynomial Regression",
-    "Ridge Regression",
-    "Lasso Regression",
-    "Elastic Net Regression",
-    "Decision Tree Regression",
-    "Random Forest Regression",
-    "Gradient Boosting Regression",
-    "Support Vector Regression",
-    "K-Nearest Neighbors Regression",
-    "AdaBoost Regression",
-    "Neural Network Regression"
-])
-            target_column=st.selectbox("Select the Target Column:",column)
-        elif dataset_choice=="Classification Type":
-            model_selection = st.selectbox("Choose the Machine Learning Model you want the prediction from :",
+        columns = df.columns
+
+        dataset_choice = st.selectbox(
+            "Choose the Type of Data you uploaded",
+            ["Numeric Type", "Classification Type", "None"]
+        )
+        
+        if dataset_choice == "Numeric Type":
+            model_selection = st.selectbox(
+                "Choose the Machine Learning Model you want the prediction from :",
+                [
+                    "Linear Regression",
+                    "Polynomial Regression",
+                    "Ridge Regression",
+                    "Lasso Regression",
+                    "Elastic Net Regression",
+                    "Decision Tree Regression",
+                    "Random Forest Regression",
+                    "Gradient Boosting Regression",
+                    "Support Vector Regression",
+                    "K-Nearest Neighbors Regression",
+                    "AdaBoost Regression",
+                    "Neural Network Regression"
+                ]
+            )
+            target_column = st.selectbox("Select the Target Column:", columns)
+        
+        elif dataset_choice == "Classification Type":
+            model_selection = st.selectbox(
+                "Choose the Machine Learning Model you want the prediction from :",
                 [
                     "Logistic Regression",
                     "K-Nearest Neighbors (KNN)",
@@ -112,10 +122,12 @@ if file is not None:
                     "XGBoost Classifier",
                     "LightGBM Classifier",
                     "Neural Network (MLPClassifier)"
-                ])
-            target_column=st.selectbox("Select the Target Column:",column)
+                ]
+            )
+            target_column = st.selectbox("Select the Target Column:", columns)
         else:
             st.warning("Please Select your Data Type First")
+
     with tab5:
         numeric_cols = st.session_state["clean_df"].select_dtypes(include=np.number).columns
         for col in numeric_cols:
