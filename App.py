@@ -26,4 +26,14 @@ if file is not None:
 
     with tab1:
         st.line_chart(df.select_dtypes(include='number'), height=250, use_container_width=True)
-
+    with tab3:
+        columns = df.select_dtypes(include=[np.number]).columns
+        for col in columns:
+            q1, q3 = df[col].quantile([0.25, 0.75])
+            iqr = q3 - q1
+            lower = q1 - (1.5 * iqr)
+            upper = q3 + (1.5 * iqr)
+            n_outliers = ((df[col] < lower) | (df[col] > upper)).sum()
+            outlier_report.append({"column": col, "num_outliers": n_outliers})
+        outliers = pd.DataFrame(outlier_report)
+        st.write(outliers)
