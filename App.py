@@ -77,7 +77,41 @@ if file is not None:
             st.write(outliers)
             st.subheader("Cleaned Dataset")
             st.write(temp_df)
-
+    with tab3:
+        dataset_choice=st.selectbox("Choose the Type of Data you uploaded",["Numeric Type","Classification Type"])
+        if dataset_choice=="Numeric Type":
+            model_selection = st.selectbox("Choose the Machine Learning Model you want the prediction from :", [
+    "Linear Regression",
+    "Polynomial Regression",
+    "Ridge Regression",
+    "Lasso Regression",
+    "Elastic Net Regression",
+    "Decision Tree Regression",
+    "Random Forest Regression",
+    "Gradient Boosting Regression",
+    "Support Vector Regression",
+    "K-Nearest Neighbors Regression",
+    "AdaBoost Regression",
+    "Neural Network Regression"
+])
+        elif dataset_choice=="Clasification Type":
+            model_selection = st.selectbox(
+                "Choose the Machine Learning Model you want the prediction from :",
+                [
+                    "Logistic Regression",
+                    "K-Nearest Neighbors (KNN)",
+                    "Support Vector Machine (SVM)",
+                    "Decision Tree Classifier",
+                    "Random Forest Classifier",
+                    "Gradient Boosting Classifier",
+                    "AdaBoost Classifier",
+                    "Naive Bayes",
+                    "Linear Discriminant Analysis",
+                    "Quadratic Discriminant Analysis",
+                    "XGBoost Classifier",
+                    "LightGBM Classifier",
+                    "Neural Network (MLPClassifier)"
+                ])   
     with tab5:
         numeric_cols = st.session_state["clean_df"].select_dtypes(include=np.number).columns
         for col in numeric_cols:
