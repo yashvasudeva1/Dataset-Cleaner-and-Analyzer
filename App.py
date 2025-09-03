@@ -77,7 +77,7 @@ if file is not None:
             st.write(outliers)
             st.subheader("Cleaned Dataset")
             st.write(temp_df)
-    with tab3:
+    with tab4:
         dataset_choice=st.selectbox("Choose the Type of Data you uploaded",["Numeric Type","Classification Type"])
         if dataset_choice=="Numeric Type":
             model_selection = st.selectbox("Choose the Machine Learning Model you want the prediction from :", [
