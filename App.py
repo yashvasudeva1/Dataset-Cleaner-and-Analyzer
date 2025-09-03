@@ -81,7 +81,7 @@ if file is not None:
     with tab5:
         numeric_cols = st.session_state["clean_df"].select_dtypes(include=np.number).columns
         for col in numeric_cols:
-            st.subheader(f"Histogram and KDE for '{col}'")
+            st.subheader(f"Histogram and KDE for {col}")
             fig, ax = plt.subplots()
             sns.histplot(st.session_state["clean_df"][col].dropna(), kde=True, bins=20, color="grey", ax=ax)
             ax.set_title(f"Histogram and KDE of {col}")
