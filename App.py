@@ -25,7 +25,6 @@ if file is not None:
         st.write(df.describe())
 
     with tab1:
-        if "carat" in df.columns:
-            st.line_chart(df["carat"], height=250, use_container_width=True)
+        st.line_chart(df.select_dtypes(include='number'), height=250, use_container_width=True)
         else:
             st.warning("'carat' column not found in the uploaded dataset.")
