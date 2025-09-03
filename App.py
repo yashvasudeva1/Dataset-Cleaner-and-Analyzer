@@ -11,4 +11,4 @@ st.write(df.describe())
 tab1,tab2,tab3,tab4=st.tabs(["Visual Representation","General Analysis", "Outlier Abalysis","Make Predictions"])
 if tab1:
   for i in column:
-    st.line_chart(df)
+    st.line_chart(df_num)
