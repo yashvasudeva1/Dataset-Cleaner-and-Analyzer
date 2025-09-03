@@ -26,5 +26,4 @@ if file is not None:
 
     with tab1:
         st.line_chart(df.select_dtypes(include='number'), height=250, use_container_width=True)
-        else:
-            st.warning("'carat' column not found in the uploaded dataset.")
+
