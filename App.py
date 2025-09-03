@@ -45,8 +45,11 @@ if file is not None:
             outlier_report.append({"Column Name": col, "Number of Outliers": n_outliers})
         outliers = pd.DataFrame(outlier_report)
         st.write(outliers)
-        st.button("Remove the Outliers")
-    
+        remove_outlier=st.button("Remove the Outliers")
+        if remove_outlier:
+            df=df[(df[col] >= lower) & (df[col] <= upper)]
+            n_outliers = ((df[col] < lower) | (df[col] > upper)).sum()
+            outlier_report.append({"column": col, "num_outliers": n_outliers})
     with tab5:
         numeric_cols = df.select_dtypes(include=np.number).columns
         for col in numeric_cols:
