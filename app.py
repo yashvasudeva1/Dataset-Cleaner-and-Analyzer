@@ -48,3 +48,17 @@ if file is not None:
         outliers = pd.DataFrame(outlier_report)
         st.write(outliers)
         st.button("Remove the Outliers")
+    with tab5:
+        if uploaded_file is not None:
+            df = pd.read_csv(uploaded_file)
+            numeric_cols = df.select_dtypes(include=np.number).columns
+        
+            for col in numeric_cols:
+                st.subheader(f"Histogram and KDE for '{col}'")
+                fig, ax = plt.subplots()
+                sns.histplot(df[col].dropna(), kde=True, bins=20, color="skyblue", ax=ax)
+                ax.set_title(f"Histogram and KDE of {col}")
+                ax.set_xlabel(col)
+                ax.set_ylabel("Frequency")
+                st.pyplot(fig)
+                plt.close(fig)
