@@ -47,9 +47,27 @@ if file is not None:
         st.write(outliers)
         remove_outlier=st.button("Remove the Outliers")
         if remove_outlier:
-            df=df[(df[col] >= lower) & (df[col] <= upper)]
-            n_outliers = ((df[col] < lower) | (df[col] > upper)).sum()
-            outlier_report.append({"column": col, "num_outliers": n_outliers})
+        temp_df = st.session_state["clean_df"]
+        for col in columns:
+            q1, q3 = temp_df[col].quantile([0.25, 0.75])
+            iqr = q3 - q1
+            lower = q1 - 1.5 * iqr
+            upper = q3 + 1.5 * iqr
+            temp_df = temp_df[(temp_df[col] >= lower) & (temp_df[col] <= upper)]
+        st.session_state["clean_df"] = temp_df
+    
+    outlier_report = []
+    for col in columns:
+        q1, q3 = st.session_state["clean_df"][col].quantile([0.25, 0.75])
+        iqr = q3 - q1
+        lower = q1 - 1.5 * iqr
+        upper = q3 + 1.5 * iqr
+        n_outliers = ((st.session_state["clean_df"][col] < lower) | (st.session_state["clean_df"][col] > upper)).sum()
+        outlier_report.append({"Column Name": col, "Number of Outliers": n_outliers})
+    
+    outliers = pd.DataFrame(outlier_report)
+    st.write("Remaining outliers after removal:")
+    st.write(outliers)
     with tab5:
         numeric_cols = df.select_dtypes(include=np.number).columns
         for col in numeric_cols:
