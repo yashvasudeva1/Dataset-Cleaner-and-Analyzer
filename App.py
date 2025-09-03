@@ -94,7 +94,7 @@ if file is not None:
     "AdaBoost Regression",
     "Neural Network Regression"
 ])
-        elif dataset_choice=="Clasification Type":
+        elif dataset_choice=="Classification Type":
             model_selection = st.selectbox("Choose the Machine Learning Model you want the prediction from :",
                 [
                     "Logistic Regression",
