@@ -75,6 +75,8 @@ if file is not None:
             outliers = pd.DataFrame(outlier_report)
             st.write("Remaining outliers after removal:")
             st.write(outliers)
+            st.subheader("Cleaned Dataset")
+            st.write(temp_df)
 
     with tab5:
         numeric_cols = st.session_state["clean_df"].select_dtypes(include=np.number).columns
