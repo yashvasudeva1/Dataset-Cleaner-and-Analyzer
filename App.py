@@ -10,7 +10,7 @@ if file is not None:
     column=df.columns
     st.write(df)
     tab0,tab1,tab2,tab3,tab4=st.tabs(["General Analysis","Visual Representation","Facts", "Outlier Abalysis","Make Predictions"])
-    if tab0:
+    with tab0:
         st.write(df.describe())
-    if tab1:
+    with tab1:
         st.line_chart(df['carat'])
