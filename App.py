@@ -28,6 +28,7 @@ if file is not None:
         st.line_chart(df.select_dtypes(include='number'), height=250, use_container_width=True)
     with tab3:
         columns = df.select_dtypes(include=[np.number]).columns
+        outlier_report = []
         for col in columns:
             q1, q3 = df[col].quantile([0.25, 0.75])
             iqr = q3 - q1
