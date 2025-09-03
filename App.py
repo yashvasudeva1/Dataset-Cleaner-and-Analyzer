@@ -7,7 +7,7 @@ file=st.file_uploader("Upload Your CSV File")
 df=pd.read_csv(file)
 column=df.columns
 st.write(df.describe())
-tab1,tab2,tab3,tab4=st.tabs(["Visual Representation","General Analysis", "Outlier Abalysis","Make Predictions"])
+tab0,tab1,tab2,tab3,tab4=st.tabs(["Home","Visual Representation","General Analysis", "Outlier Abalysis","Make Predictions"])
 if tab1:
   for i in column:
     st.line_chart(df['carat'])
