@@ -11,7 +11,7 @@ st.write("This app helps you in making your dataset cleaner, outlier free and re
 def load_data(uploaded_file):
     return pd.read_csv(uploaded_file)
 
-file = st.file_uploader("Upload Your CSV File")
+file = st.file_uploader("")
 if file is not None:
     df = load_data(file)
     # Initialize cleaned_df in session_state
