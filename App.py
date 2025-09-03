@@ -25,7 +25,13 @@ if file is not None:
         st.write(df.describe())
 
     with tab1:
-        st.line_chart(df.select_dtypes(include='number'), height=250, use_container_width=True)
+    numeric_columns = df.select_dtypes(include='number').columns.tolist()
+        with st.container(border=True):
+            selected_columns = st.multiselect("Columns", numeric_columns, default=numeric_columns)
+            if selected_columns:
+                st.line_chart(df[selected_columns], height=250, use_container_width=True)
+            else:
+                st.info("Please select at least one column to display the chart.")
 
     with tab3:
         columns = df.select_dtypes(include=[np.number]).columns
