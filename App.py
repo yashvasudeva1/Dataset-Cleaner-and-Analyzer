@@ -24,35 +24,7 @@ if file is not None:
     tab0, tab1, tab2, tab3, tab4, tab5 = st.tabs(
         ["Analysis", "Visualisation", "Facts", "Outliers", "Predictor", "Distribution"]
     )
-    st.subheader(":material/line_plot: Relationship Between Two Columns")
 
-    numeric_columns = st.session_state["clean_df"].select_dtypes(include=np.number).columns.tolist()
-    col1_sel, col2_sel = st.columns(2)
-    with col1_sel:
-        x_col = st.selectbox("Select X-axis column", numeric_columns, index=0)
-    with col2_sel:
-        y_col = st.selectbox("Select Y-axis column", numeric_columns, index=1 if len(numeric_columns) > 1 else 0)
-
-    chart_col1, chart_col2 = st.columns(2)
-
-    with chart_col1:
-        fig1, ax1 = plt.subplots()
-        ax1.plot(st.session_state["clean_df"][x_col], st.session_state["clean_df"][y_col], color="cornflowerblue", marker='o', linestyle='-')
-        ax1.set_title(f"{y_col} vs {x_col}")
-        ax1.set_xlabel(x_col)
-        ax1.set_ylabel(y_col)
-        st.pyplot(fig1)
-        plt.close(fig1)
-
-    with chart_col2:
-        # Swap axes for comparison
-        fig2, ax2 = plt.subplots()
-        ax2.plot(st.session_state["clean_df"][y_col], st.session_state["clean_df"][x_col], color="mediumseagreen", marker='o', linestyle='-')
-        ax2.set_title(f"{x_col} vs {y_col}")
-        ax2.set_xlabel(y_col)
-        ax2.set_ylabel(x_col)
-        st.pyplot(fig2)
-        plt.close(fig2)
     with tab0:
         st.write(st.session_state["clean_df"].describe())
 
