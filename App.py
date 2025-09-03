@@ -9,8 +9,8 @@ if file is not None:
     df_num = df.select_dtypes(include=[np.number])
     column=df.columns
     st.write(df)
-    tab0,tab1,tab2,tab3,tab4=st.tabs(["General Analysis","Visual Representation","Facts", "Outlier Abalysis","Make Predictions"])
+    tab0,tab1,tab2,tab3,tab4=st.tabs(["General Analysis","Visual Representation","Facts", "Outlier Analysis","Make Predictions"])
     with tab0:
         st.write(df.describe())
     with tab1:
-        st.line_chart(df['carat'])
+        st.line_chart(df['carat'],height=250, use_container_width=True)
