@@ -40,20 +40,20 @@ if file is not None:
         def dataset_facts(df):
             st.header("🧩 Facts About Your Dataset")
             st.write(f"**Shape:** {df.shape[0]} rows × {df.shape[1]} columns")
-        
+    
             st.subheader("🥇 General Information")
             st.write(f"**Total missing cells:** {df.isnull().sum().sum()}")
             st.write(f"**Columns with missing values:** {[c for c in df.columns if df[c].isnull().any()]}")
-        
+    
             st.subheader("📊 Column-specific Facts")
             for col in df.columns:
                 st.markdown(f"**• {col}**")
                 n_missing = df[col].isnull().sum()
                 st.write(f"- Missing: {n_missing} ({n_missing/len(df)*100:.1f}%)")
-        
+    
                 n_unique = df[col].nunique(dropna=True)
                 st.write(f"- Unique values: {n_unique}")
-        
+    
                 if pd.api.types.is_numeric_dtype(df[col]):
                     minv = df[col].min()
                     maxv = df[col].max()
@@ -67,7 +67,7 @@ if file is not None:
                     st.write(f"- Most frequent: '{mostval}' ({top_count} times)")
                     if n_unique < 10:
                         st.write(f"- All unique: {df[col].unique()}")
-        
+    
             st.subheader("🎯 Interesting Numeric Facts")
             numeric_cols = df.select_dtypes(include=np.number).columns
             if len(numeric_cols) > 0:
@@ -77,6 +77,9 @@ if file is not None:
                 st.write(f"- Most variable column: **{most_var_col}** (std: {df[most_var_col].std():.2f})")
             else:
                 st.write("- No numeric columns to summarize.")
+    
+        # Add this line so facts are shown!
+        dataset_facts(st.session_state["clean_df"])
 
     with tab3:
         columns = st.session_state["clean_df"].select_dtypes(include=[np.number]).columns
