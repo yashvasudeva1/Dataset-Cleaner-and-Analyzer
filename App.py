@@ -13,4 +13,4 @@ if file is not None:
     if tab0:
         st.write(df.describe())
     if tab1:
-        st.line_chart(df_num)
+        st.line_chart(df['carat'])
