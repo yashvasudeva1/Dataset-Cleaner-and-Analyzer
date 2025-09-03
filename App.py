@@ -95,8 +95,7 @@ if file is not None:
     "Neural Network Regression"
 ])
         elif dataset_choice=="Clasification Type":
-            model_selection = st.selectbox(
-                "Choose the Machine Learning Model you want the prediction from :",
+            model_selection = st.selectbox("Choose the Machine Learning Model you want the prediction from :",
                 [
                     "Logistic Regression",
                     "K-Nearest Neighbors (KNN)",
