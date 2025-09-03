@@ -22,7 +22,7 @@ if file is not None:
     st.dataframe(st.session_state["clean_df"], use_container_width=True)
     
     tab0, tab1, tab2, tab3, tab4, tab5 = st.tabs(
-        ["General Analysis", "Visual Representation", "Facts", "Outlier Analysis", "Make Predictions", "Check the Type of Distribution"]
+        ["Analysis", "Visualisation", "Facts", "Outliers", "Predictor", "Distribution"]
     )
 
     with tab0:
