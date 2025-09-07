@@ -177,15 +177,23 @@ if file is not None:
         
         st.write(styled)
 
+        numeric_cols = st.session_state["cdf"].select_dtypes(include=np.number).columns  # [web:53][web:52]
+        col1 = st.selectbox("First numeric column", numeric_cols, index=0)
+        col2 = st.selectbox("Second numeric column", numeric_cols, index=1 if len(numeric_cols) > 1 else 0)
         
+        st.subheader(f"Histograms and KDE: {col1} vs {col2}")
         
-        # numeric_cols = st.session_state["clean_df"].select_dtypes(include=np.number).columns
-        # for col in numeric_cols:
-        #     st.subheader(f"Histogram and KDE for {col}")
-        #     fig, ax = plt.subplots()
-        #     sns.histplot(st.session_state["clean_df"][col].dropna(), kde=True, bins=20, color="grey", ax=ax)
-        #     ax.set_title(f"Histogram and KDE of {col}")
-        #     ax.set_xlabel(col)
-        #     ax.set_ylabel("Frequency")
-        #     st.pyplot(fig)
-        #     plt.close(fig)
+        fig, axes = plt.subplots(1, 2, figsize=(10, 4), sharey=True)  # two panels side-by-side
+        sns.histplot(st.session_state["clean_df"][col1].dropna(), kde=True, bins=20, color="steelblue", ax=axes[0])
+        axes[0].set_title(f"{col1}")
+        axes[0].set_xlabel(col1)
+        axes[0].set_ylabel("Frequency")
+        
+        sns.histplot(st.session_state["clean_df"][col2].dropna(), kde=True, bins=20, color="indianred", ax=axes[1])
+        axes[1].set_title(f"{col2}")
+        axes[1].set_xlabel(col2)
+        axes[1].set_ylabel("Frequency")
+        
+        plt.tight_layout()
+        st.pyplot(fig)
+        plt.close(fig)
