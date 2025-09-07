@@ -130,7 +130,7 @@ if file is not None:
 
     with tab5:
         column=df.columns
-        distribution _report = []
+        distribution_report = []
         for i in column:
           a,b=stats.shapiro(df[i])
           c,d=stats.normaltest(df[i])
