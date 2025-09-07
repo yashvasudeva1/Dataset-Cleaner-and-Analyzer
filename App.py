@@ -183,5 +183,5 @@ with st.sidebar:
         s = buf.getvalue()
         st.text(s)                           # monospaced block in the sidebar [web:158]
     else:
-        st.info("No DataFrame named df is available.")
+        st.info("No DataFrame available.")
 
