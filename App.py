@@ -3,7 +3,7 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
-
+from scipy.stats import stats
 st.title(":material/folder: Dataset Cleaner and Analyser")
 st.write("This app helps you in making your dataset cleaner, outlier free and ready for training")
 
