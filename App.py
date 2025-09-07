@@ -169,7 +169,7 @@ if file is not None:
             })
         
         distribution = pd.DataFrame(distribution_report)
-        
+        st.write(distribution)
         num_cols = df.select_dtypes(include="number").columns.tolist()  # [22][23]
         if not num_cols:
             st.info("No numeric columns to plot.")
