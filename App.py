@@ -129,13 +129,27 @@ if file is not None:
             st.warning("Please Select your Data Type First")
 
     with tab5:
-        numeric_cols = st.session_state["clean_df"].select_dtypes(include=np.number).columns
-        for col in numeric_cols:
-            st.subheader(f"Histogram and KDE for {col}")
-            fig, ax = plt.subplots()
-            sns.histplot(st.session_state["clean_df"][col].dropna(), kde=True, bins=20, color="grey", ax=ax)
-            ax.set_title(f"Histogram and KDE of {col}")
-            ax.set_xlabel(col)
-            ax.set_ylabel("Frequency")
-            st.pyplot(fig)
-            plt.close(fig)
+        column=df.columns
+        distribution _report = []
+        for i in column:
+          a,b=stats.shapiro(df[i])
+          c,d=stats.normaltest(df[i])
+          if (a>0.95) and (b>(0.95*0.05)):
+            f="Likely normal"
+          else:
+            f="Likely not normal"
+        distribution_report.append({"Column Name": i, "Distribution": f})
+        distibution = pd.DataFrame(distribution_report)
+        st.write(distribution)
+        
+        
+        # numeric_cols = st.session_state["clean_df"].select_dtypes(include=np.number).columns
+        # for col in numeric_cols:
+        #     st.subheader(f"Histogram and KDE for {col}")
+        #     fig, ax = plt.subplots()
+        #     sns.histplot(st.session_state["clean_df"][col].dropna(), kde=True, bins=20, color="grey", ax=ax)
+        #     ax.set_title(f"Histogram and KDE of {col}")
+        #     ax.set_xlabel(col)
+        #     ax.set_ylabel("Frequency")
+        #     st.pyplot(fig)
+        #     plt.close(fig)
