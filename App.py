@@ -12,24 +12,20 @@ def shapiro_safe(x):
         return stats.shapiro(x)
 st.title(":material/folder: Dataset Cleaner and Analyser")
 st.write("This app helps you in making your dataset cleaner, outlier free and ready for training")
-
 @st.cache_data
 def load_data(uploaded_file):
     return pd.read_csv(uploaded_file)
-
 file = st.file_uploader("Upload CSV", type=["csv"], label_visibility="collapsed")
 if file is not None:
     df = load_data(file)
     if "clean_df" not in st.session_state:
         st.session_state["clean_df"] = df.copy()
-
     st.write("Preview of your dataset:")
     st.dataframe(st.session_state["clean_df"], use_container_width=True)
     
     tab0, tab1, tab3, tab4, tab5 = st.tabs(
         ["Analysis", "Visualisation", "Outliers", "Predictor", "Distribution"]
     )
-
     with tab0:
         st.write(st.session_state["clean_df"].describe())
     with tab1:
@@ -37,12 +33,9 @@ if file is not None:
             numeric_columns = df.select_dtypes(include='number').columns.tolist()
             selected_columns = st.multiselect("Columns", numeric_columns, default=numeric_columns)
             if selected_columns:
-                st.line_chart(df[selected_columns], height=250, use_container_width=True)  # same here [21]
+                st.line_chart(df[selected_columns], height=250, use_container_width=True) 
             else:
                 st.info("Please select at least one column to display the chart.")
-
-
-
     with tab3:
         columns = st.session_state["clean_df"].select_dtypes(include=[np.number]).columns
         outlier_report = []
@@ -56,7 +49,6 @@ if file is not None:
         outliers = pd.DataFrame(outlier_report)
         st.write("Current outliers:")
         st.write(outliers)
-
         remove_outlier = st.button("Remove the Outliers")
         if remove_outlier: 
             temp_df = st.session_state["clean_df"]
@@ -82,12 +74,10 @@ if file is not None:
             st.write(temp_df)
     with tab4:
         columns = df.columns
-
         dataset_choice = st.selectbox(
             "Choose the Type of Data you uploaded",
             ["Numeric Type", "Classification Type", "None"]
         )
-        
         if dataset_choice == "Numeric Type":
             model_selection = st.selectbox(
                 "Choose the Machine Learning Model you want the prediction from :",
@@ -107,7 +97,6 @@ if file is not None:
                 ]
             )
             target_column = st.selectbox("Select the Target Column:", columns)
-        
         elif dataset_choice == "Classification Type":
             model_selection = st.selectbox(
                 "Choose the Machine Learning Model you want the prediction from :",
@@ -133,10 +122,8 @@ if file is not None:
 
     with tab5:
         num_cols = df.select_dtypes(include="number").columns
-        
         distribution_report = []
         alpha = 0.05
-        
         for col in num_cols:
             x = df[col].dropna().values
             shapiro_stat = shapiro_p = np.nan
@@ -166,16 +153,12 @@ if file is not None:
         if not num_cols:
             st.info("No numeric columns to plot.")
             st.stop()
-        
         bins = st.slider("Bins", 10, 100, 20, 5)
-        
-        # Render histograms two at a time using Streamlit's Vega-Lite wrapper
         for i in range(0, len(num_cols), 2):
             pair = num_cols[i:i+2]
             cols = st.columns(len(pair))
             for holder, col in zip(cols, pair):
                 holder.caption(f"Histogram: {col}")
-                # Build a tiny frame with a standard 'value' column for the chart
                 data = df[[col]].rename(columns={col: "value"}).dropna()
                 holder.vega_lite_chart(
                     data,
@@ -185,7 +168,7 @@ if file is not None:
                             "x": {
                                 "field": "value",
                                 "type": "quantitative",
-                                "bin": {"maxbins": int(bins)},   # control bin count via slider
+                                "bin": {"maxbins": int(bins)}, 
                                 "title": col
                             },
                             "y": {"aggregate": "count", "type": "quantitative", "title": "Count"},
@@ -197,12 +180,10 @@ if file is not None:
                 )
 with st.sidebar:
     st.subheader("DataFrame info")
-
     if 'df' in locals() or 'df' in globals():
         buf = io.StringIO()
-        df.info(buf=buf)                     # write info() output to the buffer [web:151][web:152]
+        df.info(buf=buf)                     
         s = buf.getvalue()
-        st.text(s)                           # monospaced block in the sidebar [web:158]
+        st.text(s)                           
     else:
         st.info("No DataFrame available.")
-
