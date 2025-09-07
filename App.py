@@ -129,7 +129,7 @@ if file is not None:
             st.warning("Please Select your Data Type First")
 
     with tab5:
-        column=df.columns
+        column = df.select_dtypes(include="number").columns        
         distribution_report = []
         for i in column:
           a,b=stats.shapiro(df[i])
