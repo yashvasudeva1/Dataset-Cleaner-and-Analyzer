@@ -140,7 +140,7 @@ if file is not None:
             f="Likely not normal"
         distribution_report.append({"Column Name": i, "Distribution": f})
         distibution = pd.DataFrame(distribution_report)
-        st.write(distribution)
+        st.write(distibution)
         
         
         # numeric_cols = st.session_state["clean_df"].select_dtypes(include=np.number).columns
