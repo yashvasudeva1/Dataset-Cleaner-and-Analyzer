@@ -170,32 +170,24 @@ if file is not None:
         
         distribution = pd.DataFrame(distribution_report)
         
-        num_cols = df_ss.select_dtypes(include="number").columns.tolist()  # [web:53][web:52]
-        if len(num_cols) == 0:
-            st.info("No numeric columns available to plot.")
+        num_cols = df.select_dtypes(include="number").columns.tolist()  # [22][23]
+        if not num_cols:
+            st.info("No numeric columns to plot.")
             st.stop()
         
-        # Optional: let user choose bin count
-        bins = st.slider("Bins", min_value=10, max_value=100, value=20, step=5)
+        bins = st.slider("Bins", 10, 100, 20, 5)
         
-        # Iterate in steps of 2 and plot side-by-side
         for i in range(0, len(num_cols), 2):
-            cols_pair = num_cols[i:i+2]
-        
-            # Create a row with up to 2 plots
-            n_panels = len(cols_pair)
+            pair = num_cols[i:i+2]
+            n_panels = len(pair)
             fig, axes = plt.subplots(1, n_panels, figsize=(10, 4), sharey=True)
-        
-            # Ensure axes is iterable
             if n_panels == 1:
                 axes = [axes]
-        
-            for ax, col in zip(axes, cols_pair):
-                sns.histplot(df_ss[col].dropna(), kde=True, bins=bins, ax=ax)
+            for ax, col in zip(axes, pair):
+                sns.histplot(df[col].dropna(), kde=True, bins=bins, ax=ax)
                 ax.set_title(col)
                 ax.set_xlabel(col)
                 ax.set_ylabel("Frequency")
-        
             plt.tight_layout()
             st.pyplot(fig)
             plt.close(fig)
