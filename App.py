@@ -5,6 +5,10 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from scipy import stats
 import io
+def shapiro_safe(x):
+    with warnings.catch_warnings():
+        warnings.filterwarnings("ignore", message=".*computed p-value may not be accurate.*")
+        return stats.shapiro(x)
 st.title(":material/folder: Dataset Cleaner and Analyser")
 st.write("This app helps you in making your dataset cleaner, outlier free and ready for training")
 
@@ -138,7 +142,7 @@ if file is not None:
             shapiro_stat = shapiro_p = np.nan
             k2_stat = k2_p = np.nan
             if x.size >= 3:
-                shapiro_stat, shapiro_p = stats.shapiro(x)
+                shapiro_stat, shapiro_p = shapiro_safe(x)
             if x.size >= 8:
                 k2_stat, k2_p = stats.normaltest(x) 
             decisions = []
