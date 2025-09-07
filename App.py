@@ -37,8 +37,8 @@ if file is not None:
             selected_columns = st.multiselect("Columns", numeric_columns, default=numeric_columns)
             if selected_columns:
                 # Replace old calls here
-                st.dataframe(df, width="stretch")                     # was: st.dataframe(..., use_container_width=True)
-                st.line_chart(df[selected_columns], height=250, width="stretch")  # was: ..., use_container_width=True
+                st.dataframe(df, use_container_width=True)
+                st.line_chart(df[selected_cols], height=250, use_container_width=True)
             else:
                 st.info("Please select at least one column to display the chart.")
 
