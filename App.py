@@ -170,30 +170,32 @@ if file is not None:
         
         distribution = pd.DataFrame(distribution_report)
         
-        # Display: format Shapiro p to 2 decimals in the UI
-        styled = distribution.style.format({
-            "Shapiro p": "{:.2f}".format
-        })  # keeps underlying numeric values intact [web:82][web:79][web:88]
+        num_cols = df_ss.select_dtypes(include="number").columns.tolist()  # [web:53][web:52]
+        if len(num_cols) == 0:
+            st.info("No numeric columns available to plot.")
+            st.stop()
         
-        st.write(styled)
-
-        numeric_cols = st.session_state["cdf"].select_dtypes(include=np.number).columns  # [web:53][web:52]
-        col1 = st.selectbox("First numeric column", numeric_cols, index=0)
-        col2 = st.selectbox("Second numeric column", numeric_cols, index=1 if len(numeric_cols) > 1 else 0)
+        # Optional: let user choose bin count
+        bins = st.slider("Bins", min_value=10, max_value=100, value=20, step=5)
         
-        st.subheader(f"Histograms and KDE: {col1} vs {col2}")
+        # Iterate in steps of 2 and plot side-by-side
+        for i in range(0, len(num_cols), 2):
+            cols_pair = num_cols[i:i+2]
         
-        fig, axes = plt.subplots(1, 2, figsize=(10, 4), sharey=True)  # two panels side-by-side
-        sns.histplot(st.session_state["clean_df"][col1].dropna(), kde=True, bins=20, color="steelblue", ax=axes[0])
-        axes[0].set_title(f"{col1}")
-        axes[0].set_xlabel(col1)
-        axes[0].set_ylabel("Frequency")
+            # Create a row with up to 2 plots
+            n_panels = len(cols_pair)
+            fig, axes = plt.subplots(1, n_panels, figsize=(10, 4), sharey=True)
         
-        sns.histplot(st.session_state["clean_df"][col2].dropna(), kde=True, bins=20, color="indianred", ax=axes[1])
-        axes[1].set_title(f"{col2}")
-        axes[1].set_xlabel(col2)
-        axes[1].set_ylabel("Frequency")
+            # Ensure axes is iterable
+            if n_panels == 1:
+                axes = [axes]
         
-        plt.tight_layout()
-        st.pyplot(fig)
-        plt.close(fig)
+            for ax, col in zip(axes, cols_pair):
+                sns.histplot(df_ss[col].dropna(), kde=True, bins=bins, ax=ax)
+                ax.set_title(col)
+                ax.set_xlabel(col)
+                ax.set_ylabel("Frequency")
+        
+            plt.tight_layout()
+            st.pyplot(fig)
+            plt.close(fig)
