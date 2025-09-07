@@ -173,4 +173,4 @@ if file is not None:
             plt.tight_layout()
             st.pyplot(fig)
             plt.close(fig)
-side=st.sidebar("Hello")
+side=st.sidebar.write("Hello")
