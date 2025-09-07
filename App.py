@@ -37,7 +37,6 @@ if file is not None:
             numeric_columns = df.select_dtypes(include='number').columns.tolist()
             selected_columns = st.multiselect("Columns", numeric_columns, default=numeric_columns)
             if selected_columns:
-                st.dataframe(df, use_container_width=True)                    # use container width until new API lands [21]
                 st.line_chart(df[selected_columns], height=250, use_container_width=True)  # same here [21]
             else:
                 st.info("Please select at least one column to display the chart.")
