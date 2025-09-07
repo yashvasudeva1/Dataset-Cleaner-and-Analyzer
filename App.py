@@ -129,18 +129,46 @@ if file is not None:
             st.warning("Please Select your Data Type First")
 
     with tab5:
-        column = df.select_dtypes(include="number").columns        
+        num_cols = df.select_dtypes(include="number").columns  # numeric columns
+        
         distribution_report = []
-        for i in column:
-          a,b=stats.shapiro(df[i])
-          c,d=stats.normaltest(df[i])
-          if (a>0.95) and (b>(0.95*0.05)):
-            f="Likely normal"
-          else:
-            f="Likely not normal"
-        distribution_report.append({"Column Name": i, "Distribution": f})
-        distibution = pd.DataFrame(distribution_report)
-        st.write(distibution)
+        alpha = 0.05
+        
+        for col in num_cols:
+            x = df[col].dropna().values
+            # guard: need at least 8 for normaltest; Shapiro requires n>=3
+            shapiro_stat = shapiro_p = np.nan
+            k2_stat = k2_p = np.nan
+        
+            if x.size >= 3:
+                shapiro_stat, shapiro_p = stats.shapiro(x)  # may warn if n>5000
+            if x.size >= 8:  # scipy.stats.normaltest requires n>=8
+                k2_stat, k2_p = stats.normaltest(x)
+        
+            # Decision by p-values if available
+            decisions = []
+            if not np.isnan(shapiro_p):
+                decisions.append(shapiro_p > alpha)
+            if not np.isnan(k2_p):
+                decisions.append(k2_p > alpha)
+        
+            if decisions and all(decisions):
+                verdict = "Likely normal"
+            else:
+                verdict = "Likely not normal"
+        
+            distribution_report.append({
+                "Column": col,
+                "n": int(x.size),
+                "Shapiro W": shapiro_stat,
+                "Shapiro p": shapiro_p,
+                "K^2": k2_stat,
+                "K^2 p": k2_p,
+                "Distribution": verdict
+            })
+        
+        distribution = pd.DataFrame(distribution_report)
+        st.write(distribution)
         
         
         # numeric_cols = st.session_state["clean_df"].select_dtypes(include=np.number).columns
