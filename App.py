@@ -4,6 +4,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
 from scipy import stats
+import warnings
 import io
 def shapiro_safe(x):
     with warnings.catch_warnings():
@@ -33,14 +34,14 @@ if file is not None:
         st.write(st.session_state["clean_df"].describe())
     with tab1:
         with st.container(border=True):
-            numeric_columns = df.select_dtypes(include='number').columns.tolist()  # get numeric columns [web:53]
+            numeric_columns = df.select_dtypes(include='number').columns.tolist()
             selected_columns = st.multiselect("Columns", numeric_columns, default=numeric_columns)
             if selected_columns:
-                # Replace old calls here
-                st.dataframe(df, use_container_width=True)
-                st.line_chart(df[selected_columns], height=250, use_container_width=True)
+                st.dataframe(df, use_container_width=True)                    # use container width until new API lands [21]
+                st.line_chart(df[selected_columns], height=250, use_container_width=True)  # same here [21]
             else:
                 st.info("Please select at least one column to display the chart.")
+
 
 
     with tab3:
