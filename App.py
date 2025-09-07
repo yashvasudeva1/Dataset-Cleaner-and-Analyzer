@@ -14,7 +14,6 @@ def load_data(uploaded_file):
 file = st.file_uploader("")
 if file is not None:
     df = load_data(file)
-    # Initialize cleaned_df in session_state
     if "clean_df" not in st.session_state:
         st.session_state["clean_df"] = df.copy()
 
@@ -27,7 +26,6 @@ if file is not None:
 
     with tab0:
         st.write(st.session_state["clean_df"].describe())
-
     with tab1:
         with st.container(border=True):
             numeric_columns = st.session_state["clean_df"].select_dtypes(include='number').columns.tolist()
@@ -39,7 +37,6 @@ if file is not None:
 
     with tab3:
         columns = st.session_state["clean_df"].select_dtypes(include=[np.number]).columns
-        # Initial outlier report (before removal)
         outlier_report = []
         for col in columns:
             q1, q3 = st.session_state["clean_df"][col].quantile([0.25, 0.75])
@@ -53,7 +50,7 @@ if file is not None:
         st.write(outliers)
 
         remove_outlier = st.button("Remove the Outliers")
-        if remove_outlier:  # Clean data and update session_state
+        if remove_outlier: 
             temp_df = st.session_state["clean_df"]
             for col in columns:
                 q1, q3 = temp_df[col].quantile([0.25, 0.75])
@@ -61,9 +58,7 @@ if file is not None:
                 lower = q1 - 1.5 * iqr
                 upper = q3 + 1.5 * iqr
                 temp_df = temp_df[(temp_df[col] >= lower) & (temp_df[col] <= upper)]
-            st.session_state["clean_df"] = temp_df  # Update the cleaned DataFrame
-
-            # Report remaining outliers
+            st.session_state["clean_df"] = temp_df 
             outlier_report = []
             for col in columns:
                 q1, q3 = st.session_state["clean_df"][col].quantile([0.25, 0.75])
@@ -129,54 +124,41 @@ if file is not None:
             st.warning("Please Select your Data Type First")
 
     with tab5:
-        num_cols = df.select_dtypes(include="number").columns  # numeric columns [web:53][web:52]
+        num_cols = df.select_dtypes(include="number").columns
         
         distribution_report = []
         alpha = 0.05
         
         for col in num_cols:
             x = df[col].dropna().values
-        
-            # Initialize
             shapiro_stat = shapiro_p = np.nan
             k2_stat = k2_p = np.nan
-        
-            # Shapiro (n >= 3); note: p may be inaccurate for n > 5000 (SciPy note)
             if x.size >= 3:
-                shapiro_stat, shapiro_p = stats.shapiro(x)  # may warn if n > 5000 [web:62][web:87]
-        
-            # D’Agostino-Pearson (n >= 8)
+                shapiro_stat, shapiro_p = stats.shapiro(x)
             if x.size >= 8:
-                k2_stat, k2_p = stats.normaltest(x)  # requires n >= 8 [web:63]
-        
-            # Decision by p-values if available
+                k2_stat, k2_p = stats.normaltest(x) 
             decisions = []
             if not np.isnan(shapiro_p):
                 decisions.append(shapiro_p > alpha)
             if not np.isnan(k2_p):
                 decisions.append(k2_p > alpha)
-        
             verdict = "Likely normal" if (decisions and all(decisions)) else "Likely not normal"
-        
             distribution_report.append({
                 "Column": col,
                 "n": int(x.size),
                 "Shapiro W": shapiro_stat,
-                "Shapiro p": shapiro_p,       # keep full precision in the data
+                "Shapiro p": shapiro_p,       
                 "K^2": k2_stat,
                 "K^2 p": k2_p,
                 "Distribution": verdict
             })
-        
         distribution = pd.DataFrame(distribution_report)
         st.write(distribution.style.format({"Shapiro p": "{:.2f}".format}))
-        num_cols = df.select_dtypes(include="number").columns.tolist()  # [22][23]
+        num_cols = df.select_dtypes(include="number").columns.tolist()
         if not num_cols:
             st.info("No numeric columns to plot.")
             st.stop()
-        
         bins = st.slider("Bins", 10, 100, 20, 5)
-        
         for i in range(0, len(num_cols), 2):
             pair = num_cols[i:i+2]
             n_panels = len(pair)
