@@ -162,25 +162,39 @@ if file is not None:
             })
         distribution = pd.DataFrame(distribution_report)
         st.write(distribution.style.format({"Shapiro p": "{:.2f}".format}))
-        num_cols = df.select_dtypes(include="number").columns.tolist()
+        num_cols = df.select_dtypes(include="number").columns.tolist()  # numeric columns [web:53]
         if not num_cols:
             st.info("No numeric columns to plot.")
             st.stop()
+        
         bins = st.slider("Bins", 10, 100, 20, 5)
+        
+        # Render histograms two at a time using Streamlit's Vega-Lite wrapper
         for i in range(0, len(num_cols), 2):
             pair = num_cols[i:i+2]
-            n_panels = len(pair)
-            fig, axes = plt.subplots(1, n_panels, figsize=(10, 4), sharey=True)
-            if n_panels == 1:
-                axes = [axes]
-            for ax, col in zip(axes, pair):
-                sns.histplot(df[col].dropna(), kde=True, bins=bins, ax=ax)
-                ax.set_title(col)
-                ax.set_xlabel(col)
-                ax.set_ylabel("Frequency")
-            plt.tight_layout()
-            st.pyplot(fig)
-            plt.close(fig)
+            cols = st.columns(len(pair))
+            for holder, col in zip(cols, pair):
+                holder.caption(f"Histogram: {col}")
+                # Build a tiny frame with a standard 'value' column for the chart
+                data = df[[col]].rename(columns={col: "value"}).dropna()
+                holder.vega_lite_chart(
+                    data,
+                    {
+                        "mark": "bar",
+                        "encoding": {
+                            "x": {
+                                "field": "value",
+                                "type": "quantitative",
+                                "bin": {"maxbins": int(bins)},   # control bin count via slider
+                                "title": col
+                            },
+                            "y": {"aggregate": "count", "type": "quantitative", "title": "Count"},
+                        },
+                        "width": "container",
+                        "height": 280,
+                    },
+                    use_container_width=True,
+                )
 with st.sidebar:
     st.subheader("DataFrame info")
 
