@@ -4,6 +4,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import seaborn as sns
 from scipy import stats
+import io
 st.title(":material/folder: Dataset Cleaner and Analyser")
 st.write("This app helps you in making your dataset cleaner, outlier free and ready for training")
 
@@ -173,4 +174,14 @@ if file is not None:
             plt.tight_layout()
             st.pyplot(fig)
             plt.close(fig)
-side=st.sidebar.write("Hello")
+with st.sidebar:
+    st.subheader("DataFrame info")
+
+    if 'df' in locals() or 'df' in globals():
+        buf = io.StringIO()
+        df.info(buf=buf)                     # write info() output to the buffer [web:151][web:152]
+        s = buf.getvalue()
+        st.text(s)                           # monospaced block in the sidebar [web:158]
+    else:
+        st.info("No DataFrame named df is available.")
+
