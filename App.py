@@ -12,7 +12,7 @@ st.write("This app helps you in making your dataset cleaner, outlier free and re
 def load_data(uploaded_file):
     return pd.read_csv(uploaded_file)
 
-file = st.file_uploader("")
+file = st.file_uploader("Upload CSV", type=["csv"], label_visibility="collapsed")
 if file is not None:
     df = load_data(file)
     if "clean_df" not in st.session_state:
@@ -29,12 +29,15 @@ if file is not None:
         st.write(st.session_state["clean_df"].describe())
     with tab1:
         with st.container(border=True):
-            numeric_columns = st.session_state["clean_df"].select_dtypes(include='number').columns.tolist()
+            numeric_columns = df.select_dtypes(include='number').columns.tolist()  # get numeric columns [web:53]
             selected_columns = st.multiselect("Columns", numeric_columns, default=numeric_columns)
             if selected_columns:
-                st.line_chart(st.session_state["clean_df"][selected_columns], height=250, use_container_width=True)
+                # Replace old calls here
+                st.dataframe(df, width="stretch")                     # was: st.dataframe(..., use_container_width=True)
+                st.line_chart(df[selected_columns], height=250, width="stretch")  # was: ..., use_container_width=True
             else:
                 st.info("Please select at least one column to display the chart.")
+
 
     with tab3:
         columns = st.session_state["clean_df"].select_dtypes(include=[np.number]).columns
