@@ -111,8 +111,8 @@ if file is not None:
                     "Neural Network Regression"
                 ]
             )
-            target_column = st.selectbox("Select the Target Column:", [columns,'None'])
-            if model_selection == 'Linear Regression' and target_column != 'None':
+            target_column = st.selectbox("Select the Target Column:", columns)
+            if model_selection == 'Linear Regression':
                 df_cleaned = df.copy()
                 for col in df_cleaned.columns:
                     q1, q3 = df_cleaned[col].quantile([0.25, 0.75])
