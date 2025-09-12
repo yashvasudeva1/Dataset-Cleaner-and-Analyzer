@@ -270,8 +270,9 @@ if file is not None:
                         step=step
                     )
                 input_df = pd.DataFrame([input_data])
-                input_df = scaler.transform(input_df)
-                user_prediction=model.predict(input_df)
+                input_poly = poly.transform(input_df)
+                input_scaled = scaler.transform(input_poly)
+                user_prediction=model.predict(input_scaled)
                 st.success(f"Predicted Value for the given Target Class is {user_prediction}")
         elif dataset_choice == "Classification Type":
             model_selection = st.selectbox(
