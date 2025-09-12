@@ -190,6 +190,7 @@ if file is not None:
                         step=step
                     )
                 input_df = pd.DataFrame([input_data])
+                input_df = scaler.transform(input_df)
                 user_prediction=model.predict(input_df)
                 st.success(f"Predicted Value for the given Target Class is {user_prediction}")
             if model_selection == 'Polynomial Regression':
