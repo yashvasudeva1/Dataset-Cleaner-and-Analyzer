@@ -115,8 +115,6 @@ if file is not None:
             if model_selection == 'Linear Regression' and target_column != 'None':
                 df_cleaned = df.copy()
                 for col in df_cleaned.columns:
-                    if col == target_column:
-                        continue
                     q1, q3 = df_cleaned[col].quantile([0.25, 0.75])
                     iqr = q3 - q1
                     lower_bound = q1 - 1.5 * iqr
