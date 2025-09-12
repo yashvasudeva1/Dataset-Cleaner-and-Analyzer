@@ -120,8 +120,8 @@ if file is not None:
                     lower_bound=q1-(1.5*iqr)
                     upper_bound=q3+(1.5*iqr)
                     df_cleaned=df[(df[i]>=lower_bound) & (df[i]<=upper_bound)]
-                x==df_cleaned.drop(target_column,axis=1)
-                y==df_cleaned[target_column]
+                x=df_cleaned.drop(target_column,axis=1)
+                y=df_cleaned[target_column]
                 x_train,x_test,y_train,y_test=train_test_split(x,y,test_size=0.3,random_state=42)
                 scalar=StanardScalar()
                 x_train=scalar.fit_transform(x_train)
