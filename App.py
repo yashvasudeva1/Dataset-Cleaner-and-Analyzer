@@ -128,6 +128,9 @@ if file is not None:
                 x_test = scaler.transform(x_test)
                 model = LinearRegression()
                 model.fit(x_train, y_train)
+                st.success("""Model Trained Successfully   
+                You can now Proceed to Predict the Target column  
+                """)
                     
         elif dataset_choice == "Classification Type":
             model_selection = st.selectbox(
