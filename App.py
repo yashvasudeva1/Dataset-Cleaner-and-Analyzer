@@ -128,10 +128,32 @@ if file is not None:
                 x_test = scaler.transform(x_test)
                 model = LinearRegression()
                 model.fit(x_train, y_train)
+                y_pred=model.predict(x_test)
                 st.success("""Model Trained Successfully   
                 You can now Proceed to Predict the Target column  
                 """)
-                    
+                def adjusted_r2_score(y_true, y_pred, X):
+                    n = len(y_true)
+                    p = x.shape[1]  # number of features
+                    r2 = r2_score(y_true, y_pred)
+                    return 1 - (1 - r2) * (n - 1) / (n - p - 1)
+
+                def mean_absolute_percentage_error(y_true, y_pred):
+                    return np.mean(np.abs((y_true - y_pred) / y_true)) * 100
+                mae = mean_absolute_error(y_test, y_pred)
+                mse = mean_squared_error(y_test, y_pred)
+                rmse = np.sqrt(mse)
+                r2 = r2_score(y_test, y_pred)
+                adj_r2 = adjusted_r2_score(y_test, y_pred, X_test)
+                mape = mean_absolute_percentage_error(np.array(y_test), np.array(y_pred))
+                
+                st.sidebar.header("Linear Regression Metrics")
+                st.sidebar.write(f"Mean Absolute Error (MAE): {mae:.4f}")
+                st.sidebar.write(f"Mean Squared Error (MSE): {mse:.4f}")
+                st.sidebar.write(f"Root Mean Squared Error (RMSE): {rmse:.4f}")
+                st.sidebar.write(f"R-squared (R²): {r2:.4f}")
+                st.sidebar.write(f"Adjusted R-squared: {adj_r2:.4f}")
+                st.sidebar.write(f"Mean Absolute Percentage Error (MAPE): {mape:.2f}%")
         elif dataset_choice == "Classification Type":
             model_selection = st.selectbox(
                 "Choose the Machine Learning Model you want the prediction from :",
