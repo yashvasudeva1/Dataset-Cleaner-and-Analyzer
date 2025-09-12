@@ -113,11 +113,11 @@ if file is not None:
                     "Neural Network Regression"
                 ]
             )
-            options = ["None",] + list(df.select_dtypes(include='number').columns) 
+            options = df_cleaned.select_dtypes(include='number').columns
             target_column = st.selectbox("Select the Target Column:", options)
             if model_selection == 'Linear Regression':
                 df_cleaned = df.copy()
-                for col in df_cleaned.columns:
+                for col in df_cleaned.select_dtypes(include='number'):
                     q1, q3 = df_cleaned[col].quantile([0.25, 0.75])
                     iqr = q3 - q1
                     lower_bound = q1 - 1.5 * iqr
