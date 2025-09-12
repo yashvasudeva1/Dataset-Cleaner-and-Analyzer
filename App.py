@@ -221,9 +221,7 @@ if file is not None:
                 
                 st.success(f"""Model Trained Successfully with Polynomial Regression  
                 You can now Proceed to Predict the Target column""")
-                
                 st.sidebar.header("Polynomial Regression Metrics")
-                st.sidebar.write(f"Degree selected: {best_degree}")
                 st.sidebar.write(f"Mean Absolute Error (MAE): {best_metrics['MAE']:.4f}")
                 st.sidebar.write(f"Mean Squared Error (MSE): {best_metrics['MSE']:.4f}")
                 st.sidebar.write(f"Root Mean Squared Error (RMSE): {best_metrics['RMSE']:.4f}")
