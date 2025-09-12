@@ -92,12 +92,13 @@ if file is not None:
         columns = df.columns
         dataset_choice = st.selectbox(
             "Choose the Type of Data you uploaded",
-            ["Numeric Type", "Classification Type", "None"]
+            ["None","Numeric Type", "Classification Type"]
         )
         if dataset_choice == "Numeric Type":
             model_selection = st.selectbox(
                 "Choose the Machine Learning Model you want the prediction from :",
                 [
+                    "None"
                     "Linear Regression",
                     "Polynomial Regression",
                     "Ridge Regression",
@@ -112,7 +113,8 @@ if file is not None:
                     "Neural Network Regression"
                 ]
             )
-            target_column = st.selectbox("Select the Target Column:", columns)
+            options = ["None"] + columns 
+            target_column = st.selectbox("Select the Target Column:", options)
             if model_selection == 'Linear Regression':
                 df_cleaned = df.copy()
                 for col in df_cleaned.columns:
