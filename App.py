@@ -157,43 +157,39 @@ if file is not None:
                 st.sidebar.write(f"R-squared (R²): {r2:.4f}")
                 st.sidebar.write(f"Adjusted R-squared: {adj_r2:.4f}")
                 st.sidebar.write(f"Mean Absolute Percentage Error (MAPE): {mape:.2f}%")
-                totalcolumns=df.columns.drop(target_column)
-                col_namea = totalcolumns[1]
-                qa1 = df[col_namea].quantile(0.25)
-                qa3 = df[col_namea].quantile(0.75)
-                iqr = qa3 - qa1
-                lower_bound = qa1 - 1.5 * iqr
-                upper_bound = qa3 + 1.5 * iqr
-                value = st.slider(
-                    label=col_namea,
-                    min_value=float(lower_bound),
-                    max_value=float(upper_bound),
-                    value=float(df[col_namea].median())  
-                )
-                col_nameb=totalcolumns[2]
-                qb1 = df[col_nameb].quantile(0.25)
-                qb3 = df[col_nameb].quantile(0.75)
-                iqr = qb3 - qb1
-                lower_bound = qb1 - 1.5 * iqr
-                upper_bound = qb3 + 1.5 * iqr
-                value = st.slider(
-                    label=col_nameb,
-                    min_value=float(lower_bound),
-                    max_value=float(upper_bound),
-                    value=float(df[col_nameb].median())  
-                )
-                col_namec=totalcolumns[3]
-                qc1 = df[col_namec].quantile(0.25)
-                qc3 = df[col_namec].quantile(0.75)
-                iqr = qc3 - qc1
-                lower_bound = qc1 - 1.5 * iqr
-                upper_bound = qc3 + 1.5 * iqr
-                value = st.slider(
-                    label=col_namec,
-                    min_value=float(lower_bound),
-                    max_value=float(upper_bound),
-                    value=float(df[col_namec].median())  
-                )
+                for col in totalcolumns:
+                    q1 = df[col].quantile(0.25)
+                    q3 = df[col].quantile(0.75)
+                    iqr = q3 - q1
+                    lower_bound = q1 - 1.5 * iqr
+                    upper_bound = q3 + 1.5 * iqr
+                    
+                    # Determine slider step depending on data type (float or int)
+                    if pd.api.types.is_integer_dtype(df[col]):
+                        step = 1
+                        min_val = int(np.floor(lower_bound))
+                        max_val = int(np.ceil(upper_bound))
+                        default_val = int(df[col].median())
+                    else:
+                        step = 0.01
+                        min_val = float(lower_bound)
+                        max_val = float(upper_bound)
+                        default_val = float(df[col].median())
+                    
+                    # Create slider for each feature column
+                    input_data[col] = st.slider(
+                        label=col,
+                        min_value=min_val,
+                        max_value=max_val,
+                        value=default_val,
+                        step=step
+                    )
+                
+                # Convert input_data dictionary to single-row DataFrame to feed model
+                input_df = pd.DataFrame([input_data])
+                
+                st.write("Input data preview:")
+                st.write(input_df)
             if model_selection == 'Polynomial Regression':
                 df_cleaned = df.copy()
                 for col in df_cleaned.columns:
