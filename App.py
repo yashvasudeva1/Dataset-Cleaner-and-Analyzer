@@ -157,7 +157,8 @@ if file is not None:
                 st.sidebar.write(f"R-squared (R²): {r2:.4f}")
                 st.sidebar.write(f"Adjusted R-squared: {adj_r2:.4f}")
                 st.sidebar.write(f"Mean Absolute Percentage Error (MAPE): {mape:.2f}%")
-                col_namea = options[1]
+                totalcolumns=df.columns.drop(target_column)
+                col_namea = totalcolumns[1]
                 qa1 = df[col_namea].quantile(0.25)
                 qa3 = df[col_namea].quantile(0.75)
                 iqr = qa3 - qa1
@@ -169,7 +170,7 @@ if file is not None:
                     max_value=float(upper_bound),
                     value=float(df[col_namea].median())  
                 )
-                col_nameb=options[2]
+                col_nameb=totalcolumns[2]
                 qb1 = df[col_nameb].quantile(0.25)
                 qb3 = df[col_nameb].quantile(0.75)
                 iqr = qb3 - qb1
