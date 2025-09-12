@@ -188,9 +188,9 @@ if file is not None:
                         value=default_val,
                         step=step
                     )
-                
-                # Convert user inputs to DataFrame with one row
                 input_df = pd.DataFrame([input_data])
+                user_prediction=model.predict(input_df)
+                st.success(f"Predicted Value for the given Target Class is {user_prediction}")
             if model_selection == 'Polynomial Regression':
                 df_cleaned = df.copy()
                 for col in df_cleaned.columns:
