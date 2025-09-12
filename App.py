@@ -123,7 +123,7 @@ if file is not None:
                 x=df_cleaned.drop(target_column,axis=1)
                 y=df_cleaned[target_column]
                 x_train,x_test,y_train,y_test=train_test_split(x,y,test_size=0.3,random_state=42)
-                scalar=StanardScalar()
+                scalar=StanardScaler()
                 x_train=scalar.fit_transform(x_train)
                 x_test=scalar.transform(x_test)
                 model=LinearRegression()
