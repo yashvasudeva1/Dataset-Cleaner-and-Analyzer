@@ -38,7 +38,8 @@ if file is not None:
                 st.info("Please select at least one column to display the chart.")
     with tab2:
         st.title("Chat with your Dataset")
-        st.selectbox("Select the Model you want to chat with :",["Gemini",'Llama',"Deepseek",'Qwen'])
+        Model=st.selectbox("Select the Model you want to chat with :",["Gemini",'Llama',"Deepseek",'Qwen'])
+        apikey=st.text_input(f"Enter {Model} API key")
     with tab3:
         columns = st.session_state["clean_df"].select_dtypes(include=[np.number]).columns
         outlier_report = []
@@ -75,6 +76,7 @@ if file is not None:
             st.write(outliers)
             st.subheader("Cleaned Dataset")
             st.write(temp_df)
+            st.download_button(temp_df)
     with tab4:
         columns = df.columns
         dataset_choice = st.selectbox(
