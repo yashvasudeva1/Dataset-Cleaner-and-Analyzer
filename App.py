@@ -182,7 +182,7 @@ if file is not None:
                     max_value=float(upper_bound),
                     value=float(df[col_nameb].median())  
                 )
-                col_nameb=totalcolumns[3]
+                col_namec=totalcolumns[3]
                 qc1 = df[col_namec].quantile(0.25)
                 qc3 = df[col_namec].quantile(0.75)
                 iqr = qc3 - qc1
