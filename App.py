@@ -6,6 +6,7 @@ import seaborn as sns
 from scipy import stats
 import warnings
 import io
+from sklearn.linear_models import LinearRegression
 def shapiro_safe(x):
     with warnings.catch_warnings():
         warnings.filterwarnings("ignore", message=".*computed p-value may not be accurate.*")
@@ -109,6 +110,8 @@ if file is not None:
                 ]
             )
             target_column = st.selectbox("Select the Target Column:", columns)
+            if model_seletion='Linear Regression':
+                
         elif dataset_choice == "Classification Type":
             model_selection = st.selectbox(
                 "Choose the Machine Learning Model you want the prediction from :",
@@ -190,12 +193,4 @@ if file is not None:
                     },
                     use_container_width=True,
                 )
-with st.sidebar:
-    st.subheader("DataFrame info")
-    if 'df' in locals() or 'df' in globals():
-        buf = io.StringIO()
-        df.info(buf=buf)                     
-        s = buf.getvalue()
-        st.text(s)                           
-    else:
-        st.info("No DataFrame available.")
+
