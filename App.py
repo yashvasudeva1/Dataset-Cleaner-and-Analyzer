@@ -168,48 +168,33 @@ if file is not None:
                 
                 x = df_cleaned.drop(target_column, axis=1)
                 y = df_cleaned[target_column]
-                
                 x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.3, random_state=42)
-                
-                # Apply polynomial features transformation
                 poly = PolynomialFeatures(degree=2, include_bias=False)
                 x_train_poly = poly.fit_transform(x_train)
                 x_test_poly = poly.transform(x_test)
-                
-                # Scaling
                 scaler = StandardScaler()
                 x_train_poly = scaler.fit_transform(x_train_poly)
                 x_test_poly = scaler.transform(x_test_poly)
-                
-                # Model training
                 model = LinearRegression()
                 model.fit(x_train_poly, y_train)
-                
-                # Prediction
                 y_pred = model.predict(x_test_poly)
-                
+
                 st.success("""Model Trained Successfully with Polynomial Regression  
                 You can now Proceed to Predict the Target column  
                 """)
-                
                 def adjusted_r2_score(y_true, y_pred, X):
                     n = len(y_true)
-                    p = X.shape[1]  # number of features including polynomial terms
+                    p = x.shape[1]
                     r2 = r2_score(y_true, y_pred)
                     return 1 - (1 - r2) * (n - 1) / (n - p - 1)
-                
                 def mean_absolute_percentage_error(y_true, y_pred):
                     return np.mean(np.abs((y_true - y_pred) / y_true)) * 100
-                
-                # Calculate metrics
                 mae = mean_absolute_error(y_test, y_pred)
                 mse = mean_squared_error(y_test, y_pred)
                 rmse = np.sqrt(mse)
                 r2 = r2_score(y_test, y_pred)
                 adj_r2 = adjusted_r2_score(y_test, y_pred, x_test_poly)
                 mape = mean_absolute_percentage_error(np.array(y_test), np.array(y_pred))
-                
-                # Display metrics in sidebar
                 st.sidebar.header("Polynomial Regression Metrics")
                 st.sidebar.write(f"Mean Absolute Error (MAE): {mae:.4f}")
                 st.sidebar.write(f"Mean Squared Error (MSE): {mse:.4f}")
@@ -217,17 +202,6 @@ if file is not None:
                 st.sidebar.write(f"R-squared (R²): {r2:.4f}")
                 st.sidebar.write(f"Adjusted R-squared: {adj_r2:.4f}")
                 st.sidebar.write(f"Mean Absolute Percentage Error (MAPE): {mape:.2f}%")
-
-                
-                st.success(f"""Model Trained Successfully with Polynomial Regression  
-                You can now Proceed to Predict the Target column""")
-                st.sidebar.header("Polynomial Regression Metrics")
-                st.sidebar.write(f"Mean Absolute Error (MAE): {best_metrics['MAE']:.4f}")
-                st.sidebar.write(f"Mean Squared Error (MSE): {best_metrics['MSE']:.4f}")
-                st.sidebar.write(f"Root Mean Squared Error (RMSE): {best_metrics['RMSE']:.4f}")
-                st.sidebar.write(f"R-squared (R²): {best_metrics['R2']:.4f}")
-                st.sidebar.write(f"Adjusted R-squared: {best_metrics['Adj_R2']:.4f}")
-                st.sidebar.write(f"Mean Absolute Percentage Error (MAPE): {best_metrics['MAPE']:.2f}%")
         elif dataset_choice == "Classification Type":
             model_selection = st.selectbox(
                 "Choose the Machine Learning Model you want the prediction from :",
