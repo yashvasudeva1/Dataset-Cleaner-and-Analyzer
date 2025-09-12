@@ -195,7 +195,7 @@ if file is not None:
                 st.success(f"Predicted Value for the given Target Class is {user_prediction}")
             if model_selection == 'Polynomial Regression':
                 df_cleaned = df.copy()
-                for col in df_cleaned.columns:
+                for col in df_cleaned.select_dtypes(include='number'):
                     q1, q3 = df_cleaned[col].quantile([0.25, 0.75])
                     iqr = q3 - q1
                     lower_bound = q1 - 1.5 * iqr
