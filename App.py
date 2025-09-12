@@ -219,7 +219,7 @@ if file is not None:
                 st.sidebar.write(f"Mean Absolute Percentage Error (MAPE): {mape:.2f}%")
 
                 
-                st.success(f"""Model Trained Successfully with Polynomial Regression (Degree={best_degree})  
+                st.success(f"""Model Trained Successfully with Polynomial Regression  
                 You can now Proceed to Predict the Target column""")
                 
                 st.sidebar.header("Polynomial Regression Metrics")
