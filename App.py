@@ -112,7 +112,7 @@ if file is not None:
                 ]
             )
             target_column = st.selectbox("Select the Target Column:", columns)
-            if model_seletion=='Linear Regression':
+            if model_selection=='Linear Regression':
                 column=df.columns
                 for i in columnz:
                     q1,q3=df[i].quantile([0.25,0.75])
