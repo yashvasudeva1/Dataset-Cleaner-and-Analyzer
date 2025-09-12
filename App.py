@@ -182,7 +182,18 @@ if file is not None:
                     max_value=float(upper_bound),
                     value=float(df[col_nameb].median())  
                 )
-            
+                col_nameb=totalcolumns[3]
+                qc1 = df[col_namec].quantile(0.25)
+                qc3 = df[col_namec].quantile(0.75)
+                iqr = qc3 - qc1
+                lower_bound = qc1 - 1.5 * iqr
+                upper_bound = qc3 + 1.5 * iqr
+                value = st.slider(
+                    label=col_namec,
+                    min_value=float(lower_bound),
+                    max_value=float(upper_bound),
+                    value=float(df[col_namec].median())  
+                )
             if model_selection == 'Polynomial Regression':
                 df_cleaned = df.copy()
                 for col in df_cleaned.columns:
