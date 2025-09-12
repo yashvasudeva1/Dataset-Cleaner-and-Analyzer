@@ -238,6 +238,41 @@ if file is not None:
                 st.sidebar.write(f"R-squared (R²): {r2:.4f}")
                 st.sidebar.write(f"Adjusted R-squared: {adj_r2:.4f}")
                 st.sidebar.write(f"Mean Absolute Percentage Error (MAPE): {mape:.2f}%")
+                totalcolumns = df_cleaned.select_dtypes(include='number').columns.drop(target_column, errors='ignore')
+
+                st.header("Input feature values for prediction")
+                
+                input_data = {}
+                
+                for col in totalcolumns:
+                    q1 = df[col].quantile(0.25)
+                    q3 = df[col].quantile(0.75)
+                    iqr = q3 - q1
+                    lower_bound = q1 - 1.5 * iqr
+                    upper_bound = q3 + 1.5 * iqr
+                
+                    if pd.api.types.is_integer_dtype(df[col]):
+                        step = 1
+                        min_val = int(np.floor(lower_bound))
+                        max_val = int(np.ceil(upper_bound))
+                        default_val = int(df[col].median())
+                    else:
+                        step = 0.01
+                        min_val = float(lower_bound)
+                        max_val = float(upper_bound)
+                        default_val = float(df[col].median())
+                
+                    input_data[col] = st.slider(
+                        label=col,
+                        min_value=min_val,
+                        max_value=max_val,
+                        value=default_val,
+                        step=step
+                    )
+                input_df = pd.DataFrame([input_data])
+                input_df = scaler.transform(input_df)
+                user_prediction=model.predict(input_df)
+                st.success(f"Predicted Value for the given Target Class is {user_prediction}")
         elif dataset_choice == "Classification Type":
             model_selection = st.selectbox(
                 "Choose the Machine Learning Model you want the prediction from :",
