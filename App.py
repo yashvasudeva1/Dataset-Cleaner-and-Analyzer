@@ -201,8 +201,8 @@ if file is not None:
                     lower_bound = q1 - 1.5 * iqr
                     upper_bound = q3 + 1.5 * iqr
                     df_cleaned = df_cleaned[(df_cleaned[col] >= lower_bound) & (df_cleaned[col] <= upper_bound)]
-                
-                x = df_cleaned.drop(target_column, axis=1)
+                numeric_cols = df_cleaned.select_dtypes(include=['number']).columns.drop(target_column, errors='ignore')
+                x = df_cleaned[numeric_cols]
                 y = df_cleaned[target_column]
                 x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.3, random_state=42)
                 poly = PolynomialFeatures(degree=2, include_bias=False)
