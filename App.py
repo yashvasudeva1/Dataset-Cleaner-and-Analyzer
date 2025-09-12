@@ -98,7 +98,7 @@ if file is not None:
             model_selection = st.selectbox(
                 "Choose the Machine Learning Model you want the prediction from :",
                 [
-                    "None"
+                    "None",
                     "Linear Regression",
                     "Polynomial Regression",
                     "Ridge Regression",
@@ -113,7 +113,7 @@ if file is not None:
                     "Neural Network Regression"
                 ]
             )
-            options = ["None"] + columns 
+            options = ["None",] + columns 
             target_column = st.selectbox("Select the Target Column:", options)
             if model_selection == 'Linear Regression':
                 df_cleaned = df.copy()
