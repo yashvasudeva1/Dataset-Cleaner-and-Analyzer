@@ -179,7 +179,7 @@ if file is not None:
                     label=col_nameb,
                     min_value=float(lower_bound),
                     max_value=float(upper_bound),
-                    value=float(df[col_name].median())  
+                    value=float(df[col_nameb].median())  
                 )
             
             if model_selection == 'Polynomial Regression':
