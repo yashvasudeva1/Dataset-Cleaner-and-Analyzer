@@ -6,7 +6,7 @@ import seaborn as sns
 from scipy import stats
 import warnings
 import io
-from sklearn.linear_models import LinearRegression
+from sklearn.linear_model import LinearRegression
 from sklearn.model_selection import train_test_split, cross_val_score
 from sklearn.preprocessing import StandardScalar
 def shapiro_safe(x):
