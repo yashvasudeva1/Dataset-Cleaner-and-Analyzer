@@ -9,6 +9,7 @@ import io
 from sklearn.linear_model import LinearRegression
 from sklearn.model_selection import train_test_split, cross_val_score
 from sklearn.preprocessing import StandardScaler
+from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 def shapiro_safe(x):
     with warnings.catch_warnings():
         warnings.filterwarnings("ignore", message=".*computed p-value may not be accurate.*")
