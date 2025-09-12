@@ -23,8 +23,8 @@ if file is not None:
     st.write("Preview of your dataset:")
     st.dataframe(st.session_state["clean_df"], use_container_width=True)
     
-    tab0, tab1, tab3, tab4, tab5 = st.tabs(
-        ["Analysis", "Visualisation", "Outliers", "Predictor", "Distribution"]
+    tab0, tab1,tab2 , tab3, tab4, tab5 = st.tabs(
+        ["Analysis", "Visualisation", "Chat" ,"Outliers", "Predictor", "Distribution"]
     )
     with tab0:
         st.write(st.session_state["clean_df"].describe())
@@ -36,6 +36,8 @@ if file is not None:
                 st.line_chart(df[selected_columns], height=250, use_container_width=True) 
             else:
                 st.info("Please select at least one column to display the chart.")
+    with tab2:
+        st.title("Chat with your Dataset")
     with tab3:
         columns = st.session_state["clean_df"].select_dtypes(include=[np.number]).columns
         outlier_report = []
