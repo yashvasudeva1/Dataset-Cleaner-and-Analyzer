@@ -157,15 +157,19 @@ if file is not None:
                 st.sidebar.write(f"R-squared (R²): {r2:.4f}")
                 st.sidebar.write(f"Adjusted R-squared: {adj_r2:.4f}")
                 st.sidebar.write(f"Mean Absolute Percentage Error (MAPE): {mape:.2f}%")
-                totalcolumns=df.columns.drop(target_column)
+                totalcolumns = df.columns.drop(target_column)
+
+                st.header("Input feature values for prediction")
+                
+                input_data = {}
+                
                 for col in totalcolumns:
                     q1 = df[col].quantile(0.25)
                     q3 = df[col].quantile(0.75)
                     iqr = q3 - q1
                     lower_bound = q1 - 1.5 * iqr
                     upper_bound = q3 + 1.5 * iqr
-                    
-                    # Determine slider step depending on data type (float or int)
+                
                     if pd.api.types.is_integer_dtype(df[col]):
                         step = 1
                         min_val = int(np.floor(lower_bound))
@@ -176,8 +180,7 @@ if file is not None:
                         min_val = float(lower_bound)
                         max_val = float(upper_bound)
                         default_val = float(df[col].median())
-                    
-                    # Create slider for each feature column
+                
                     input_data[col] = st.slider(
                         label=col,
                         min_value=min_val,
@@ -186,11 +189,8 @@ if file is not None:
                         step=step
                     )
                 
-                # Convert input_data dictionary to single-row DataFrame to feed model
+                # Convert user inputs to DataFrame with one row
                 input_df = pd.DataFrame([input_data])
-                
-                st.write("Input data preview:")
-                st.write(input_df)
             if model_selection == 'Polynomial Regression':
                 df_cleaned = df.copy()
                 for col in df_cleaned.columns:
