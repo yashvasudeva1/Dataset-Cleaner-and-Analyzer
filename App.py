@@ -113,7 +113,7 @@ if file is not None:
                     "Neural Network Regression"
                 ]
             )
-            options = ["None",] + list(df.select_dtypes(include='number').columns.drop(target_column, errors='ignore')) 
+            options = ["None",] + list(df.select_dtypes(include='number').columns) 
             target_column = st.selectbox("Select the Target Column:", options)
             if model_selection == 'Linear Regression':
                 df_cleaned = df.copy()
