@@ -133,7 +133,7 @@ if file is not None:
                 st.success("""Model Trained Successfully   
                 You can now Proceed to Predict the Target column  
                 """)
-                def adjusted_r2_score(y_true, y_pred, X):
+                def adjusted_r2_score(y_true, y_pred, x):
                     n = len(y_true)
                     p = x.shape[1]  # number of features
                     r2 = r2_score(y_true, y_pred)
@@ -145,7 +145,7 @@ if file is not None:
                 mse = mean_squared_error(y_test, y_pred)
                 rmse = np.sqrt(mse)
                 r2 = r2_score(y_test, y_pred)
-                adj_r2 = adjusted_r2_score(y_test, y_pred, X_test)
+                adj_r2 = adjusted_r2_score(y_test, y_pred, x_test)
                 mape = mean_absolute_percentage_error(np.array(y_test), np.array(y_pred))
                 
                 st.sidebar.header("Linear Regression Metrics")
