@@ -7,6 +7,8 @@ from scipy import stats
 import warnings
 import io
 from sklearn.linear_models import LinearRegression
+from sklearn.model_selection import train_test_split, cross_val_score
+from sklearn.preprocessing import StandardScalar
 def shapiro_safe(x):
     with warnings.catch_warnings():
         warnings.filterwarnings("ignore", message=".*computed p-value may not be accurate.*")
@@ -77,13 +79,13 @@ if file is not None:
             st.write(outliers)
             st.subheader("Cleaned Dataset")
             st.write(temp_df)
-            csv_data = temp_df.to_csv(index=False).encode('utf-8')
-            st.download_button(
-                label="Download Cleaned Data",
-                data=csv_data,
-                file_name='cleaned.csv',
-                mime='text/csv'
-            )
+            # csv_data = temp_df.to_csv(index=False).encode('utf-8')
+            # st.download_button(
+            #     label="Download Cleaned Data",
+            #     data=csv_data,
+            #     file_name='cleaned.csv',
+            #     mime='text/csv'
+            # )
 
     with tab4:
         columns = df.columns
@@ -110,7 +112,22 @@ if file is not None:
                 ]
             )
             target_column = st.selectbox("Select the Target Column:", columns)
-            if model_seletion='Linear Regression':
+            if model_seletion=='Linear Regression':
+                column=df.columns
+                for i in columnz:
+                    q1,q3=df[i].quantile([0.25,0.75])
+                    iqr=q3-q1
+                    lower_bound=q1-(1.5*iqr)
+                    upper_bound=q3+(1.5*iqr)
+                    df_cleaned=df[(df[i]>=lower_bound) & (df[i]<=upper_bound)]
+                x==df_cleaned.drop(target_column,axis=1)
+                y==df_cleaned[target_column]
+                x_train,x_test,y_train,y_test=train_test_split(x,y,test_size=0.3,random_state=42)
+                scalar=StanardScalar()
+                x_train=scalar.fit_transform(x_train)
+                x_test=scalar.transform(x_test)
+                model=LinearRegression()
+                model.fit(x_train,y_train)
                 
         elif dataset_choice == "Classification Type":
             model_selection = st.selectbox(
