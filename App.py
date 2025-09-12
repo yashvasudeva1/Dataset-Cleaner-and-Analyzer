@@ -157,20 +157,30 @@ if file is not None:
                 st.sidebar.write(f"R-squared (R²): {r2:.4f}")
                 st.sidebar.write(f"Adjusted R-squared: {adj_r2:.4f}")
                 st.sidebar.write(f"Mean Absolute Percentage Error (MAPE): {mape:.2f}%")
-                col_name = options[1]
-                q1 = df[col_name].quantile(0.25)
-                q3 = df[col_name].quantile(0.75)
-                iqr = q3 - q1
-                lower_bound = q1 - 1.5 * iqr
-                upper_bound = q3 + 1.5 * iqr
-                
+                col_namea = options[1]
+                qa1 = df[col_namea].quantile(0.25)
+                qa3 = df[col_namea].quantile(0.75)
+                iqr = qa3 - qa1
+                lower_bound = qa1 - 1.5 * iqr
+                upper_bound = qa3 + 1.5 * iqr
                 value = st.slider(
-                    label=col_name,
+                    label=col_namea,
+                    min_value=float(lower_bound),
+                    max_value=float(upper_bound),
+                    value=float(df[col_namea].median())  
+                )
+                col_nameb=options[2]
+                qb1 = df[col_nameb].quantile(0.25)
+                qb3 = df[col_nameb].quantile(0.75)
+                iqr = qb3 - qb1
+                lower_bound = qb1 - 1.5 * iqr
+                upper_bound = qb3 + 1.5 * iqr
+                value = st.slider(
+                    label=col_nameb,
                     min_value=float(lower_bound),
                     max_value=float(upper_bound),
                     value=float(df[col_name].median())  
                 )
-
             
             if model_selection == 'Polynomial Regression':
                 df_cleaned = df.copy()
