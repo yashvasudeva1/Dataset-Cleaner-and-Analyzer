@@ -171,6 +171,27 @@ if file is not None:
                 
                 x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.3, random_state=42)
                 
+                # Apply polynomial features transformation
+                poly = PolynomialFeatures(degree=2, include_bias=False)
+                x_train_poly = poly.fit_transform(x_train)
+                x_test_poly = poly.transform(x_test)
+                
+                # Scaling
+                scaler = StandardScaler()
+                x_train_poly = scaler.fit_transform(x_train_poly)
+                x_test_poly = scaler.transform(x_test_poly)
+                
+                # Model training
+                model = LinearRegression()
+                model.fit(x_train_poly, y_train)
+                
+                # Prediction
+                y_pred = model.predict(x_test_poly)
+                
+                st.success("""Model Trained Successfully with Polynomial Regression  
+                You can now Proceed to Predict the Target column  
+                """)
+                
                 def adjusted_r2_score(y_true, y_pred, X):
                     n = len(y_true)
                     p = X.shape[1]  # number of features including polynomial terms
@@ -180,37 +201,23 @@ if file is not None:
                 def mean_absolute_percentage_error(y_true, y_pred):
                     return np.mean(np.abs((y_true - y_pred) / y_true)) * 100
                 
-                best_degree = 1
-                best_r2 = -np.inf
-                best_model = None
-                best_metrics = {}
+                # Calculate metrics
+                mae = mean_absolute_error(y_test, y_pred)
+                mse = mean_squared_error(y_test, y_pred)
+                rmse = np.sqrt(mse)
+                r2 = r2_score(y_test, y_pred)
+                adj_r2 = adjusted_r2_score(y_test, y_pred, x_test_poly)
+                mape = mean_absolute_percentage_error(np.array(y_test), np.array(y_pred))
                 
-                for degree in range(1, 6):  # Try degrees 1 to 5
-                    poly = PolynomialFeatures(degree=degree, include_bias=False)
-                    x_train_poly = poly.fit_transform(x_train)
-                    x_test_poly = poly.transform(x_test)
-                
-                    scaler = StandardScaler()
-                    x_train_poly = scaler.fit_transform(x_train_poly)
-                    x_test_poly = scaler.transform(x_test_poly)
-                
-                    model = LinearRegression()
-                    model.fit(x_train_poly, y_train)
-                    y_pred = model.predict(x_test_poly)
-                
-                    r2 = r2_score(y_test, y_pred)
-                
-                    if r2 > best_r2:
-                        best_r2 = r2
-                        best_degree = degree
-                        best_model = model
-                        # store metrics
-                        best_metrics['MAE'] = mean_absolute_error(y_test, y_pred)
-                        best_metrics['MSE'] = mean_squared_error(y_test, y_pred)
-                        best_metrics['RMSE'] = np.sqrt(best_metrics['MSE'])
-                        best_metrics['R2'] = r2
-                        best_metrics['Adj_R2'] = adjusted_r2_score(y_test, y_pred, x_test_poly)
-                        best_metrics['MAPE'] = mean_absolute_percentage_error(np.array(y_test), np.array(y_pred))
+                # Display metrics in sidebar
+                st.sidebar.header("Polynomial Regression Metrics")
+                st.sidebar.write(f"Mean Absolute Error (MAE): {mae:.4f}")
+                st.sidebar.write(f"Mean Squared Error (MSE): {mse:.4f}")
+                st.sidebar.write(f"Root Mean Squared Error (RMSE): {rmse:.4f}")
+                st.sidebar.write(f"R-squared (R²): {r2:.4f}")
+                st.sidebar.write(f"Adjusted R-squared: {adj_r2:.4f}")
+                st.sidebar.write(f"Mean Absolute Percentage Error (MAPE): {mape:.2f}%")
+
                 
                 st.success(f"""Model Trained Successfully with Polynomial Regression (Degree={best_degree})  
                 You can now Proceed to Predict the Target column""")
