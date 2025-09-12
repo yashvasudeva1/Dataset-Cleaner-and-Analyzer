@@ -76,7 +76,12 @@ if file is not None:
             st.write(outliers)
             st.subheader("Cleaned Dataset")
             st.write(temp_df)
-            st.download_button(temp_df)
+            st.download_button(
+                label="Download Cleaned Data",
+                data=temp_df,
+                file_name='cleaned.csv',
+                mime='text/csv'
+            )
     with tab4:
         columns = df.columns
         dataset_choice = st.selectbox(
