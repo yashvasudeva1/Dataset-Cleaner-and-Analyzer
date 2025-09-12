@@ -157,9 +157,19 @@ if file is not None:
                 st.sidebar.write(f"R-squared (R²): {r2:.4f}")
                 st.sidebar.write(f"Adjusted R-squared: {adj_r2:.4f}")
                 st.sidebar.write(f"Mean Absolute Percentage Error (MAPE): {mape:.2f}%")
-                st.slider(options[1], min_value=df[options[1]].quantile(0.25)-1.5*(df[options[1]].quantile(0.75)-df[options[1]].quantile(0.25)), max_value=df[options[1]].quantile(0.75)+1.5*(df[options[1]].quantile(0.75)-df[options[1])
-
-lower_bound=df['agesq'].quantile(0.25)-1.5*(df['agesq'].quantile(0.75)-df['agesq'].quantile(0.25))
+                col_name = options[1]
+                q1 = df[col_name].quantile(0.25)
+                q3 = df[col_name].quantile(0.75)
+                iqr = q3 - q1
+                lower_bound = q1 - 1.5 * iqr
+                upper_bound = q3 + 1.5 * iqr
+                
+                value = st.slider(
+                    label=col_name,
+                    min_value=float(lower_bound),
+                    max_value=float(upper_bound),
+                    value=float(df[col_name].median())  
+                )
 
             
             if model_selection == 'Polynomial Regression':
