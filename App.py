@@ -157,6 +157,7 @@ if file is not None:
                 st.sidebar.write(f"R-squared (R²): {r2:.4f}")
                 st.sidebar.write(f"Adjusted R-squared: {adj_r2:.4f}")
                 st.sidebar.write(f"Mean Absolute Percentage Error (MAPE): {mape:.2f}%")
+                totalcolumns=df.columns.drop(target_column)
                 for col in totalcolumns:
                     q1 = df[col].quantile(0.25)
                     q3 = df[col].quantile(0.75)
