@@ -114,7 +114,7 @@ if file is not None:
             target_column = st.selectbox("Select the Target Column:", columns)
             if model_selection=='Linear Regression':
                 column=df.columns
-                for i in columnz:
+                for i in column:
                     q1,q3=df[i].quantile([0.25,0.75])
                     iqr=q3-q1
                     lower_bound=q1-(1.5*iqr)
