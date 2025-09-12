@@ -38,6 +38,7 @@ if file is not None:
                 st.info("Please select at least one column to display the chart.")
     with tab2:
         st.title("Chat with your Dataset")
+        st.selectbox("Select the Model you want to chat with :",["Gemini",'Llama',"Deepseek",'Qwen'])
     with tab3:
         columns = st.session_state["clean_df"].select_dtypes(include=[np.number]).columns
         outlier_report = []
