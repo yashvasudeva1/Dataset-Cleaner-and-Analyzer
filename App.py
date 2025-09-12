@@ -8,7 +8,7 @@ import warnings
 import io
 from sklearn.linear_model import LinearRegression
 from sklearn.model_selection import train_test_split, cross_val_score
-from sklearn.preprocessing import StandardScaler
+from sklearn.preprocessing import StandardScaler, PolynomialFeatures
 from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 def shapiro_safe(x):
     with warnings.catch_warnings():
@@ -157,6 +157,72 @@ if file is not None:
                 st.sidebar.write(f"R-squared (R²): {r2:.4f}")
                 st.sidebar.write(f"Adjusted R-squared: {adj_r2:.4f}")
                 st.sidebar.write(f"Mean Absolute Percentage Error (MAPE): {mape:.2f}%")
+            if model_selection == 'Polynomial Regression':
+                df_cleaned = df.copy()
+                for col in df_cleaned.columns:
+                    q1, q3 = df_cleaned[col].quantile([0.25, 0.75])
+                    iqr = q3 - q1
+                    lower_bound = q1 - 1.5 * iqr
+                    upper_bound = q3 + 1.5 * iqr
+                    df_cleaned = df_cleaned[(df_cleaned[col] >= lower_bound) & (df_cleaned[col] <= upper_bound)]
+                
+                x = df_cleaned.drop(target_column, axis=1)
+                y = df_cleaned[target_column]
+                
+                x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.3, random_state=42)
+                
+                def adjusted_r2_score(y_true, y_pred, X):
+                    n = len(y_true)
+                    p = X.shape[1]  # number of features including polynomial terms
+                    r2 = r2_score(y_true, y_pred)
+                    return 1 - (1 - r2) * (n - 1) / (n - p - 1)
+                
+                def mean_absolute_percentage_error(y_true, y_pred):
+                    return np.mean(np.abs((y_true - y_pred) / y_true)) * 100
+                
+                best_degree = 1
+                best_r2 = -np.inf
+                best_model = None
+                best_metrics = {}
+                
+                for degree in range(1, 6):  # Try degrees 1 to 5
+                    poly = PolynomialFeatures(degree=degree, include_bias=False)
+                    x_train_poly = poly.fit_transform(x_train)
+                    x_test_poly = poly.transform(x_test)
+                
+                    scaler = StandardScaler()
+                    x_train_poly = scaler.fit_transform(x_train_poly)
+                    x_test_poly = scaler.transform(x_test_poly)
+                
+                    model = LinearRegression()
+                    model.fit(x_train_poly, y_train)
+                    y_pred = model.predict(x_test_poly)
+                
+                    r2 = r2_score(y_test, y_pred)
+                
+                    if r2 > best_r2:
+                        best_r2 = r2
+                        best_degree = degree
+                        best_model = model
+                        # store metrics
+                        best_metrics['MAE'] = mean_absolute_error(y_test, y_pred)
+                        best_metrics['MSE'] = mean_squared_error(y_test, y_pred)
+                        best_metrics['RMSE'] = np.sqrt(best_metrics['MSE'])
+                        best_metrics['R2'] = r2
+                        best_metrics['Adj_R2'] = adjusted_r2_score(y_test, y_pred, x_test_poly)
+                        best_metrics['MAPE'] = mean_absolute_percentage_error(np.array(y_test), np.array(y_pred))
+                
+                st.success(f"""Model Trained Successfully with Polynomial Regression (Degree={best_degree})  
+                You can now Proceed to Predict the Target column""")
+                
+                st.sidebar.header("Polynomial Regression Metrics")
+                st.sidebar.write(f"Degree selected: {best_degree}")
+                st.sidebar.write(f"Mean Absolute Error (MAE): {best_metrics['MAE']:.4f}")
+                st.sidebar.write(f"Mean Squared Error (MSE): {best_metrics['MSE']:.4f}")
+                st.sidebar.write(f"Root Mean Squared Error (RMSE): {best_metrics['RMSE']:.4f}")
+                st.sidebar.write(f"R-squared (R²): {best_metrics['R2']:.4f}")
+                st.sidebar.write(f"Adjusted R-squared: {best_metrics['Adj_R2']:.4f}")
+                st.sidebar.write(f"Mean Absolute Percentage Error (MAPE): {best_metrics['MAPE']:.2f}%")
         elif dataset_choice == "Classification Type":
             model_selection = st.selectbox(
                 "Choose the Machine Learning Model you want the prediction from :",
