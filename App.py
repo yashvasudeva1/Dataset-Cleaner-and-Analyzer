@@ -157,7 +157,8 @@ if file is not None:
                 st.sidebar.write(f"R-squared (R²): {r2:.4f}")
                 st.sidebar.write(f"Adjusted R-squared: {adj_r2:.4f}")
                 st.sidebar.write(f"Mean Absolute Percentage Error (MAPE): {mape:.2f}%")
-                totalcolumns = df.columns.drop(target_column)
+                totalcolumns = df_cleaned.select_dtypes(include=['number']).columns.drop(target_column)
+
 
                 st.header("Input feature values for prediction")
                 
