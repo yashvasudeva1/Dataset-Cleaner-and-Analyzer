@@ -357,7 +357,7 @@ if file is not None:
                     )
                 input_df = pd.DataFrame([input_data])
                 input_df = scaler.transform(input_df)
-                user_prediction=model.predict(input_df)
+                user_prediction=ridgecv.predict(input_df)
                 st.success(f"Predicted Value for the given Target Class is {user_prediction}")
         elif dataset_choice == "Classification Type":
             model_selection = st.selectbox(
