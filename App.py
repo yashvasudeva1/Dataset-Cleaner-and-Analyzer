@@ -379,7 +379,7 @@ if file is not None:
                 parameters={'alpha':param}
                 lassocv=GridSearchCV(ridge,parameters,scoring='neg_mean_squared_error',cv=10)
                 lassocv.fit(x_train,y_train)
-                y_pred=ridgecv.predict(x_test)
+                y_pred=lassocv.predict(x_test)
                 st.success("""Model Trained Successfully   
                 You can now Proceed to Predict the Target column  
                 """)
