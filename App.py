@@ -313,7 +313,7 @@ if file is not None:
                 r2 = r2_score(y_test, y_pred)
                 adj_r2 = adjusted_r2_score(y_test, y_pred, x_test)
                 mape = mean_absolute_percentage_error(np.array(y_test), np.array(y_pred))
-                best_parameter=ridge.best_score_
+                best_parameter=ridgecv.best_score_
                 
                 st.sidebar.header("Ridge Regression Metrics")
                 st.sidebar.write(f"Mean Absolute Error (MAE): {mae:.4f}")
