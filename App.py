@@ -1,4 +1,4 @@
-import streamlit as st
+fimport streamlit as st
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -358,6 +358,90 @@ if file is not None:
                 input_df = pd.DataFrame([input_data])
                 input_df = scaler.transform(input_df)
                 user_prediction=ridgecv.predict(input_df)
+                st.success(f"Predicted Value for the given Target Class is {user_prediction}")
+            if model_selection == 'Lasso Regression':
+                df_cleaned = df.copy()
+                for col in df_cleaned.select_dtypes(include='number'):
+                    q1, q3 = df_cleaned[col].quantile([0.25, 0.75])
+                    iqr = q3 - q1
+                    lower_bound = q1 - 1.5 * iqr
+                    upper_bound = q3 + 1.5 * iqr
+                    df_cleaned = df_cleaned[(df_cleaned[col] >= lower_bound) & (df_cleaned[col] <= upper_bound)]
+                numeric_cols = df_cleaned.select_dtypes(include=['number']).columns.drop(target_column, errors='ignore')
+                x = df_cleaned[numeric_cols]
+                y = df_cleaned[target_column]
+                x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.3, random_state=42)
+                scaler = StandardScaler()
+                x_train = scaler.fit_transform(x_train)
+                x_test = scaler.transform(x_test)
+                ridge=Lasso()
+                param=np.arange(0.000000001,101,1)
+                parameters={'alpha':param}
+                lassocv=GridSearchCV(ridge,parameters,scoring='neg_mean_squared_error',cv=10)
+                lassocv.fit(x_train,y_train)
+                y_pred=ridgecv.predict(x_test)
+                st.success("""Model Trained Successfully   
+                You can now Proceed to Predict the Target column  
+                """)
+                def adjusted_r2_score(y_true, y_pred, x):
+                    n = len(y_true)
+                    p = x.shape[1] 
+                    r2 = r2_score(y_true, y_pred)
+                    return 1 - (1 - r2) * (n - 1) / (n - p - 1)
+
+                def mean_absolute_percentage_error(y_true, y_pred):
+                    return np.mean(np.abs((y_true - y_pred) / y_true)) * 100
+                mae = mean_absolute_error(y_test, y_pred)
+                mse = mean_squared_error(y_test, y_pred)
+                rmse = np.sqrt(mse)
+                r2 = r2_score(y_test, y_pred)
+                adj_r2 = adjusted_r2_score(y_test, y_pred, x_test)
+                mape = mean_absolute_percentage_error(np.array(y_test), np.array(y_pred))
+                
+                
+                st.sidebar.header("Lasso Regression Metrics")
+                st.sidebar.write(f"Mean Absolute Error (MAE): {mae:.4f}")
+                st.sidebar.write(f"Mean Squared Error (MSE): {mse:.4f}")
+                st.sidebar.write(f"Root Mean Squared Error (RMSE): {rmse:.4f}")
+                st.sidebar.write(f"R-squared (R²): {r2:.4f}")
+                st.sidebar.write(f"Adjusted R-squared: {adj_r2:.4f}")
+                st.sidebar.write(f"Mean Absolute Percentage Error (MAPE): {mape:.2f}%")
+                best_alpha = lassocv.best_params_['alpha']
+                st.sidebar.write(f"Best Parameter for Hyper-Parameter Tuning(HPT): {best_alpha:.2f}")
+                totalcolumns = df_cleaned.select_dtypes(include='number').columns.drop(target_column, errors='ignore')
+
+                st.header("Input feature values for prediction")
+                
+                input_data = {}
+                
+                for col in totalcolumns:
+                    q1 = df[col].quantile(0.25)
+                    q3 = df[col].quantile(0.75)
+                    iqr = q3 - q1
+                    lower_bound = q1 - 1.5 * iqr
+                    upper_bound = q3 + 1.5 * iqr
+                
+                    if pd.api.types.is_integer_dtype(df[col]):
+                        step = 1
+                        min_val = int(np.floor(lower_bound))
+                        max_val = int(np.ceil(upper_bound))
+                        default_val = int(df[col].median())
+                    else:
+                        step = 0.01
+                        min_val = float(lower_bound)
+                        max_val = float(upper_bound)
+                        default_val = float(df[col].median())
+                
+                    input_data[col] = st.slider(
+                        label=col,
+                        min_value=min_val,
+                        max_value=max_val,
+                        value=default_val,
+                        step=step
+                    )
+                input_df = pd.DataFrame([input_data])
+                input_df = scaler.transform(input_df)
+                user_prediction=lassocv.predict(input_df)
                 st.success(f"Predicted Value for the given Target Class is {user_prediction}")
         elif dataset_choice == "Classification Type":
             model_selection = st.selectbox(
