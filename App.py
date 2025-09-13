@@ -322,7 +322,7 @@ if file is not None:
                 st.sidebar.write(f"R-squared (R²): {r2:.4f}")
                 st.sidebar.write(f"Adjusted R-squared: {adj_r2:.4f}")
                 st.sidebar.write(f"Mean Absolute Percentage Error (MAPE): {mape:.2f}%")
-                best_alpha = grid_search.best_params_['alpha']
+                best_alpha = ridgecv.best_params_['alpha']
                 st.sidebar.write(f"Best Parameter for Hyper-Parameter Tuning(HPT): {best_alpha:.2f}")
                 totalcolumns = df_cleaned.select_dtypes(include='number').columns.drop(target_column, errors='ignore')
 
