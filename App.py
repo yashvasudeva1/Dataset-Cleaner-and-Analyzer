@@ -313,7 +313,7 @@ if file is not None:
                 r2 = r2_score(y_test, y_pred)
                 adj_r2 = adjusted_r2_score(y_test, y_pred, x_test)
                 mape = mean_absolute_percentage_error(np.array(y_test), np.array(y_pred))
-                best_parameter=ridgecv.best_score_
+                
                 
                 st.sidebar.header("Ridge Regression Metrics")
                 st.sidebar.write(f"Mean Absolute Error (MAE): {mae:.4f}")
@@ -322,7 +322,7 @@ if file is not None:
                 st.sidebar.write(f"R-squared (R²): {r2:.4f}")
                 st.sidebar.write(f"Adjusted R-squared: {adj_r2:.4f}")
                 st.sidebar.write(f"Mean Absolute Percentage Error (MAPE): {mape:.2f}%")
-                st.sidebar.write(f"Best Paremeter for Hyper-Parameter Tuning(HPT): {best_parameter:.2f}%")
+                st.sidebar.write(f"Best Paremeter for Hyper-Parameter Tuning(HPT): {ridgecv.best_params_:.2f}%")
                 totalcolumns = df_cleaned.select_dtypes(include='number').columns.drop(target_column, errors='ignore')
 
                 st.header("Input feature values for prediction")
