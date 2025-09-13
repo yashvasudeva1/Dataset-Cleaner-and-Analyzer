@@ -294,6 +294,7 @@ if file is not None:
                 param=np.arange(0.000000001,101,1)
                 parameters={'alpha':param}
                 ridgecv=GridSearchCV(ridge,parameters,scoring='neg_mean_squared_error',cv=10)
+                ridgecv.fit(x_train,y_train)
                 y_pred=ridgecv.predict(x_test)
                 st.success("""Model Trained Successfully   
                 You can now Proceed to Predict the Target column  
