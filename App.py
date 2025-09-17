@@ -67,11 +67,11 @@ if file is not None:
             cleaned= cleaned.drop_duplicates()
             report["Rows After Duplicate Removal"] = len(cleaned)
         st.write("### Report")
-        st.write(report)
+        st.write(st.dataframe(report))
     
         st.write("### Cleaned Data")
         data=st.dataframe(cleaned)
-        cleaned_df.to_csv(data, index=False)
+        cleaned.to_csv(data, index=False)
        
         st.download_button(
             label="Download Cleaned Data",
