@@ -519,7 +519,7 @@ if file is not None:
                 scaler = StandardScaler()
                 x_train = scaler.fit_transform(x_train)
                 x_test = scaler.transform(x_test)
-                model = Elastic()
+                model = ElasticNet()
                 model.fit(x_train, y_train)
                 y_pred=model.predict(x_test)
                 st.success("""Model Trained Successfully   
