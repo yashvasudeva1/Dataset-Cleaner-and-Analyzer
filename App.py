@@ -98,7 +98,6 @@ if file is not None:
         if __name__ == "__main__":
             import pandas as pd
             # Load your CSV dataset here before calling main()
-            df = pd.read_csv('Diamonds Prices2022.csv')
             main()
 
 
