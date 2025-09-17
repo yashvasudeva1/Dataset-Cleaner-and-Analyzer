@@ -64,13 +64,13 @@ if file is not None:
         def remove_duplicates(df):
             return df.drop_duplicates()
         if "Outliers" in actions:
-            cleaned = remove_outliers(cleaned_df)
+            cleaned = remove_outliers(cleaned)
             report["Rows After Outlier Removal"] = len(cleaned)
         if "None Values" in actions:
-            cleaned = remove_nans(cleaned_df)
+            cleaned = remove_nans(cleaned)
             report["Rows After NaN Removal"] = len(cleaned)
         if "Duplicates" in actions:
-            cleaned = remove_duplicates(cleaned_df)
+            cleaned = remove_duplicates(cleaned)
             report["Rows After Duplicate Removal"] = len(cleaned)
                 
         # outlier_report = []
