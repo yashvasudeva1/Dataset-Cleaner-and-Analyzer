@@ -272,7 +272,10 @@ if file is not None:
                         min_val = float(lower_bound)
                         max_val = float(upper_bound)
                         default_val = float(df[col].median())
-                
+                    if min_val >= max_val:
+                        max_val = min_val + step if pd.api.types.is_integer_dtype(df[col]) else min_val + 0.01
+                        if default_val < min_val or default_val > max_val:
+                            default_val = min_val
                     input_data[col] = st.slider(
                         label=col,
                         min_value=min_val,
