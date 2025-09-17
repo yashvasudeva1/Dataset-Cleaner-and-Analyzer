@@ -6,7 +6,7 @@ import seaborn as sns
 from scipy import stats
 import warnings
 import io
-from sklearn.linear_model import LinearRegression, Ridge, Lasso
+from sklearn.linear_model import LinearRegression, Ridge, Lasso, ElasticNet
 from sklearn.model_selection import train_test_split, cross_val_score, GridSearchCV
 from sklearn.preprocessing import StandardScaler, PolynomialFeatures
 from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
@@ -137,48 +137,6 @@ if file is not None:
                 file_name="cleaned_data.csv",
                 mime="text/csv"
             )
-        # outlier_report = []
-        # for col in columns:
-        #     q1, q3 = st.session_state["clean_df"][col].quantile([0.25, 0.75])
-        #     iqr = q3 - q1
-        #     lower = q1 - (1.5 * iqr)
-        #     upper = q3 + (1.5 * iqr)
-        #     n_outliers = ((st.session_state["clean_df"][col] < lower) | (st.session_state["clean_df"][col] > upper)).sum()
-        #     outlier_report.append({"Column Name": col, "Number of Outliers": n_outliers})
-        # outliers = pd.DataFrame(outlier_report)
-        # st.write("Current outliers:")
-        # st.write(outliers)
-        # remove_outlier = st.button("Remove the Outliers")
-        # if remove_outlier: 
-        #     temp_df = st.session_state["clean_df"]
-        #     for col in columns:
-        #         q1, q3 = temp_df[col].quantile([0.25, 0.75])
-        #         iqr = q3 - q1
-        #         lower = q1 - 1.5 * iqr
-        #         upper = q3 + 1.5 * iqr
-        #         temp_df = temp_df[(temp_df[col] >= lower) & (temp_df[col] <= upper)]
-        #     st.session_state["clean_df"] = temp_df 
-        #     outlier_report = []
-        #     for col in columns:
-        #         q1, q3 = st.session_state["clean_df"][col].quantile([0.25, 0.75])
-        #         iqr = q3 - q1
-        #         lower = q1 - 1.5 * iqr
-        #         upper = q3 + 1.5 * iqr
-        #         n_outliers = ((st.session_state["clean_df"][col] < lower) | (st.session_state["clean_df"][col] > upper)).sum()
-        #         outlier_report.append({"Column Name": col, "Number of Outliers": n_outliers})
-        #     outliers = pd.DataFrame(outlier_report)
-        #     st.write("Remaining outliers after removal:")
-        #     st.write(outliers)
-        #     st.subheader("Cleaned Dataset")
-        #     st.write(temp_df)
-        #     # csv_data = temp_df.to_csv(index=False).encode('utf-8')
-        #     # st.download_button(
-        #     #     label="Download Cleaned Data",
-        #     #     data=csv_data,
-        #     #     file_name='cleaned.csv',
-        #     #     mime='text/csv'
-        #     # )
-
     with tab4:
         columns = df.columns
         dataset_choice = st.selectbox(
@@ -545,6 +503,87 @@ if file is not None:
                 input_df = pd.DataFrame([input_data])
                 input_df = scaler.transform(input_df)
                 user_prediction=lassocv.predict(input_df)
+                st.success(f"Predicted Value for the given Target Class is {user_prediction}")
+            if model_selection == 'Elastic Net Regression':
+                df_cleaned = df.copy()
+                for col in df_cleaned.select_dtypes(include='number'):
+                    q1, q3 = df_cleaned[col].quantile([0.25, 0.75])
+                    iqr = q3 - q1
+                    lower_bound = q1 - 1.5 * iqr
+                    upper_bound = q3 + 1.5 * iqr
+                    df_cleaned = df_cleaned[(df_cleaned[col] >= lower_bound) & (df_cleaned[col] <= upper_bound)]
+                numeric_cols = df_cleaned.select_dtypes(include=['number']).columns.drop(target_column, errors='ignore')
+                x = df_cleaned[numeric_cols]
+                y = df_cleaned[target_column]
+                x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.3, random_state=42)
+                scaler = StandardScaler()
+                x_train = scaler.fit_transform(x_train)
+                x_test = scaler.transform(x_test)
+                model = Elastic()
+                model.fit(x_train, y_train)
+                y_pred=model.predict(x_test)
+                st.success("""Model Trained Successfully   
+                You can now Proceed to Predict the Target column  
+                """)
+                def adjusted_r2_score(y_true, y_pred, x):
+                    n = len(y_true)
+                    p = x.shape[1]  # number of features
+                    r2 = r2_score(y_true, y_pred)
+                    return 1 - (1 - r2) * (n - 1) / (n - p - 1)
+
+                def mean_absolute_percentage_error(y_true, y_pred):
+                    return np.mean(np.abs((y_true - y_pred) / y_true)) * 100
+                mae = mean_absolute_error(y_test, y_pred)
+                mse = mean_squared_error(y_test, y_pred)
+                rmse = np.sqrt(mse)
+                r2 = r2_score(y_test, y_pred)
+                adj_r2 = adjusted_r2_score(y_test, y_pred, x_test)
+                mape = mean_absolute_percentage_error(np.array(y_test), np.array(y_pred))
+                
+                st.sidebar.header("Linear Regression Metrics")
+                st.sidebar.write(f"Mean Absolute Error (MAE): {mae:.4f}")
+                st.sidebar.write(f"Mean Squared Error (MSE): {mse:.4f}")
+                st.sidebar.write(f"Root Mean Squared Error (RMSE): {rmse:.4f}")
+                st.sidebar.write(f"R-squared (R²): {r2:.4f}")
+                st.sidebar.write(f"Adjusted R-squared: {adj_r2:.4f}")
+                st.sidebar.write(f"Mean Absolute Percentage Error (MAPE): {mape:.2f}%")
+                totalcolumns = df_cleaned.select_dtypes(include='number').columns.drop(target_column, errors='ignore')
+
+                st.header("Input feature values for prediction")
+                
+                input_data = {}
+                
+                for col in totalcolumns:
+                    q1 = df[col].quantile(0.25)
+                    q3 = df[col].quantile(0.75)
+                    iqr = q3 - q1
+                    lower_bound = q1 - 1.5 * iqr
+                    upper_bound = q3 + 1.5 * iqr
+                
+                    if pd.api.types.is_integer_dtype(df[col]):
+                        step = 1
+                        min_val = int(np.floor(lower_bound))
+                        max_val = int(np.ceil(upper_bound))
+                        default_val = int(df[col].median())
+                    else:
+                        step = 0.01
+                        min_val = float(lower_bound)
+                        max_val = float(upper_bound)
+                        default_val = float(df[col].median())
+                    if min_val >= max_val:
+                        max_val = min_val + step if pd.api.types.is_integer_dtype(df[col]) else min_val + 0.01
+                        if default_val < min_val or default_val > max_val:
+                            default_val = min_val
+                    input_data[col] = st.slider(
+                        label=col,
+                        min_value=min_val,
+                        max_value=max_val,
+                        value=default_val,
+                        step=step
+                    )
+                input_df = pd.DataFrame([input_data])
+                input_df = scaler.transform(input_df)
+                user_prediction=model.predict(input_df)
                 st.success(f"Predicted Value for the given Target Class is {user_prediction}")
         elif dataset_choice == "Classification Type":
             model_selection = st.selectbox(
