@@ -62,7 +62,6 @@ if file is not None:
         if "Duplicates" in actions:
             cleaned = remove_duplicates(cleaned_df)
             report["Rows After Duplicate Removal"] = len(cleaned_df)
-            if "None Values" in actions:
                 
         # outlier_report = []
         # for col in columns:
