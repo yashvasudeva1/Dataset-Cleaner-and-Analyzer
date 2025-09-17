@@ -70,14 +70,12 @@ if file is not None:
         st.write(report)
     
         st.write("### Cleaned Data")
-        st.dataframe(cleaned)
-    
-        towrite = BytesIO()
-        cleaned_df.to_csv(towrite, index=False)
-        towrite.seek(0)
+        data=st.dataframe(cleaned)
+        cleaned_df.to_csv(data, index=False)
+       
         st.download_button(
             label="Download Cleaned Data",
-            data=towrite,
+            data=data,
             file_name="cleaned_data.csv",
             mime="text/csv"
         )
