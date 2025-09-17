@@ -45,20 +45,17 @@ if file is not None:
             else:
                 st.info("Please select at least one column to display the chart.")
     with tab2:        
+        import streamlit as st
         def llama_api_call(api_key, user_data, question):
-            # Mock function for LLaMA API interaction with user data context
             return f"LLaMA answer to '{question}' based on your data."
         
         def gemini_api_call(api_key, user_data, question):
-            # Mock function for Gemini API interaction
             return f"Gemini answer to '{question}' based on your data."
         
         def qwen_api_call(api_key, user_data, question):
-            # Mock function for Qwen API interaction
             return f"Qwen answer to '{question}' based on your data."
         
         def deepseek_api_call(api_key, user_data, question):
-            # Mock function for Deepseek API interaction
             return f"Deepseek answer to '{question}' based on your data."
         
         model_functions = {
@@ -69,7 +66,6 @@ if file is not None:
         }
         
         def chat_interface(api_call_func, api_key, user_data):
-            # Streamlit chat interface
             st.write("Start chatting below. Enter your questions:")
             user_question = st.text_input("Your question:")
             if user_question:
@@ -79,31 +75,32 @@ if file is not None:
         def main():
             st.title("Dataset Chatbot Application")
         
-            # Use tabs for UI organization
-            tab1, tab2 = st.tabs(["Upload Data", "Chat with your Dataset"])
+            tab1, tab2 = st.tabs(["Dataset Info", "Chat with your Dataset"])
         
             with tab1:
-                st.header("Upload your dataset or paste text")
-                user_data = st.text_area("Enter the data you want the model to use (text or JSON):", height=200)
-            
+                st.header("Dataset Preview")
+                st.dataframe(df)
+        
             with tab2:
                 st.title("Chat with your Dataset")
                 Model = st.selectbox("Select the Model you want to chat with:", ["Gemini", "Llama", "Deepseek", "Qwen"])
                 apikey = st.text_input(f"Enter {Model} API key", type="password")
         
-                # Only enable chat if API key and data are provided
-                if apikey and user_data:
+                if apikey:
                     api_key = apikey.strip()
-                    user_data_strip = user_data.strip()
+                    # Convert df to string or json to pass as user_data
+                    user_data_str = df.to_csv(index=False)
                     api_call_func = model_functions[Model.lower()]
-                    chat_interface(api_call_func, api_key, user_data_strip)
-                elif not apikey:
+                    chat_interface(api_call_func, api_key, user_data_str)
+                else:
                     st.warning(f"Please enter your {Model} API key to chat.")
-                elif not user_data:
-                    st.warning("Please enter or upload dataset text in the 'Upload Data' tab first.")
         
         if __name__ == "__main__":
+            import pandas as pd
+            # Load your CSV dataset here before calling main()
+            df = pd.read_csv('Diamonds Prices2022.csv')
             main()
+
 
     with tab3:
         df = st.session_state["clean_df"]
