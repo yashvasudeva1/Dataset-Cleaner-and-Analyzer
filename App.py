@@ -540,7 +540,7 @@ if file is not None:
                 adj_r2 = adjusted_r2_score(y_test, y_pred, x_test)
                 mape = mean_absolute_percentage_error(np.array(y_test), np.array(y_pred))
                 
-                st.sidebar.header("Linear Regression Metrics")
+                st.sidebar.header("Elastic Net Regression Metrics")
                 st.sidebar.write(f"Mean Absolute Error (MAE): {mae:.4f}")
                 st.sidebar.write(f"Mean Squared Error (MSE): {mse:.4f}")
                 st.sidebar.write(f"Root Mean Squared Error (RMSE): {rmse:.4f}")
