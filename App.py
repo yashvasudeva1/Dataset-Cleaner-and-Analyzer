@@ -28,7 +28,7 @@ if file is not None:
     st.dataframe(st.session_state["clean_df"], use_container_width=True)
     
     tab0, tab1,tab2 , tab3, tab4, tab5 = st.tabs(
-        ["Analysis", "Visualisation", "Chat" ,"Outliers", "Predictor", "Distribution"]
+        ["Analysis", "Visualisation", "Chat" ,"Cleaning", "Predictor", "Distribution"]
     )
     with tab0:
         st.write(st.session_state["clean_df"].describe())
@@ -46,47 +46,65 @@ if file is not None:
         apikey=st.text_input(f"Enter {Model} API key")
     with tab3:
         columns = st.session_state["clean_df"].select_dtypes(include=[np.number]).columns
-        outlier_report = []
-        for col in columns:
-            q1, q3 = st.session_state["clean_df"][col].quantile([0.25, 0.75])
-            iqr = q3 - q1
-            lower = q1 - (1.5 * iqr)
-            upper = q3 + (1.5 * iqr)
-            n_outliers = ((st.session_state["clean_df"][col] < lower) | (st.session_state["clean_df"][col] > upper)).sum()
-            outlier_report.append({"Column Name": col, "Number of Outliers": n_outliers})
-        outliers = pd.DataFrame(outlier_report)
-        st.write("Current outliers:")
-        st.write(outliers)
-        remove_outlier = st.button("Remove the Outliers")
-        if remove_outlier: 
-            temp_df = st.session_state["clean_df"]
-            for col in columns:
-                q1, q3 = temp_df[col].quantile([0.25, 0.75])
-                iqr = q3 - q1
-                lower = q1 - 1.5 * iqr
-                upper = q3 + 1.5 * iqr
-                temp_df = temp_df[(temp_df[col] >= lower) & (temp_df[col] <= upper)]
-            st.session_state["clean_df"] = temp_df 
-            outlier_report = []
-            for col in columns:
-                q1, q3 = st.session_state["clean_df"][col].quantile([0.25, 0.75])
-                iqr = q3 - q1
-                lower = q1 - 1.5 * iqr
-                upper = q3 + 1.5 * iqr
-                n_outliers = ((st.session_state["clean_df"][col] < lower) | (st.session_state["clean_df"][col] > upper)).sum()
-                outlier_report.append({"Column Name": col, "Number of Outliers": n_outliers})
-            outliers = pd.DataFrame(outlier_report)
-            st.write("Remaining outliers after removal:")
-            st.write(outliers)
-            st.subheader("Cleaned Dataset")
-            st.write(temp_df)
-            # csv_data = temp_df.to_csv(index=False).encode('utf-8')
-            # st.download_button(
-            #     label="Download Cleaned Data",
-            #     data=csv_data,
-            #     file_name='cleaned.csv',
-            #     mime='text/csv'
-            # )
+        cleaned=df.copy()
+        actions=st.multiselect("Select Actions :",["NaN Values","Duplicates","Outliers"])
+        report = {
+            "Original Rows": len(df),
+            "Original Nulls": df.isnull().sum().sum(),
+            "Original Duplicates": df.duplicated().sum()
+        }
+        if "Outliers" in actions:
+            cleaned = remove_outliers(cleaned_df)
+            report["Rows After Outlier Removal"] = len(cleaned_df)
+        if "None Values" in actions:
+            cleaned = remove_nans(cleaned_df)
+            report["Rows After NaN Removal"] = len(cleaned_df)
+        if "Duplicates" in actions:
+            cleaned = remove_duplicates(cleaned_df)
+            report["Rows After Duplicate Removal"] = len(cleaned_df)
+            if "None Values" in actions:
+                
+        # outlier_report = []
+        # for col in columns:
+        #     q1, q3 = st.session_state["clean_df"][col].quantile([0.25, 0.75])
+        #     iqr = q3 - q1
+        #     lower = q1 - (1.5 * iqr)
+        #     upper = q3 + (1.5 * iqr)
+        #     n_outliers = ((st.session_state["clean_df"][col] < lower) | (st.session_state["clean_df"][col] > upper)).sum()
+        #     outlier_report.append({"Column Name": col, "Number of Outliers": n_outliers})
+        # outliers = pd.DataFrame(outlier_report)
+        # st.write("Current outliers:")
+        # st.write(outliers)
+        # remove_outlier = st.button("Remove the Outliers")
+        # if remove_outlier: 
+        #     temp_df = st.session_state["clean_df"]
+        #     for col in columns:
+        #         q1, q3 = temp_df[col].quantile([0.25, 0.75])
+        #         iqr = q3 - q1
+        #         lower = q1 - 1.5 * iqr
+        #         upper = q3 + 1.5 * iqr
+        #         temp_df = temp_df[(temp_df[col] >= lower) & (temp_df[col] <= upper)]
+        #     st.session_state["clean_df"] = temp_df 
+        #     outlier_report = []
+        #     for col in columns:
+        #         q1, q3 = st.session_state["clean_df"][col].quantile([0.25, 0.75])
+        #         iqr = q3 - q1
+        #         lower = q1 - 1.5 * iqr
+        #         upper = q3 + 1.5 * iqr
+        #         n_outliers = ((st.session_state["clean_df"][col] < lower) | (st.session_state["clean_df"][col] > upper)).sum()
+        #         outlier_report.append({"Column Name": col, "Number of Outliers": n_outliers})
+        #     outliers = pd.DataFrame(outlier_report)
+        #     st.write("Remaining outliers after removal:")
+        #     st.write(outliers)
+        #     st.subheader("Cleaned Dataset")
+        #     st.write(temp_df)
+        #     # csv_data = temp_df.to_csv(index=False).encode('utf-8')
+        #     # st.download_button(
+        #     #     label="Download Cleaned Data",
+        #     #     data=csv_data,
+        #     #     file_name='cleaned.csv',
+        #     #     mime='text/csv'
+        #     # )
 
     with tab4:
         columns = df.columns
