@@ -45,40 +45,28 @@ if file is not None:
         Model=st.selectbox("Select the Model you want to chat with :",["Gemini",'Llama',"Deepseek",'Qwen'])
         apikey=st.text_input(f"Enter {Model} API key")
     with tab3:
-        columns = st.session_state["clean_df"].select_dtypes(include=[np.number]).columns
-        cleaned=df.copy()
-        actions=st.multiselect("Select Actions :",["NaN Values","Duplicates","Outliers"])
+        df = st.session_state["clean_df"]
+        actions = st.multiselect("Select Actions :", ["NaN Values", "Duplicates", "Outliers"])
+        cleaned = df.copy()
         report = {
             "Original Rows": len(df),
             "Original Nulls": df.isnull().sum().sum(),
             "Original Duplicates": df.duplicated().sum()
         }
-        cleaned= cleaned.drop_duplicates()
-        if "Outliers" in actions:
-            Q1 = df.select_dtypes(include=[float, int]).quantile(0.25)
-            Q3 = df.select_dtypes(include=[float, int]).quantile(0.75)
-            IQR = Q3 - Q1
-            cleaned = cleaned[((df < (Q1 - 1.5 * IQR)) | (df > (Q3 + 1.5 * IQR))).any(axis=1)]
-            report["Rows After Outlier Removal"] = len(cleaned)
-        if "None Values" in actions:
-            cleaned=cleaned.drop_na()
-            report["Rows After NaN Removal"] = len(cleaned)
         if "Duplicates" in actions:
-            cleaned= cleaned.drop_duplicates()
+            cleaned = cleaned.drop_duplicates()
             report["Rows After Duplicate Removal"] = len(cleaned)
-        st.write("### Report")
-        st.write(st.dataframe(report))
-    
-        st.write("### Cleaned Data")
-        data=st.dataframe(cleaned)
-        cleaned.to_csv(data, index=False)
-       
-        st.download_button(
-            label="Download Cleaned Data",
-            data=data,
-            file_name="cleaned_data.csv",
-            mime="text/csv"
-        )
+        if "Outliers" in actions:
+            Q1 = cleaned.select_dtypes(include=[np.number]).quantile(0.25)
+            Q3 = cleaned.select_dtypes(include=[np.number]).quantile(0.75)
+            IQR = Q3 - Q1
+            mask = ~((cleaned.select_dtypes(include=[np.number]) < (Q1 - 1.5 * IQR)) | 
+                     (cleaned.select_dtypes(include=[np.number]) > (Q3 + 1.5 * IQR))).any(axis=1)
+            cleaned = cleaned.loc[mask]
+            report["Rows After Outlier Removal"] = len(cleaned)
+        if "NaN Values" in actions:
+            cleaned = cleaned.dropna()
+            report
         # outlier_report = []
         # for col in columns:
         #     q1, q3 = st.session_state["clean_df"][col].quantile([0.25, 0.75])
