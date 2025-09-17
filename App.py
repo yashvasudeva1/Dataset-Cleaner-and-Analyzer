@@ -53,6 +53,16 @@ if file is not None:
             "Original Nulls": df.isnull().sum().sum(),
             "Original Duplicates": df.duplicated().sum()
         }
+        def remove_outliers(df):
+            Q1 = df.select_dtypes(include=[float, int]).quantile(0.25)
+            Q3 = df.select_dtypes(include=[float, int]).quantile(0.75)
+            IQR = Q3 - Q1
+            mask = ~((df < (Q1 - 1.5 * IQR)) | (df > (Q3 + 1.5 * IQR))).any(axis=1)
+            return df[mask]
+        def remove_nans(df):
+            return df.dropna()
+        def remove_duplicates(df):
+            return df.drop_duplicates()
         if "Outliers" in actions:
             cleaned = remove_outliers(cleaned_df)
             report["Rows After Outlier Removal"] = len(cleaned_df)
