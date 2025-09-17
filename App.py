@@ -48,56 +48,95 @@ if file is not None:
         df = st.session_state["clean_df"]
         actions = st.multiselect("Select Actions :", ["NaN Values", "Duplicates", "Outliers"])
         
-        cleaned = df.copy()
+        # Prepare base report with column names
+        report_before = pd.DataFrame(index=df.columns)
         
-        # Before cleaning reports (column-wise counts)
-        nulls_before = df.isnull().sum()
-        dups_mask_before = df.duplicated(keep=False)
-        dups_count_before = df.loc[dups_mask_before].count()
-        numerics = df.select_dtypes(include=np.number)
-        
-        Q1 = numerics.quantile(0.25)
-        Q3 = numerics.quantile(0.75)
-        IQR = Q3 - Q1
-        outliers_mask_before = (numerics < (Q1 - 1.5 * IQR)) | (numerics > (Q3 + 1.5 * IQR))
-        outliers_count_before = outliers_mask_before.sum()
-        
+        # Add NaN counts if selected
         if "NaN Values" in actions:
-            st.write("### NaN Values Report")
-            # Before
-            before = nulls_before.to_frame(name='Before Cleaning')
-            # After
-            cleaned = cleaned.dropna()
-            after = cleaned.isnull().sum().to_frame(name='After Cleaning')
-            st.dataframe(pd.concat([before, after], axis=1))
+            report_before["NaN Values"] = df.isnull().sum()
         
+        # Add Duplicates counts if selected
         if "Duplicates" in actions:
-            st.write("### Duplicates Report")
-            # Before
-            before = dups_count_before.to_frame(name='Before Cleaning')
-            # After
-            cleaned = cleaned.drop_duplicates()
-            after = cleaned.count().to_frame(name='After Cleaning')
-            st.dataframe(pd.concat([before, after], axis=1))
+            dup_mask = df.duplicated(keep=False)
+            dup_counts = df.loc[dup_mask].count()
+            report_before["Duplicates"] = dup_counts
         
+        # Add Outliers counts if selected
         if "Outliers" in actions:
-            st.write("### Outliers Report")
-            # Before
-            before = outliers_count_before.to_frame(name='Before Cleaning')
-            # After
-            numerics_cleaned = cleaned.select_dtypes(include=np.number)
-            Q1_cleaned = numerics_cleaned.quantile(0.25)
-            Q3_cleaned = numerics_cleaned.quantile(0.75)
-            IQR_cleaned = Q3_cleaned - Q1_cleaned
-            outliers_mask_after = (numerics_cleaned < (Q1_cleaned - 1.5 * IQR_cleaned)) | (numerics_cleaned > (Q3_cleaned + 1.5 * IQR_cleaned))
-            # Keep only rows without outliers
-            mask_keep = ~outliers_mask_after.any(axis=1)
-            cleaned = cleaned.loc[mask_keep]
-            after = outliers_mask_after.sum().to_frame(name='After Cleaning')
-            st.dataframe(pd.concat([before, after], axis=1))
+            numerics = df.select_dtypes(include=np.number)
+            Q1 = numerics.quantile(0.25)
+            Q3 = numerics.quantile(0.75)
+            IQR = Q3 - Q1
+            outlier_mask = (numerics < (Q1 - 1.5 * IQR)) | (numerics > (Q3 + 1.5 * IQR))
+            outliers_count = outlier_mask.sum()
+            report_before["Outliers"] = np.nan
+            for col in outliers_count.index:
+                report_before.at[col, "Outliers"] = outliers_count[col]
         
-        st.write("### Cleaned Data After Selected Actions")
-        st.dataframe(cleaned)
+        st.write("### Report Before Cleaning")
+        st.dataframe(report_before.fillna('-').astype(str))
+        
+        if st.button("Clean"):
+        
+            cleaned = df.copy()
+        
+            # Apply cleaning based on selections
+            if "Duplicates" in actions:
+                cleaned = cleaned.drop_duplicates()
+        
+            if "Outliers" in actions:
+                numerics_cleaned = cleaned.select_dtypes(include=np.number)
+                Q1 = numerics_cleaned.quantile(0.25)
+                Q3 = numerics_cleaned.quantile(0.75)
+                IQR = Q3 - Q1
+                outlier_mask = (numerics_cleaned < (Q1 - 1.5 * IQR)) | (numerics_cleaned > (Q3 + 1.5 * IQR))
+                keep_mask = ~outlier_mask.any(axis=1)
+                cleaned = cleaned.loc[keep_mask]
+        
+            if "NaN Values" in actions:
+                cleaned = cleaned.dropna()
+        
+            # Prepare after cleaning report in same format
+            report_after = pd.DataFrame(index=df.columns)
+        
+            if "NaN Values" in actions:
+                report_after["NaN Values"] = cleaned.isnull().sum()
+        
+            if "Duplicates" in actions:
+                dup_mask = cleaned.duplicated(keep=False)
+                dup_counts = cleaned.loc[dup_mask].count()
+                report_after["Duplicates"] = dup_counts
+            elif "Duplicates" in actions:
+                report_after["Duplicates"] = report_before.get("Duplicates")
+        
+            if "Outliers" in actions:
+                numerics_after = cleaned.select_dtypes(include=np.number)
+                Q1 = numerics_after.quantile(0.25)
+                Q3 = numerics_after.quantile(0.75)
+                IQR = Q3 - Q1
+                outlier_mask_after = (numerics_after < (Q1 - 1.5 * IQR)) | (numerics_after > (Q3 + 1.5 * IQR))
+                outliers_count_after = outlier_mask_after.sum()
+                report_after["Outliers"] = np.nan
+                for col in outliers_count_after.index:
+                    report_after.at[col, "Outliers"] = outliers_count_after[col]
+            elif "Outliers" in actions:
+                report_after["Outliers"] = report_before.get("Outliers")
+        
+            st.write("### Report After Cleaning")
+            st.dataframe(report_after.fillna('-').astype(str))
+        
+            st.write("### Cleaned Data")
+            st.dataframe(cleaned)
+        
+            # Export to CSV string for download
+            csv_string = cleaned.to_csv(index=False)
+            
+            st.download_button(
+                label="Download Cleaned Data",
+                data=csv_string,
+                file_name="cleaned_data.csv",
+                mime="text/csv"
+            )
         # outlier_report = []
         # for col in columns:
         #     q1, q3 = st.session_state["clean_df"][col].quantile([0.25, 0.75])
