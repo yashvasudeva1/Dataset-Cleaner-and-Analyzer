@@ -45,61 +45,11 @@ if file is not None:
             else:
                 st.info("Please select at least one column to display the chart.")
     with tab2:        
-        import streamlit as st
-        def llama_api_call(api_key, user_data, question):
-            return f"LLaMA answer to '{question}' based on your data."
-        
-        def gemini_api_call(api_key, user_data, question):
-            return f"Gemini answer to '{question}' based on your data."
-        
-        def qwen_api_call(api_key, user_data, question):
-            return f"Qwen answer to '{question}' based on your data."
-        
-        def deepseek_api_call(api_key, user_data, question):
-            return f"Deepseek answer to '{question}' based on your data."
-        
-        model_functions = {
-            'llama': llama_api_call,
-            'gemini': gemini_api_call,
-            'qwen': qwen_api_call,
-            'deepseek': deepseek_api_call
-        }
-        
-        def chat_interface(api_call_func, api_key, user_data):
-            st.write("Start chatting below. Enter your questions:")
-            user_question = st.text_input("Your question:")
-            if user_question:
-                answer = api_call_func(api_key, user_data, user_question)
-                st.markdown(f"**Bot:** {answer}")
-        
-        def main():
-            st.title("Dataset Chatbot Application")
-        
-            tab1, tab2 = st.tabs(["Dataset Info", "Chat with your Dataset"])
-        
-            with tab1:
-                st.header("Dataset Preview")
-                st.dataframe(df)
-        
-            with tab2:
-                st.title("Chat with your Dataset")
-                Model = st.selectbox("Select the Model you want to chat with:", ["Gemini", "Llama", "Deepseek", "Qwen"])
-                apikey = st.text_input(f"Enter {Model} API key", type="password")
-        
-                if apikey:
-                    api_key = apikey.strip()
-                    # Convert df to string or json to pass as user_data
-                    user_data_str = df.to_csv(index=False)
-                    api_call_func = model_functions[Model.lower()]
-                    chat_interface(api_call_func, api_key, user_data_str)
-                else:
-                    st.warning(f"Please enter your {Model} API key to chat.")
-        
-        if __name__ == "__main__":
-            import pandas as pd
-            # Load your CSV dataset here before calling main()
-            main()
 
+
+
+
+        
 
     with tab3:
         df = st.session_state["clean_df"]
