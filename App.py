@@ -34,12 +34,10 @@ def shapiro_safe(x):
     with warnings.catch_warnings():
         warnings.filterwarnings("ignore", message=".*computed p-value may not be accurate.*")
         return stats.shapiro(x)
-logo_path = "transparent.png"  # Use your image file
+logo_path = "logo.png"
 col1, col2 = st.columns([1, 6])
-
 with col1:
-    st.image(logo_path, width=400)  # Adjust width as needed
-
+    st.image(logo_path, width=400)
 with col2:
     st.markdown("<h1 style='margin-bottom:0;'>Dataset Cleaner and Analyser</h1>", unsafe_allow_html=True)
 
