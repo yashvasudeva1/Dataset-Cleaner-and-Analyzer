@@ -19,3 +19,10 @@ from sklearn.neural_network import MLPClassifier
 from sklearn.model_selection import train_test_split, cross_val_score, GridSearchCV
 from sklearn.preprocessing import StandardScaler, PolynomialFeatures
 from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
+
+st.title(":material/folder: Dataset Cleaner and Analyser")
+st.write("This app helps in making your dataset cleaner, outlier-free, and ready for training")
+
+@st.cache_data
+def load_data(uploaded_file):
+    return pd.read_csv(uploaded_file)
