@@ -96,6 +96,9 @@ if file is not None:
             else:
                 st.info("Please select at least one column to display the chart.")
     with tab2:
+        import streamlit as st
+        import requests
+        
         class SimpleChatbot:
             def __init__(self, api_url, api_key):
                 self.api_url = api_url
@@ -107,12 +110,15 @@ if file is not None:
         
             def send_message(self, message):
                 payload = {'message': message}
-                response = requests.post(self.api_url, headers=self.headers, json=payload)
-                if response.status_code == 200:
-                    data = response.json()
-                    return data.get('reply', 'No reply field in response')
-                else:
-                    return f'Error: {response.status_code} - {response.text}'
+                try:
+                    response = requests.post(self.api_url, headers=self.headers, json=payload)
+                    if response.status_code == 200:
+                        data = response.json()
+                        return data.get('reply', 'No reply field in response')
+                    else:
+                        return f'Error: {response.status_code} - {response.text}'
+                except requests.exceptions.RequestException as e:
+                    return f'Connection error: {str(e)}'
         
         # Streamlit UI
         st.title("Simple Chatbot")
