@@ -41,8 +41,8 @@ with col1:
 with col2:
     st.markdown(
         """
-        <h1 style='font-size:50px; font-family: "Sans-serif", Arial, monospace; font-weight:bold;'>
-            QuickML
+        <h1 style='font-size:55px; font-family: "Sans-serif", Arial, monospace; font-weight:bold;'>
+            QUICKML
         </h1>
     
         """,
