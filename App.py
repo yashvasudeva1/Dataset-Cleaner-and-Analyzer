@@ -34,7 +34,16 @@ def shapiro_safe(x):
     with warnings.catch_warnings():
         warnings.filterwarnings("ignore", message=".*computed p-value may not be accurate.*")
         return stats.shapiro(x)
-st.logo("Untitled design (3).svg", size='large')
+st.markdown("""
+    <style>
+    img[data-testid="stImage"] {
+        height: 120px !important;
+        width: auto !important;
+    }
+    </style>
+    """, unsafe_allow_html=True)
+
+st.image("Untitled design (3).svg")
 st.title("Datset Cleaner and Analyser")
 st.write("This app helps you in making your dataset cleaner, outlier free and ready for training")
 @st.cache_data
