@@ -41,10 +41,10 @@ with col1:
 with col2:
     st.markdown(
         """
-        <h1 style='font-size:55px; font-family: "Sans-serif", Arial, monospace; font-weight:bold;'>
-            QUICKML
-        </h1>
-    
+        <div style='display: flex; align-items: center;'>
+            <img src="transparent.png" style="height:70px; margin-right:20px;">
+            <span style="font-size:60px; font-weight:bold; color:#fff; font-family: Arial, Helvetica, sans-serif;">QUICKML</span>
+        </div>
         """,
         unsafe_allow_html=True
     )
