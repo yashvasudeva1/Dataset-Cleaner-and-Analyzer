@@ -2105,7 +2105,7 @@ logo_path='1.png'
 col1, col2 = st.columns([1, 6])
 
 with col1:
-    st.image(logo_path, width=400)  # Adjust width as needed
+    st.image(logo_path, width=2000)  # Adjust width as needed
 
 with col2:
     st.markdown("<h1 style='margin-bottom:0;'>Dataset Cleaner and Analyser</h1>", unsafe_allow_html=True)
