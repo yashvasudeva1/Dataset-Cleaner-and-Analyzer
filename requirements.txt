@@ -5,4 +5,4 @@ numpy
 seaborn
 scipy
 scikit-learn
-
+lightgbm
