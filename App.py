@@ -2101,7 +2101,7 @@ if file is not None:
                     use_container_width=True,
                 )
 
-logo_path='1.png'
+logo_path='transparent logo.png'
 col1, col2 = st.columns([1, 6])
 
 with col1:
