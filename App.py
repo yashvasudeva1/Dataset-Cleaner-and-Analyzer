@@ -39,11 +39,26 @@ if file is not None:
     with tab1:
         with st.container(border=True):
             numeric_columns = df.select_dtypes(include='number').columns.tolist()
-            selected_columns = st.multiselect("Columns", numeric_columns, default=numeric_columns)
-            if selected_columns:
-                st.line_chart(df[selected_columns], height=250, use_container_width=True) 
+    
+            # Select one or more columns for regular line chart
+            selected_columns = st.multiselect("Select one or more columns to plot line chart", numeric_columns, default=numeric_columns)
+    
+            # Select exactly two columns for line plot between those two
+            selected_two = st.multiselect("Select exactly two columns to plot one against the other", numeric_columns)
+    
+            if selected_two:
+                if len(selected_two) == 2:
+                    x_col, y_col = selected_two
+                    st.line_chart(df.set_index(x_col)[y_col], height=250, use_container_width=True)
+                else:
+                    st.warning("Please select exactly two columns for this plot.")
+    
+            elif selected_columns:
+                st.line_chart(df[selected_columns], height=250, use_container_width=True)
+    
             else:
                 st.info("Please select at least one column to display the chart.")
+
     
 
 
