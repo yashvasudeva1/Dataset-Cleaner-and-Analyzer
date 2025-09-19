@@ -38,11 +38,7 @@ if file is not None:
         st.write(st.session_state["clean_df"].describe())
     with tab1:
         with st.container(border=True):
-            numeric_columns = df.select_dtypes(include='number').columns.tolist()
-    
-            # Select one or more columns for regular line chart
-            selected_columns = st.multiselect("Select one or more columns to plot line chart", numeric_columns, default=numeric_columns)
-    
+            numeric_columns = df.select_dtypes(include='number').columns.tolist()    
             # Select exactly two columns for line plot between those two
             selected_two = st.multiselect("Select exactly two columns to plot one against the other", numeric_columns)
     
