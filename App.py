@@ -34,7 +34,12 @@ def shapiro_safe(x):
     with warnings.catch_warnings():
         warnings.filterwarnings("ignore", message=".*computed p-value may not be accurate.*")
         return stats.shapiro(x)
-st.title(":material/folder: Dataset Cleaner and Analyser")
+logo_path='transparent.png'
+col1, col2 = st.columns([1, 6])
+with col1:
+    st.image(logo_path, width=2000)
+with col2:
+    st.title("Datset Cleaner and Analyser")
 st.write("This app helps you in making your dataset cleaner, outlier free and ready for training")
 @st.cache_data
 def load_data(uploaded_file):
@@ -2101,12 +2106,5 @@ if file is not None:
                     use_container_width=True,
                 )
 
-logo_path='transparent.png'
-col1, col2 = st.columns([1, 6])
 
-with col1:
-    st.image(logo_path, width=2000)  # Adjust width as needed
-
-with col2:
-    st.title("Datset Cleaner and Analyser")
 
