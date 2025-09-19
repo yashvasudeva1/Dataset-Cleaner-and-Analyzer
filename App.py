@@ -6,6 +6,7 @@ import seaborn as sns
 from scipy import stats
 import warnings
 import io
+import altair as alt
 from sklearn.svm import SVR
 from sklearn.linear_model import LinearRegression, Ridge, Lasso, ElasticNet
 from sklearn.tree import DecisionTreeRegressor
@@ -39,27 +40,29 @@ if file is not None:
     with tab1:
         with st.container(border=True):
             numeric_columns = df.select_dtypes(include='number').columns.tolist()    
-            # Select exactly two columns for line plot between those two
             selected_two = st.multiselect("Select exactly two columns to plot one against the other", numeric_columns)
     
             if selected_two:
                 if len(selected_two) == 2:
                     x_col, y_col = selected_two
-                    st.line_chart(df.set_index(x_col)[y_col], height=250, use_container_width=True)
+                    chart = (
+                        alt.Chart(df)
+                        .mark_line()
+                        .encode(
+                            x=alt.X(x_col, title=x_col),
+                            y=alt.Y(y_col, title=y_col),
+                        )
+                        .properties(
+                            title=f"Line plot of {y_col} vs {x_col}",
+                            width=600,
+                            height=300
+                        )
+                    )
+                    st.altair_chart(chart, use_container_width=True)
                 else:
                     st.warning("Please select exactly two columns for this plot.")
             else:
                 st.info("Please select at least one column to display the chart.")
-
-    
-
-
-
-        
-
-    if "cleaned_df" not in st.session_state:
-        st.session_state["cleaned_df"] = st.session_state["clean_df"]
-    
     with tab3:
         df = st.session_state["cleaned_df"]
     
