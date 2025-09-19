@@ -108,8 +108,7 @@ if file is not None:
     
             st.session_state["cleaned_df"] = cleaned
         if "cleaned_df" not in st.session_state:
-            # Initialize with the original data at start
-            st.session_state.cleaned_df = clean_df  # clean_df must be defined before this line
+            st.session_state["cleaned_df"] = st.session_state["clean_df"]
         cleaned_latest = st.session_state["cleaned_df"]
         report_after = pd.DataFrame(index=cleaned_latest.columns)
         if "NaN Values" in actions:
