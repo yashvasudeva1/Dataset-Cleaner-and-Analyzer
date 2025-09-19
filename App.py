@@ -64,7 +64,7 @@ if file is not None:
             else:
                 st.info("Please select at least one column to display the chart.")
     with tab3:
-        df = st.session_state["cleaned_df"]
+        df = st.session_state["clean_df"]
     
         actions = st.multiselect("Select Actions :", ["NaN Values", "Duplicates", "Outliers"])
     
