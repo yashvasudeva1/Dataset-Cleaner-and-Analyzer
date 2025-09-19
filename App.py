@@ -51,7 +51,7 @@ if file is not None:
         
 
     with tab3:
-        df = st.session_state["cleaned_df"]
+        df = st.session_state["clean_df"]
     
         actions = st.multiselect("Select Actions :", ["NaN Values", "Duplicates", "Outliers"])
     
