@@ -55,6 +55,14 @@ if file is not None:
     if "transformed" not in st.session_state:
         st.session_state["transformed"] = False  # To track if transform applied
     
+    def get_normality_labels(df):
+        normality_labels = pd.Series(index=df.columns, dtype=object)
+        numerics = df.select_dtypes(include=np.number)
+        for col in numerics.columns:
+            stat, p = normaltest(numerics[col].dropna())
+            normality_labels[col] = "Likely Normal" if p >= 0.05 else "Likely not Normal"
+        return normality_labels
+    
     with tab3:
         df = st.session_state["cleaned_df"]
     
@@ -79,6 +87,11 @@ if file is not None:
             for col in outliers_count.index:
                 report_before.at[col, "Outliers"] = outliers_count[col]
     
+        # Add normality labels to before cleaning report if "Transform" selected
+        if "Transform" in actions:
+            normality_labels_before = get_normality_labels(df)
+            report_before["Normality"] = normality_labels_before
+    
         st.write("### Report Before Cleaning")
         st.dataframe(report_before.fillna('-').astype(str))
     
@@ -88,24 +101,19 @@ if file is not None:
             # Apply transformations only once if selected
             if "Transform" in actions and not st.session_state["transformed"]:
                 numerics = cleaned.select_dtypes(include=np.number)
-    
-                # Use PowerTransformer (Yeo-Johnson) which is suitable for data with zero or negative values
                 pt = PowerTransformer(method='yeo-johnson', standardize=True)
     
-                # Detect non-normal columns (p-value < 0.05 in normaltest)
                 cols_to_transform = []
                 for col in numerics.columns:
-                    # normaltest returns statistic and p-value
                     stat, p = normaltest(numerics[col].dropna())
                     if p < 0.05:
                         cols_to_transform.append(col)
     
                 if cols_to_transform:
-                    # Transform selected columns and replace in DataFrame
                     transformed_values = pt.fit_transform(numerics[cols_to_transform])
                     cleaned.loc[:, cols_to_transform] = transformed_values
     
-                st.session_state["transformed"] = True  # mark transformation done
+                st.session_state["transformed"] = True
     
             if "Duplicates" in actions:
                 cleaned = cleaned.drop_duplicates()
@@ -120,10 +128,9 @@ if file is not None:
             if "NaN Values" in actions:
                 cleaned = cleaned.dropna()
     
-            # Update cleaned data in session state
             st.session_state["cleaned_df"] = cleaned
     
-        # Always create report after cleaning with latest cleaned_df
+        # Prepare report after cleaning with normality labels if selected
         cleaned_latest = st.session_state["cleaned_df"]
         report_after = pd.DataFrame(index=cleaned_latest.columns)
         if "NaN Values" in actions:
@@ -142,6 +149,10 @@ if file is not None:
             report_after["Outliers"] = np.nan
             for col in outliers_count_after.index:
                 report_after.at[col, "Outliers"] = outliers_count_after[col]
+    
+        if "Transform" in actions:
+            normality_labels_after = get_normality_labels(cleaned_latest)
+            report_after["Normality"] = normality_labels_after
     
         st.write("### Report After Cleaning")
         st.dataframe(report_after.fillna('-').astype(str))
