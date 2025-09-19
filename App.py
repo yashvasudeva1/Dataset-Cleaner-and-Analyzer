@@ -2108,5 +2108,5 @@ with col1:
     st.image(logo_path, width=2000)  # Adjust width as needed
 
 with col2:
-    st.markdown("<h1 style='margin-bottom:0;'>Dataset Cleaner and Analyser</h1>", unsafe_allow_html=True)
+    st.title("Datset Cleaner and Analyser")
 
