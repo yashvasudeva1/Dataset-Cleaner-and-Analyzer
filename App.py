@@ -100,36 +100,62 @@ if file is not None:
         import requests
         
         class SimpleChatbot:
-            def __init__(self, api_url, api_key):
-                self.api_url = api_url
+            def __init__(self, api_key, api_type="google"):
                 self.api_key = api_key
-                self.headers = {
-                    'Authorization': f'Bearer {self.api_key}',
-                    'Content-Type': 'application/json'
-                }
+                self.api_type = api_type
+                
+                if api_type == "google":
+                    self.api_url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key={api_key}"
+                    self.headers = {'Content-Type': 'application/json'}
+                elif api_type == "openai":
+                    self.api_url = "https://api.openai.com/v1/chat/completions"
+                    self.headers = {
+                        'Authorization': f'Bearer {api_key}',
+                        'Content-Type': 'application/json'
+                    }
         
             def send_message(self, message):
-                payload = {'message': message}
                 try:
-                    response = requests.post(self.api_url, headers=self.headers, json=payload)
-                    if response.status_code == 200:
-                        data = response.json()
-                        return data.get('reply', 'No reply field in response')
-                    else:
-                        return f'Error: {response.status_code} - {response.text}'
+                    if self.api_type == "google":
+                        payload = {
+                            "contents": [{
+                                "parts": [{"text": message}]
+                            }]
+                        }
+                        response = requests.post(self.api_url, headers=self.headers, json=payload)
+                        if response.status_code == 200:
+                            data = response.json()
+                            return data.get('candidates', [{}])[0].get('content', {}).get('parts', [{}])[0].get('text', 'No response')
+                        else:
+                            return f'Error: {response.status_code} - {response.text}'
+                            
+                    elif self.api_type == "openai":
+                        payload = {
+                            "model": "gpt-3.5-turbo",
+                            "messages": [{"role": "user", "content": message}]
+                        }
+                        response = requests.post(self.api_url, headers=self.headers, json=payload)
+                        if response.status_code == 200:
+                            data = response.json()
+                            return data.get('choices', [{}])[0].get('message', {}).get('content', 'No response')
+                        else:
+                            return f'Error: {response.status_code} - {response.text}'
+                            
                 except requests.exceptions.RequestException as e:
                     return f'Connection error: {str(e)}'
         
         # Streamlit UI
         st.title("Simple Chatbot")
         
-        api_url = st.text_input("API URL", value="https://example-chatbot-api.com/v1/chat")
-        api_key = st.text_input("API Key", type="password", value="your_api_key_here")
+        api_type = st.selectbox("Select API", ["google", "openai"])
+        api_key = st.text_input("API Key", type="password", 
+                               help="For Google: Get from Google AI Studio. For OpenAI: Get from OpenAI Platform")
         user_input = st.text_input("Your message")
         
-        if st.button("Send") and user_input:
-            bot = SimpleChatbot(api_url, api_key)
-            reply = bot.send_message(user_input)
+        if st.button("Send") and user_input and api_key:
+            bot = SimpleChatbot(api_key, api_type)
+            with st.spinner("Getting response..."):
+                reply = bot.send_message(user_input)
             st.text_area("Bot reply", value=reply, height=150)
 
     with tab3:
