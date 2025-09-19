@@ -51,7 +51,7 @@ if file is not None:
         
 
     if "cleaned_df" not in st.session_state:
-    st.session_state["cleaned_df"] = st.session_state["clean_df"]
+        st.session_state["cleaned_df"] = st.session_state["clean_df"]
 
     with tab3:
         df = st.session_state["cleaned_df"]
