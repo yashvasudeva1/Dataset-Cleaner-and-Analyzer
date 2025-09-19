@@ -23,8 +23,8 @@ from sklearn.tree import DecisionTreeClassifier
 from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier, AdaBoostClassifier
 from sklearn.naive_bayes import GaussianNB
 from sklearn.discriminant_analysis import LinearDiscriminantAnalysis, QuadraticDiscriminantAnalysis
-from xgboost import XGBClassifier       # requires xgboost package
-from lightgbm import LGBMClassifier     # requires lightgbm package
+from xgboost import XGBClassifier
+from lightgbm import LGBMClassifier
 from sklearn.neural_network import MLPClassifier
 from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, confusion_matrix
 from sklearn.model_selection import train_test_split, cross_val_score, GridSearchCV
@@ -39,9 +39,7 @@ col1, col2 = st.columns([1, 6])
 with col1:
     st.image(logo_path, width=400)
 with col2:
-    st.markdown("<h1 style='margin-bottom:0;'>Dataset Cleaner and Analyser</h1>", unsafe_allow_html=True)
-
-
+    st.title("QuickML")
 @st.cache_data
 def load_data(uploaded_file):
     return pd.read_csv(uploaded_file)
