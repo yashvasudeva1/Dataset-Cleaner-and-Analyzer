@@ -54,10 +54,7 @@ if file is not None:
         df = st.session_state["clean_df"]
     
         actions = st.multiselect("Select Actions :", ["NaN Values", "Duplicates", "Outliers"])
-    
-        # Prepare base report with column names
         report_before = pd.DataFrame(index=df.columns)
-    
         if "NaN Values" in actions:
             report_before["NaN Values"] = df.isnull().sum()
         if "Duplicates" in actions:
@@ -80,7 +77,6 @@ if file is not None:
     
         if st.button("Clean"):
             cleaned = df.copy()
-    
             if "Duplicates" in actions:
                 cleaned = cleaned.drop_duplicates()
             if "Outliers" in actions:
@@ -94,10 +90,10 @@ if file is not None:
             if "NaN Values" in actions:
                 cleaned = cleaned.dropna()
     
-            # Update session state with new cleaned data for next iteration
+            # Update session state for next cleaning & reporting iteration
             st.session_state["cleaned_df"] = cleaned
     
-            # Prepare after cleaning report in same format
+            # Prepare new report after cleaning (for newly cleaned data)
             report_after = pd.DataFrame(index=cleaned.columns)
             if "NaN Values" in actions:
                 report_after["NaN Values"] = cleaned.isnull().sum()
