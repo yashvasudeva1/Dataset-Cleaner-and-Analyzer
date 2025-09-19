@@ -60,8 +60,8 @@ if file is not None:
     st.write("Preview of your dataset:")
     st.dataframe(st.session_state["clean_df"], use_container_width=True)
     
-    tab0, tab1,tab2 , tab3, tab4, tab5 = st.tabs(
-        ["Analysis", "Visualisation", "Chat" ,"Cleaning", "Predictor", "Distribution"]
+    tab0, tab1 , tab3, tab4, tab5 = st.tabs(
+        ["Analysis", "Visualisation" ,"Cleaning", "Predictor", "Distribution"]
     )
     with tab0:
         st.write(st.session_state["clean_df"].describe())
