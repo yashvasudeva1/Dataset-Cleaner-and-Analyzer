@@ -165,9 +165,10 @@ def adjusted_r2_score(y_true, y_pred, X):
 
 def mean_absolute_percentage_error(y_true, y_pred):
     y_true, y_pred = np.array(y_true), np.array(y_pred)
-    return np.mean(np.abs((y_true - y_pred) / y_true)) * 100
+    mask = y_true != 0
+    return np.mean(np.abs((y_true[mask] - y_pred[mask]) / y_true[mask])) * 100
 
-def train_and_evaluate_model(model, X_train_scaled, y_train, X_test_scaled, y_test, X_test=None):
+def train_and_evaluate_model(model, X_train, y_train, X_train_scaled, X_test_scaled, y_test, X_test=None):
     model.fit(X_train_scaled, y_train)
     y_pred = model.predict(X_test_scaled)
     metrics = {
@@ -175,7 +176,7 @@ def train_and_evaluate_model(model, X_train_scaled, y_train, X_test_scaled, y_te
         'MSE': mean_squared_error(y_test, y_pred),
         'RMSE': np.sqrt(mean_squared_error(y_test, y_pred)),
         'R2': r2_score(y_test, y_pred),
-        'Adj_R2': adjusted_r2_score(y_test, y_pred, X_test if X_test is not None else X_train_scaled),
+        'Adj_R2': adjusted_r2_score(y_test, y_pred, X_test if X_test is not None else X_train),
         'MAPE': mean_absolute_percentage_error(y_test, y_pred)
     }
     return y_pred, metrics
@@ -201,16 +202,15 @@ def get_slider_params(df, col):
         default_val = min_val
     return min_val, max_val, default_val, step
 
-def show_metrics_sidebar(metrics, model_name, extra_params=None):
-    st.sidebar.header(f"{model_name} Metrics")
-    for k, v in metrics.items():
-        fmt_str = f"{k} {v:.4f}" if k != 'MAPE' else f"{k} {v:.2f}%"
-        st.sidebar.write(fmt_str)
-    if extra_params:
-        for param, val in extra_params.items():
-            st.sidebar.write(f"{param}: {val}")
+def show_metrics(metrics, model_name):
+    st.subheader(f"{model_name} Model Performance:")
+    for name, value in metrics.items():
+        if name == "MAPE":
+            st.write(f"{name}: {value:.2f}%")
+        else:
+            st.write(f"{name}: {value:.4f}")
 
-def predictor_tab(df):
+def tab_predictor(df):
     st.header("Predictive Modelling")
 
     dataset_type = st.selectbox("Choose the Type of Data you uploaded", ["None", "Numeric Type", "Classification Type"])
@@ -225,23 +225,17 @@ def predictor_tab(df):
         "AdaBoost Regression"
     ]
 
-    selected_model = st.selectbox("Choose the Machine Learning Model you want for prediction", model_options)
+    selected_model = st.selectbox("Choose the Machine Learning Model for prediction", model_options)
 
     if selected_model == "None":
+        st.info("Select a model to proceed.")
         return
 
     numeric_cols = df.select_dtypes(include=np.number).columns.tolist()
     target_col = st.selectbox("Select the Target Column", options=numeric_cols)
 
-    # Prepare data
-    df_clean = df.copy()
-    # Outlier removal can optionally be handled here as needed
-    numeric_cols_no_target = [col for col in numeric_cols if col != target_col]
+    X_train, X_test, y_train, y_test, X_train_scaled, X_test_scaled, scaler, df_cleaned = prepare_data(df, target_col)
 
-    # Train Test Split and Scaling
-    X_train, X_test, y_train, y_test, X_train_scaled, X_test_scaled, scaler = prepare_data(df_clean, target_col)
-
-    # Model selection mapping
     models = {
         "Linear Regression": LinearRegression(),
         "Polynomial Regression": ("poly", LinearRegression()),
@@ -252,15 +246,14 @@ def predictor_tab(df):
         "Random Forest Regression": RandomForestRegressor(random_state=42),
         "Gradient Boosting Regression": GradientBoostingRegressor(random_state=42),
         "Support Vector Regression": SVR(kernel='rbf'),
-        "K-Nearest Neighbors Regression": KNeighborsRegressor(n_neighbors=5),
+        "K-Nearest Neighbors Regression": KNeighborsRegressor(),
         "AdaBoost Regression": AdaBoostRegressor(random_state=42)
     }
 
     if selected_model not in models:
-        st.error("Model not implemented yet.")
+        st.error("Selected model not implemented.")
         return
 
-    # Handle Polynomial Regression separately due to PolyFeatures
     if selected_model == "Polynomial Regression":
         poly = PolynomialFeatures(degree=2, include_bias=False)
         X_train_poly = poly.fit_transform(X_train)
@@ -269,33 +262,33 @@ def predictor_tab(df):
         X_train_poly_scaled = scaler_poly.fit_transform(X_train_poly)
         X_test_poly_scaled = scaler_poly.transform(X_test_poly)
         model = models[selected_model][1]
-        y_pred, metrics = train_and_evaluate_model(model, X_train_poly_scaled, y_train, X_test_poly_scaled, y_test, X_test_poly)
+        y_pred, metrics = train_and_evaluate_model(model, X_train_poly, y_train, X_train_poly_scaled, X_test_poly_scaled, y_test, X_test_poly)
         scaler_used = scaler_poly
-        input_features = numeric_cols_no_target
+        poly_transform = poly
     else:
         model = models[selected_model]
-        y_pred, metrics = train_and_evaluate_model(model, X_train_scaled, y_train, X_test_scaled, y_test, X_test)
+        y_pred, metrics = train_and_evaluate_model(model, X_train, y_train, X_train_scaled, X_test_scaled, y_test, X_test)
         scaler_used = scaler
-        input_features = numeric_cols_no_target
+        poly_transform = None
 
-    st.success(f"Model Trained Successfully: {selected_model}. You can now proceed to predict the target.")
+    show_metrics(metrics, selected_model)
 
-    show_metrics_sidebar(metrics, selected_model)
-
-    # Input sliders for prediction
-    st.header("Input feature values for prediction")
+    st.subheader("Input Values for Prediction")
+    input_features = [col for col in numeric_cols if col != target_col]
     input_data = {}
+
     for col in input_features:
-        min_val, max_val, default_val, step = get_slider_params(df_clean, col)
-        input_data[col] = st.slider(label=col, min_value=min_val, max_value=max_val, value=default_val, step=step)
+        min_val, max_val, default_val, step = get_slider_params(df_cleaned, col)
+        input_val = st.slider(label=col, min_value=min_val, max_value=max_val, value=default_val, step=step)
+        input_data[col] = input_val
 
     input_df = pd.DataFrame([input_data])
-    if selected_model == "Polynomial Regression":
-        input_poly = poly.transform(input_df)
+
+    if poly_transform is not None:
+        input_poly = poly_transform.transform(input_df)
         input_scaled = scaler_used.transform(input_poly)
-        user_prediction = model.predict(input_scaled)[0]
     else:
         input_scaled = scaler_used.transform(input_df)
-        user_prediction = model.predict(input_scaled)[0]
 
-    st.success(f"Predicted Value for the given input is: {user_prediction:.4f}")
+    prediction = model.predict(input_scaled)[0]
+    st.success(f"Predicted {target_col} value: {prediction:.4f}")
