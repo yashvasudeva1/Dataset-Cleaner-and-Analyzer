@@ -6,6 +6,7 @@ import seaborn as sns
 from scipy import stats
 import warnings
 import io
+from scipy.stats import normaltest
 from sklearn.svm import SVR
 from sklearn.linear_model import LinearRegression, Ridge, Lasso, ElasticNet
 from sklearn.tree import DecisionTreeRegressor
