@@ -97,34 +97,33 @@ if file is not None:
             st.info("Please select at least one column to display the chart.")
 
     with tab_clean:
-        df = st.session_state["clean_df"]
-        actions = st.multiselect("Select Actions:", ["NaN Values", "Duplicates", "Outliers"])
+    # Use the latest cleaned dataframe if available, else original
+    df = st.session_state.get("cleaned_df", st.session_state["clean_df"])
+    
+    actions = st.multiselect("Select Actions:", ["NaN Values", "Duplicates", "Outliers"])
+    
+    # Report before cleaning
+    report_before = generate_report(df, actions)
+    st.write("### Report Before Cleaning")
+    st.dataframe(report_before)
+    
+    if st.button("Clean"):
+        cleaned = df.copy()
 
-        # Report before cleaning
-        report_before = generate_report(df, actions)
-        st.write("### Report Before Cleaning")
-        st.dataframe(report_before)
-
-        if st.button("Clean"):
-            cleaned = df.copy()
-
-            if "Duplicates" in actions:
-                cleaned = cleaned.drop_duplicates()
-
-            if "Outliers" in actions:
-                numerics_cleaned = cleaned.select_dtypes(include=np.number)
-                outlier_mask, _ = calculate_outliers(numerics_cleaned)
-                keep_mask = ~outlier_mask.any(axis=1)
-                cleaned = cleaned.loc[keep_mask]
-
-            if "NaN Values" in actions:
-                cleaned = cleaned.dropna()
-
-            st.session_state["cleaned_df"] = cleaned
-
-        if "cleaned_df" not in st.session_state:
-            st.session_state["cleaned_df"] = st.session_state["clean_df"]
-
+        if "Duplicates" in actions:
+            cleaned = cleaned.drop_duplicates()
+        if "Outliers" in actions:
+            numerics_cleaned = cleaned.select_dtypes(include=np.number)
+            outlier_mask, _ = calculate_outliers(numerics_cleaned)
+            keep_mask = ~outlier_mask.any(axis=1)
+            cleaned = cleaned.loc[keep_mask]
+        if "NaN Values" in actions:
+            cleaned = cleaned.dropna()
+        
+        st.session_state["cleaned_df"] = cleaned  # mark that cleaning is done
+    
+    # Only show cleaned data and report if cleaned_df is in session state (clean button pressed once)
+    if "cleaned_df" in st.session_state:
         cleaned_latest = st.session_state["cleaned_df"]
         report_after = generate_report(cleaned_latest, actions)
 
@@ -141,3 +140,4 @@ if file is not None:
             file_name="cleaned_data.csv",
             mime="text/csv"
         )
+
