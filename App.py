@@ -52,11 +52,13 @@ if file is not None:
 
     if "cleaned_df" not in st.session_state:
         st.session_state["cleaned_df"] = st.session_state["clean_df"]
-
+    if "transformed" not in st.session_state:
+        st.session_state["transformed"] = False  # To track if transform applied
+    
     with tab3:
         df = st.session_state["cleaned_df"]
     
-        actions = st.multiselect("Select Actions :", ["NaN Values", "Duplicates", "Outliers"])
+        actions = st.multiselect("Select Actions :", ["NaN Values", "Duplicates", "Outliers", "Transform"])
     
         # Prepare report before cleaning using current df
         report_before = pd.DataFrame(index=df.columns)
@@ -80,9 +82,31 @@ if file is not None:
         st.write("### Report Before Cleaning")
         st.dataframe(report_before.fillna('-').astype(str))
     
-        # Clean when button is clicked
         if st.button("Clean"):
             cleaned = df.copy()
+    
+            # Apply transformations only once if selected
+            if "Transform" in actions and not st.session_state["transformed"]:
+                numerics = cleaned.select_dtypes(include=np.number)
+    
+                # Use PowerTransformer (Yeo-Johnson) which is suitable for data with zero or negative values
+                pt = PowerTransformer(method='yeo-johnson', standardize=True)
+    
+                # Detect non-normal columns (p-value < 0.05 in normaltest)
+                cols_to_transform = []
+                for col in numerics.columns:
+                    # normaltest returns statistic and p-value
+                    stat, p = normaltest(numerics[col].dropna())
+                    if p < 0.05:
+                        cols_to_transform.append(col)
+    
+                if cols_to_transform:
+                    # Transform selected columns and replace in DataFrame
+                    transformed_values = pt.fit_transform(numerics[cols_to_transform])
+                    cleaned.loc[:, cols_to_transform] = transformed_values
+    
+                st.session_state["transformed"] = True  # mark transformation done
+    
             if "Duplicates" in actions:
                 cleaned = cleaned.drop_duplicates()
             if "Outliers" in actions:
@@ -96,10 +120,10 @@ if file is not None:
             if "NaN Values" in actions:
                 cleaned = cleaned.dropna()
     
-            # Save the new cleaned dataset to session state
+            # Update cleaned data in session state
             st.session_state["cleaned_df"] = cleaned
     
-        # Always generate report_after from latest cleaned_df (even after multiple clean clicks!)
+        # Always create report after cleaning with latest cleaned_df
         cleaned_latest = st.session_state["cleaned_df"]
         report_after = pd.DataFrame(index=cleaned_latest.columns)
         if "NaN Values" in actions:
