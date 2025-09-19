@@ -6,6 +6,7 @@ import seaborn as sns
 from scipy import stats
 import warnings
 import io
+import requests
 import altair as alt
 from sklearn.svm import SVR, SVC
 from sklearn.linear_model import LinearRegression, Ridge, Lasso, ElasticNet, LogisticRegression
@@ -94,6 +95,36 @@ if file is not None:
                     st.warning("Please select exactly two columns for this plot.")
             else:
                 st.info("Please select at least one column to display the chart.")
+    with tab2:
+        class SimpleChatbot:
+            def __init__(self, api_url, api_key):
+                self.api_url = api_url
+                self.api_key = api_key
+                self.headers = {
+                    'Authorization': f'Bearer {self.api_key}',
+                    'Content-Type': 'application/json'
+                }
+        
+            def send_message(self, message):
+                payload = {'message': message}
+                response = requests.post(self.api_url, headers=self.headers, json=payload)
+                if response.status_code == 200:
+                    data = response.json()
+                    return data.get('reply', 'No reply field in response')
+                else:
+                    return f'Error: {response.status_code} - {response.text}'
+        
+        # Streamlit UI
+        st.title("Simple Chatbot")
+        
+        api_url = st.text_input("API URL", value="https://example-chatbot-api.com/v1/chat")
+        api_key = st.text_input("API Key", type="password", value="your_api_key_here")
+        user_input = st.text_input("Your message")
+        
+        if st.button("Send") and user_input:
+            bot = SimpleChatbot(api_url, api_key)
+            reply = bot.send_message(user_input)
+            st.text_area("Bot reply", value=reply, height=150)
 
     with tab3:
         df = st.session_state["clean_df"]
