@@ -6,9 +6,7 @@ import seaborn as sns
 from scipy import stats
 import warnings
 import io
-from scipy.stats import normaltest
 from sklearn.svm import SVR
-from sklearn.preprocessing import PowerTransformer
 from sklearn.linear_model import LinearRegression, Ridge, Lasso, ElasticNet
 from sklearn.tree import DecisionTreeRegressor
 from sklearn.ensemble import RandomForestRegressor, GradientBoostingRegressor, AdaBoostRegressor
@@ -54,21 +52,11 @@ if file is not None:
 
     if "cleaned_df" not in st.session_state:
         st.session_state["cleaned_df"] = st.session_state["clean_df"]
-    if "transformed" not in st.session_state:
-        st.session_state["transformed"] = False  # To track if transform applied
-    
-    def get_normality_labels(df):
-        normality_labels = pd.Series(index=df.columns, dtype=object)
-        numerics = df.select_dtypes(include=np.number)
-        for col in numerics.columns:
-            stat, p = normaltest(numerics[col].dropna())
-            normality_labels[col] = "Likely Normal" if p >= 0.05 else "Likely not Normal"
-        return normality_labels
     
     with tab3:
         df = st.session_state["cleaned_df"]
     
-        actions = st.multiselect("Select Actions :", ["NaN Values", "Duplicates", "Outliers", "Transform"])
+        actions = st.multiselect("Select Actions :", ["NaN Values", "Duplicates", "Outliers"])
     
         # Prepare report before cleaning using current df
         report_before = pd.DataFrame(index=df.columns)
@@ -89,33 +77,11 @@ if file is not None:
             for col in outliers_count.index:
                 report_before.at[col, "Outliers"] = outliers_count[col]
     
-        # Add normality labels to before cleaning report if "Transform" selected
-        if "Transform" in actions:
-            normality_labels_before = get_normality_labels(df)
-            report_before["Normality"] = normality_labels_before
-    
         st.write("### Report Before Cleaning")
         st.dataframe(report_before.fillna('-').astype(str))
     
         if st.button("Clean"):
             cleaned = df.copy()
-    
-            # Apply transformations only once if selected
-            if "Transform" in actions and not st.session_state["transformed"]:
-                numerics = cleaned.select_dtypes(include=np.number)
-                pt = PowerTransformer(method='yeo-johnson', standardize=True)
-    
-                cols_to_transform = []
-                for col in numerics.columns:
-                    stat, p = normaltest(numerics[col].dropna())
-                    if p < 0.05:
-                        cols_to_transform.append(col)
-    
-                if cols_to_transform:
-                    transformed_values = pt.fit_transform(numerics[cols_to_transform])
-                    cleaned.loc[:, cols_to_transform] = transformed_values
-    
-                st.session_state["transformed"] = True
     
             if "Duplicates" in actions:
                 cleaned = cleaned.drop_duplicates()
@@ -132,7 +98,7 @@ if file is not None:
     
             st.session_state["cleaned_df"] = cleaned
     
-        # Prepare report after cleaning with normality labels if selected
+        # Prepare report after cleaning using latest cleaned_df
         cleaned_latest = st.session_state["cleaned_df"]
         report_after = pd.DataFrame(index=cleaned_latest.columns)
         if "NaN Values" in actions:
@@ -151,10 +117,6 @@ if file is not None:
             report_after["Outliers"] = np.nan
             for col in outliers_count_after.index:
                 report_after.at[col, "Outliers"] = outliers_count_after[col]
-    
-        if "Transform" in actions:
-            normality_labels_after = get_normality_labels(cleaned_latest)
-            report_after["Normality"] = normality_labels_after
     
         st.write("### Report After Cleaning")
         st.dataframe(report_after.fillna('-').astype(str))
