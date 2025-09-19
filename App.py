@@ -60,8 +60,12 @@ if file is not None:
             if selected_two:
                 if len(selected_two) == 2:
                     x_col, y_col = selected_two
+                    
+                    # Sort the dataframe by the x column in ascending order before plotting
+                    df_sorted = df.sort_values(by=x_col, ascending=True)
+    
                     chart = (
-                        alt.Chart(df)
+                        alt.Chart(df_sorted)
                         .mark_line()
                         .encode(
                             x=alt.X(x_col, title=x_col),
@@ -78,6 +82,7 @@ if file is not None:
                     st.warning("Please select exactly two columns for this plot.")
             else:
                 st.info("Please select at least one column to display the chart.")
+
     with tab3:
         df = st.session_state["clean_df"]
     
