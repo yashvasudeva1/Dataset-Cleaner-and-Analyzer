@@ -34,11 +34,7 @@ def shapiro_safe(x):
     with warnings.catch_warnings():
         warnings.filterwarnings("ignore", message=".*computed p-value may not be accurate.*")
         return stats.shapiro(x)
-col1, col2 = st.sidebar.columns([1,6])
-with col1:
-    st.logo('Untitled design (3).svg', width=40)
-with col2:
-    st.markdown("<h2>Dataset Cleaner and Analyser</h2>", unsafe_allow_html=True)
+st.title("Dataset Cleaner & Analyzer")
 st.write("This app helps you in making your dataset cleaner, outlier free and ready for training")
 @st.cache_data
 def load_data(uploaded_file):
