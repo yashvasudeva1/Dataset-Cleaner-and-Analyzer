@@ -292,3 +292,5 @@ def tab_predictor(df):
 
     prediction = model.predict(input_scaled)[0]
     st.success(f"Predicted {target_col} value: {prediction:.4f}")
+with tab_predictor:
+    tab_predictor(df)
