@@ -1101,9 +1101,931 @@ if file is not None:
                 ]
             )
             target_column = st.selectbox("Select the Target Column:", columns)
+            if model_selection == 'Logistic Regression':
+            df_cleaned = df.copy()
+            for col in df_cleaned.select_dtypes(include='number'):
+                q1, q3 = df_cleaned[col].quantile([0.25, 0.75])
+                iqr = q3 - q1
+                lower_bound = q1 - 1.5 * iqr
+                upper_bound = q3 + 1.5 * iqr
+                df_cleaned = df_cleaned[(df_cleaned[col] >= lower_bound) & (df_cleaned[col] <= upper_bound)]
+            numeric_cols = df_cleaned.select_dtypes(include=['number']).columns.drop(target_column, errors='ignore')
+            x = df_cleaned[numeric_cols]
+            y = df_cleaned[target_column]
+            x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.3, random_state=42)
+            scaler = StandardScaler()
+            x_train = scaler.fit_transform(x_train)
+            x_test = scaler.transform(x_test)
+            model = LogisticRegression(max_iter=1000)
+            model.fit(x_train, y_train)
+            y_pred = model.predict(x_test)
+        
+            acc = accuracy_score(y_test, y_pred)
+            prec = precision_score(y_test, y_pred, average='weighted', zero_division=0)
+            rec = recall_score(y_test, y_pred, average='weighted')
+            f1 = f1_score(y_test, y_pred, average='weighted')
+            cm = confusion_matrix(y_test, y_pred)
+        
+            st.sidebar.header("Logistic Regression Metrics")
+            st.sidebar.write(f"Accuracy: {acc:.4f}")
+            st.sidebar.write(f"Precision: {prec:.4f}")
+            st.sidebar.write(f"Recall: {rec:.4f}")
+            st.sidebar.write(f"F1 Score: {f1:.4f}")
+            st.sidebar.write(f"Confusion Matrix:\n{cm}")
+        
+            totalcolumns = df_cleaned.select_dtypes(include='number').columns.drop(target_column, errors='ignore')
+            st.header("Input feature values for prediction")
+        
+            input_data = {}
+        
+            for col in totalcolumns:
+                q1 = df[col].quantile(0.25)
+                q3 = df[col].quantile(0.75)
+                iqr = q3 - q1
+                lower_bound = q1 - 1.5 * iqr
+                upper_bound = q3 + 1.5 * iqr
+        
+                if pd.api.types.is_integer_dtype(df[col]):
+                    step = 1
+                    min_val = int(np.floor(lower_bound))
+                    max_val = int(np.ceil(upper_bound))
+                    default_val = int(df[col].median())
+                else:
+                    step = 0.01
+                    min_val = float(lower_bound)
+                    max_val = float(upper_bound)
+                    default_val = float(df[col].median())
+                if min_val >= max_val:
+                    max_val = min_val + step if pd.api.types.is_integer_dtype(df[col]) else min_val + 0.01
+                    if default_val < min_val or default_val > max_val:
+                        default_val = min_val
+                input_data[col] = st.slider(
+                    label=col,
+                    min_value=min_val,
+                    max_value=max_val,
+                    value=default_val,
+                    step=step
+                )
+            input_df = pd.DataFrame([input_data])
+            input_df = scaler.transform(input_df)
+            user_prediction = model.predict(input_df)
+            st.success(f"Predicted Class for the given input is {user_prediction[0]}")
+        
+        
+        if model_selection == 'K-Nearest Neighbors (KNN)':
+            df_cleaned = df.copy()
+            for col in df_cleaned.select_dtypes(include='number'):
+                q1, q3 = df_cleaned[col].quantile([0.25, 0.75])
+                iqr = q3 - q1
+                lower_bound = q1 - 1.5 * iqr
+                upper_bound = q3 + 1.5 * iqr
+                df_cleaned = df_cleaned[(df_cleaned[col] >= lower_bound) & (df_cleaned[col] <= upper_bound)]
+            numeric_cols = df_cleaned.select_dtypes(include=['number']).columns.drop(target_column, errors='ignore')
+            x = df_cleaned[numeric_cols]
+            y = df_cleaned[target_column]
+            x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.3, random_state=42)
+            scaler = StandardScaler()
+            x_train = scaler.fit_transform(x_train)
+            x_test = scaler.transform(x_test)
+            model = KNeighborsClassifier(n_neighbors=5)
+            model.fit(x_train, y_train)
+            y_pred = model.predict(x_test)
+        
+            acc = accuracy_score(y_test, y_pred)
+            prec = precision_score(y_test, y_pred, average='weighted', zero_division=0)
+            rec = recall_score(y_test, y_pred, average='weighted')
+            f1 = f1_score(y_test, y_pred, average='weighted')
+            cm = confusion_matrix(y_test, y_pred)
+        
+            st.sidebar.header("K-Nearest Neighbors Classifier Metrics")
+            st.sidebar.write(f"Accuracy: {acc:.4f}")
+            st.sidebar.write(f"Precision: {prec:.4f}")
+            st.sidebar.write(f"Recall: {rec:.4f}")
+            st.sidebar.write(f"F1 Score: {f1:.4f}")
+            st.sidebar.write(f"Confusion Matrix:\n{cm}")
+        
+            totalcolumns = df_cleaned.select_dtypes(include='number').columns.drop(target_column, errors='ignore')
+            st.header("Input feature values for prediction")
+        
+            input_data = {}
+        
+            for col in totalcolumns:
+                q1 = df[col].quantile(0.25)
+                q3 = df[col].quantile(0.75)
+                iqr = q3 - q1
+                lower_bound = q1 - 1.5 * iqr
+                upper_bound = q3 + 1.5 * iqr
+        
+                if pd.api.types.is_integer_dtype(df[col]):
+                    step = 1
+                    min_val = int(np.floor(lower_bound))
+                    max_val = int(np.ceil(upper_bound))
+                    default_val = int(df[col].median())
+                else:
+                    step = 0.01
+                    min_val = float(lower_bound)
+                    max_val = float(upper_bound)
+                    default_val = float(df[col].median())
+                if min_val >= max_val:
+                    max_val = min_val + step if pd.api.types.is_integer_dtype(df[col]) else min_val + 0.01
+                    if default_val < min_val or default_val > max_val:
+                        default_val = min_val
+                input_data[col] = st.slider(
+                    label=col,
+                    min_value=min_val,
+                    max_value=max_val,
+                    value=default_val,
+                    step=step
+                )
+            input_df = pd.DataFrame([input_data])
+            input_df = scaler.transform(input_df)
+            user_prediction = model.predict(input_df)
+            st.success(f"Predicted Class for the given input is {user_prediction[0]}")
+        
+        
+        if model_selection == 'Support Vector Machine (SVM)':
+            df_cleaned = df.copy()
+            for col in df_cleaned.select_dtypes(include='number'):
+                q1, q3 = df_cleaned[col].quantile([0.25, 0.75])
+                iqr = q3 - q1
+                lower_bound = q1 - 1.5 * iqr
+                upper_bound = q3 + 1.5 * iqr
+                df_cleaned = df_cleaned[(df_cleaned[col] >= lower_bound) & (df_cleaned[col] <= upper_bound)]
+            numeric_cols = df_cleaned.select_dtypes(include=['number']).columns.drop(target_column, errors='ignore')
+            x = df_cleaned[numeric_cols]
+            y = df_cleaned[target_column]
+            x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.3, random_state=42)
+            scaler = StandardScaler()
+            x_train = scaler.fit_transform(x_train)
+            x_test = scaler.transform(x_test)
+            model = SVC(probability=True)
+            model.fit(x_train, y_train)
+            y_pred = model.predict(x_test)
+        
+            acc = accuracy_score(y_test, y_pred)
+            prec = precision_score(y_test, y_pred, average='weighted', zero_division=0)
+            rec = recall_score(y_test, y_pred, average='weighted')
+            f1 = f1_score(y_test, y_pred, average='weighted')
+            cm = confusion_matrix(y_test, y_pred)
+        
+            st.sidebar.header("Support Vector Machine Metrics")
+            st.sidebar.write(f"Accuracy: {acc:.4f}")
+            st.sidebar.write(f"Precision: {prec:.4f}")
+            st.sidebar.write(f"Recall: {rec:.4f}")
+            st.sidebar.write(f"F1 Score: {f1:.4f}")
+            st.sidebar.write(f"Confusion Matrix:\n{cm}")
+        
+            totalcolumns = df_cleaned.select_dtypes(include='number').columns.drop(target_column, errors='ignore')
+            st.header("Input feature values for prediction")
+        
+            input_data = {}
+        
+            for col in totalcolumns:
+                q1 = df[col].quantile(0.25)
+                q3 = df[col].quantile(0.75)
+                iqr = q3 - q1
+                lower_bound = q1 - 1.5 * iqr
+                upper_bound = q3 + 1.5 * iqr
+        
+                if pd.api.types.is_integer_dtype(df[col]):
+                    step = 1
+                    min_val = int(np.floor(lower_bound))
+                    max_val = int(np.ceil(upper_bound))
+                    default_val = int(df[col].median())
+                else:
+                    step = 0.01
+                    min_val = float(lower_bound)
+                    max_val = float(upper_bound)
+                    default_val = float(df[col].median())
+                if min_val >= max_val:
+                    max_val = min_val + step if pd.api.types.is_integer_dtype(df[col]) else min_val + 0.01
+                    if default_val < min_val or default_val > max_val:
+                        default_val = min_val
+                input_data[col] = st.slider(
+                    label=col,
+                    min_value=min_val,
+                    max_value=max_val,
+                    value=default_val,
+                    step=step
+                )
+            input_df = pd.DataFrame([input_data])
+            input_df = scaler.transform(input_df)
+            user_prediction = model.predict(input_df)
+            st.success(f"Predicted Class for the given input is {user_prediction[0]}")
+        
+        
+        if model_selection == 'Decision Tree Classifier':
+            df_cleaned = df.copy()
+            for col in df_cleaned.select_dtypes(include='number'):
+                q1, q3 = df_cleaned[col].quantile([0.25, 0.75])
+                iqr = q3 - q1
+                lower_bound = q1 - 1.5 * iqr
+                upper_bound = q3 + 1.5 * iqr
+                df_cleaned = df_cleaned[(df_cleaned[col] >= lower_bound) & (df_cleaned[col] <= upper_bound)]
+            numeric_cols = df_cleaned.select_dtypes(include=['number']).columns.drop(target_column, errors='ignore')
+            x = df_cleaned[numeric_cols]
+            y = df_cleaned[target_column]
+            x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.3, random_state=42)
+            scaler = StandardScaler()
+            x_train = scaler.fit_transform(x_train)
+            x_test = scaler.transform(x_test)
+            model = DecisionTreeClassifier()
+            model.fit(x_train, y_train)
+            y_pred = model.predict(x_test)
+        
+            acc = accuracy_score(y_test, y_pred)
+            prec = precision_score(y_test, y_pred, average='weighted', zero_division=0)
+            rec = recall_score(y_test, y_pred, average='weighted')
+            f1 = f1_score(y_test, y_pred, average='weighted')
+            cm = confusion_matrix(y_test, y_pred)
+        
+            st.sidebar.header("Decision Tree Classifier Metrics")
+            st.sidebar.write(f"Accuracy: {acc:.4f}")
+            st.sidebar.write(f"Precision: {prec:.4f}")
+            st.sidebar.write(f"Recall: {rec:.4f}")
+            st.sidebar.write(f"F1 Score: {f1:.4f}")
+            st.sidebar.write(f"Confusion Matrix:\n{cm}")
+        
+            totalcolumns = df_cleaned.select_dtypes(include='number').columns.drop(target_column, errors='ignore')
+            st.header("Input feature values for prediction")
+        
+            input_data = {}
+        
+            for col in totalcolumns:
+                q1 = df[col].quantile(0.25)
+                q3 = df[col].quantile(0.75)
+                iqr = q3 - q1
+                lower_bound = q1 - 1.5 * iqr
+                upper_bound = q3 + 1.5 * iqr
+        
+                if pd.api.types.is_integer_dtype(df[col]):
+                    step = 1
+                    min_val = int(np.floor(lower_bound))
+                    max_val = int(np.ceil(upper_bound))
+                    default_val = int(df[col].median())
+                else:
+                    step = 0.01
+                    min_val = float(lower_bound)
+                    max_val = float(upper_bound)
+                    default_val = float(df[col].median())
+                if min_val >= max_val:
+                    max_val = min_val + step if pd.api.types.is_integer_dtype(df[col]) else min_val + 0.01
+                    if default_val < min_val or default_val > max_val:
+                        default_val = min_val
+                input_data[col] = st.slider(
+                    label=col,
+                    min_value=min_val,
+                    max_value=max_val,
+                    value=default_val,
+                    step=step
+                )
+            input_df = pd.DataFrame([input_data])
+            input_df = scaler.transform(input_df)
+            user_prediction = model.predict(input_df)
+            st.success(f"Predicted Class for the given input is {user_prediction[0]}")
+        
+        
+        if model_selection == 'Random Forest Classifier':
+            df_cleaned = df.copy()
+            for col in df_cleaned.select_dtypes(include='number'):
+                q1, q3 = df_cleaned[col].quantile([0.25, 0.75])
+                iqr = q3 - q1
+                lower_bound = q1 - 1.5 * iqr
+                upper_bound = q3 + 1.5 * iqr
+                df_cleaned = df_cleaned[(df_cleaned[col] >= lower_bound) & (df_cleaned[col] <= upper_bound)]
+            numeric_cols = df_cleaned.select_dtypes(include=['number']).columns.drop(target_column, errors='ignore')
+            x = df_cleaned[numeric_cols]
+            y = df_cleaned[target_column]
+            x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.3, random_state=42)
+            scaler = StandardScaler()
+            x_train = scaler.fit_transform(x_train)
+            x_test = scaler.transform(x_test)
+            model = RandomForestClassifier()
+            model.fit(x_train, y_train)
+            y_pred = model.predict(x_test)
+        
+            acc = accuracy_score(y_test, y_pred)
+            prec = precision_score(y_test, y_pred, average='weighted', zero_division=0)
+            rec = recall_score(y_test, y_pred, average='weighted')
+            f1 = f1_score(y_test, y_pred, average='weighted')
+            cm = confusion_matrix(y_test, y_pred)
+        
+            st.sidebar.header("Random Forest Classifier Metrics")
+            st.sidebar.write(f"Accuracy: {acc:.4f}")
+            st.sidebar.write(f"Precision: {prec:.4f}")
+            st.sidebar.write(f"Recall: {rec:.4f}")
+            st.sidebar.write(f"F1 Score: {f1:.4f}")
+            st.sidebar.write(f"Confusion Matrix:\n{cm}")
+        
+            totalcolumns = df_cleaned.select_dtypes(include='number').columns.drop(target_column, errors='ignore')
+            st.header("Input feature values for prediction")
+        
+            input_data = {}
+        
+            for col in totalcolumns:
+                q1 = df[col].quantile(0.25)
+                q3 = df[col].quantile(0.75)
+                iqr = q3 - q1
+                lower_bound = q1 - 1.5 * iqr
+                upper_bound = q3 + 1.5 * iqr
+        
+                if pd.api.types.is_integer_dtype(df[col]):
+                    step = 1
+                    min_val = int(np.floor(lower_bound))
+                    max_val = int(np.ceil(upper_bound))
+                    default_val = int(df[col].median())
+                else:
+                    step = 0.01
+                    min_val = float(lower_bound)
+                    max_val = float(upper_bound)
+                    default_val = float(df[col].median())
+                if min_val >= max_val:
+                    max_val = min_val + step if pd.api.types.is_integer_dtype(df[col]) else min_val + 0.01
+                    if default_val < min_val or default_val > max_val:
+                        default_val = min_val
+                input_data[col] = st.slider(
+                    label=col,
+                    min_value=min_val,
+                    max_value=max_val,
+                    value=default_val,
+                    step=step
+                )
+            input_df = pd.DataFrame([input_data])
+            input_df = scaler.transform(input_df)
+            user_prediction = model.predict(input_df)
+            st.success(f"Predicted Class for the given input is {user_prediction[0]}")
+        
+        
+        if model_selection == 'Gradient Boosting Classifier':
+            df_cleaned = df.copy()
+            for col in df_cleaned.select_dtypes(include='number'):
+                q1, q3 = df_cleaned[col].quantile([0.25, 0.75])
+                iqr = q3 - q1
+                lower_bound = q1 - 1.5 * iqr
+                upper_bound = q3 + 1.5 * iqr
+                df_cleaned = df_cleaned[(df_cleaned[col] >= lower_bound) & (df_cleaned[col] <= upper_bound)]
+            numeric_cols = df_cleaned.select_dtypes(include=['number']).columns.drop(target_column, errors='ignore')
+            x = df_cleaned[numeric_cols]
+            y = df_cleaned[target_column]
+            x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.3, random_state=42)
+            scaler = StandardScaler()
+            x_train = scaler.fit_transform(x_train)
+            x_test = scaler.transform(x_test)
+            model = GradientBoostingClassifier()
+            model.fit(x_train, y_train)
+            y_pred = model.predict(x_test)
+        
+            acc = accuracy_score(y_test, y_pred)
+            prec = precision_score(y_test, y_pred, average='weighted', zero_division=0)
+            rec = recall_score(y_test, y_pred, average='weighted')
+            f1 = f1_score(y_test, y_pred, average='weighted')
+            cm = confusion_matrix(y_test, y_pred)
+        
+            st.sidebar.header("Gradient Boosting Classifier Metrics")
+            st.sidebar.write(f"Accuracy: {acc:.4f}")
+            st.sidebar.write(f"Precision: {prec:.4f}")
+            st.sidebar.write(f"Recall: {rec:.4f}")
+            st.sidebar.write(f"F1 Score: {f1:.4f}")
+            st.sidebar.write(f"Confusion Matrix:\n{cm}")
+        
+            totalcolumns = df_cleaned.select_dtypes(include='number').columns.drop(target_column, errors='ignore')
+            st.header("Input feature values for prediction")
+        
+            input_data = {}
+        
+            for col in totalcolumns:
+                q1 = df[col].quantile(0.25)
+                q3 = df[col].quantile(0.75)
+                iqr = q3 - q1
+                lower_bound = q1 - 1.5 * iqr
+                upper_bound = q3 + 1.5 * iqr
+        
+                if pd.api.types.is_integer_dtype(df[col]):
+                    step = 1
+                    min_val = int(np.floor(lower_bound))
+                    max_val = int(np.ceil(upper_bound))
+                    default_val = int(df[col].median())
+                else:
+                    step = 0.01
+                    min_val = float(lower_bound)
+                    max_val = float(upper_bound)
+                    default_val = float(df[col].median())
+                if min_val >= max_val:
+                    max_val = min_val + step if pd.api.types.is_integer_dtype(df[col]) else min_val + 0.01
+                    if default_val < min_val or default_val > max_val:
+                        default_val = min_val
+                input_data[col] = st.slider(
+                    label=col,
+                    min_value=min_val,
+                    max_value=max_val,
+                    value=default_val,
+                    step=step
+                )
+            input_df = pd.DataFrame([input_data])
+            input_df = scaler.transform(input_df)
+            user_prediction = model.predict(input_df)
+            st.success(f"Predicted Class for the given input is {user_prediction[0]}")
+        
+        
+        if model_selection == 'AdaBoost Classifier':
+            df_cleaned = df.copy()
+            for col in df_cleaned.select_dtypes(include='number'):
+                q1, q3 = df_cleaned[col].quantile([0.25, 0.75])
+                iqr = q3 - q1
+                lower_bound = q1 - 1.5 * iqr
+                upper_bound = q3 + 1.5 * iqr
+                df_cleaned = df_cleaned[(df_cleaned[col] >= lower_bound) & (df_cleaned[col] <= upper_bound)]
+            numeric_cols = df_cleaned.select_dtypes(include=['number']).columns.drop(target_column, errors='ignore')
+            x = df_cleaned[numeric_cols]
+            y = df_cleaned[target_column]
+            x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.3, random_state=42)
+            scaler = StandardScaler()
+            x_train = scaler.fit_transform(x_train)
+            x_test = scaler.transform(x_test)
+            model = AdaBoostClassifier()
+            model.fit(x_train, y_train)
+            y_pred = model.predict(x_test)
+        
+            acc = accuracy_score(y_test, y_pred)
+            prec = precision_score(y_test, y_pred, average='weighted', zero_division=0)
+            rec = recall_score(y_test, y_pred, average='weighted')
+            f1 = f1_score(y_test, y_pred, average='weighted')
+            cm = confusion_matrix(y_test, y_pred)
+        
+            st.sidebar.header("AdaBoost Classifier Metrics")
+            st.sidebar.write(f"Accuracy: {acc:.4f}")
+            st.sidebar.write(f"Precision: {prec:.4f}")
+            st.sidebar.write(f"Recall: {rec:.4f}")
+            st.sidebar.write(f"F1 Score: {f1:.4f}")
+            st.sidebar.write(f"Confusion Matrix:\n{cm}")
+        
+            totalcolumns = df_cleaned.select_dtypes(include='number').columns.drop(target_column, errors='ignore')
+            st.header("Input feature values for prediction")
+        
+            input_data = {}
+        
+            for col in totalcolumns:
+                q1 = df[col].quantile(0.25)
+                q3 = df[col].quantile(0.75)
+                iqr = q3 - q1
+                lower_bound = q1 - 1.5 * iqr
+                upper_bound = q3 + 1.5 * iqr
+        
+                if pd.api.types.is_integer_dtype(df[col]):
+                    step = 1
+                    min_val = int(np.floor(lower_bound))
+                    max_val = int(np.ceil(upper_bound))
+                    default_val = int(df[col].median())
+                else:
+                    step = 0.01
+                    min_val = float(lower_bound)
+                    max_val = float(upper_bound)
+                    default_val = float(df[col].median())
+                if min_val >= max_val:
+                    max_val = min_val + step if pd.api.types.is_integer_dtype(df[col]) else min_val + 0.01
+                    if default_val < min_val or default_val > max_val:
+                        default_val = min_val
+                input_data[col] = st.slider(
+                    label=col,
+                    min_value=min_val,
+                    max_value=max_val,
+                    value=default_val,
+                    step=step
+                )
+            input_df = pd.DataFrame([input_data])
+            input_df = scaler.transform(input_df)
+            user_prediction = model.predict(input_df)
+            st.success(f"Predicted Class for the given input is {user_prediction[0]}")
+        
+        
+        if model_selection == 'Naive Bayes':
+            df_cleaned = df.copy()
+            for col in df_cleaned.select_dtypes(include='number'):
+                q1, q3 = df_cleaned[col].quantile([0.25, 0.75])
+                iqr = q3 - q1
+                lower_bound = q1 - 1.5 * iqr
+                upper_bound = q3 + 1.5 * iqr
+                df_cleaned = df_cleaned[(df_cleaned[col] >= lower_bound) & (df_cleaned[col] <= upper_bound)]
+            numeric_cols = df_cleaned.select_dtypes(include=['number']).columns.drop(target_column, errors='ignore')
+            x = df_cleaned[numeric_cols]
+            y = df_cleaned[target_column]
+            x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.3, random_state=42)
+            scaler = StandardScaler()
+            x_train = scaler.fit_transform(x_train)
+            x_test = scaler.transform(x_test)
+            model = GaussianNB()
+            model.fit(x_train, y_train)
+            y_pred = model.predict(x_test)
+        
+            acc = accuracy_score(y_test, y_pred)
+            prec = precision_score(y_test, y_pred, average='weighted', zero_division=0)
+            rec = recall_score(y_test, y_pred, average='weighted')
+            f1 = f1_score(y_test, y_pred, average='weighted')
+            cm = confusion_matrix(y_test, y_pred)
+        
+            st.sidebar.header("Naive Bayes Metrics")
+            st.sidebar.write(f"Accuracy: {acc:.4f}")
+            st.sidebar.write(f"Precision: {prec:.4f}")
+            st.sidebar.write(f"Recall: {rec:.4f}")
+            st.sidebar.write(f"F1 Score: {f1:.4f}")
+            st.sidebar.write(f"Confusion Matrix:\n{cm}")
+        
+            totalcolumns = df_cleaned.select_dtypes(include='number').columns.drop(target_column, errors='ignore')
+            st.header("Input feature values for prediction")
+        
+            input_data = {}
+        
+            for col in totalcolumns:
+                q1 = df[col].quantile(0.25)
+                q3 = df[col].quantile(0.75)
+                iqr = q3 - q1
+                lower_bound = q1 - 1.5 * iqr
+                upper_bound = q3 + 1.5 * iqr
+        
+                if pd.api.types.is_integer_dtype(df[col]):
+                    step = 1
+                    min_val = int(np.floor(lower_bound))
+                    max_val = int(np.ceil(upper_bound))
+                    default_val = int(df[col].median())
+                else:
+                    step = 0.01
+                    min_val = float(lower_bound)
+                    max_val = float(upper_bound)
+                    default_val = float(df[col].median())
+                if min_val >= max_val:
+                    max_val = min_val + step if pd.api.types.is_integer_dtype(df[col]) else min_val + 0.01
+                    if default_val < min_val or default_val > max_val:
+                        default_val = min_val
+                input_data[col] = st.slider(
+                    label=col,
+                    min_value=min_val,
+                    max_value=max_val,
+                    value=default_val,
+                    step=step
+                )
+            input_df = pd.DataFrame([input_data])
+            input_df = scaler.transform(input_df)
+            user_prediction = model.predict(input_df)
+            st.success(f"Predicted Class for the given input is {user_prediction[0]}")
+        
+        
+        if model_selection == 'Linear Discriminant Analysis':
+            df_cleaned = df.copy()
+            for col in df_cleaned.select_dtypes(include='number'):
+                q1, q3 = df_cleaned[col].quantile([0.25, 0.75])
+                iqr = q3 - q1
+                lower_bound = q1 - 1.5 * iqr
+                upper_bound = q3 + 1.5 * iqr
+                df_cleaned = df_cleaned[(df_cleaned[col] >= lower_bound) & (df_cleaned[col] <= upper_bound)]
+            numeric_cols = df_cleaned.select_dtypes(include=['number']).columns.drop(target_column, errors='ignore')
+            x = df_cleaned[numeric_cols]
+            y = df_cleaned[target_column]
+            x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.3, random_state=42)
+            scaler = StandardScaler()
+            x_train = scaler.fit_transform(x_train)
+            x_test = scaler.transform(x_test)
+            model = LinearDiscriminantAnalysis()
+            model.fit(x_train, y_train)
+            y_pred = model.predict(x_test)
+        
+            acc = accuracy_score(y_test, y_pred)
+            prec = precision_score(y_test, y_pred, average='weighted', zero_division=0)
+            rec = recall_score(y_test, y_pred, average='weighted')
+            f1 = f1_score(y_test, y_pred, average='weighted')
+            cm = confusion_matrix(y_test, y_pred)
+        
+            st.sidebar.header("Linear Discriminant Analysis Metrics")
+            st.sidebar.write(f"Accuracy: {acc:.4f}")
+            st.sidebar.write(f"Precision: {prec:.4f}")
+            st.sidebar.write(f"Recall: {rec:.4f}")
+            st.sidebar.write(f"F1 Score: {f1:.4f}")
+            st.sidebar.write(f"Confusion Matrix:\n{cm}")
+        
+            totalcolumns = df_cleaned.select_dtypes(include='number').columns.drop(target_column, errors='ignore')
+            st.header("Input feature values for prediction")
+        
+            input_data = {}
+        
+            for col in totalcolumns:
+                q1 = df[col].quantile(0.25)
+                q3 = df[col].quantile(0.75)
+                iqr = q3 - q1
+                lower_bound = q1 - 1.5 * iqr
+                upper_bound = q3 + 1.5 * iqr
+        
+                if pd.api.types.is_integer_dtype(df[col]):
+                    step = 1
+                    min_val = int(np.floor(lower_bound))
+                    max_val = int(np.ceil(upper_bound))
+                    default_val = int(df[col].median())
+                else:
+                    step = 0.01
+                    min_val = float(lower_bound)
+                    max_val = float(upper_bound)
+                    default_val = float(df[col].median())
+                if min_val >= max_val:
+                    max_val = min_val + step if pd.api.types.is_integer_dtype(df[col]) else min_val + 0.01
+                    if default_val < min_val or default_val > max_val:
+                        default_val = min_val
+                input_data[col] = st.slider(
+                    label=col,
+                    min_value=min_val,
+                    max_value=max_val,
+                    value=default_val,
+                    step=step
+                )
+            input_df = pd.DataFrame([input_data])
+            input_df = scaler.transform(input_df)
+            user_prediction = model.predict(input_df)
+            st.success(f"Predicted Class for the given input is {user_prediction[0]}")
+        
+        
+        if model_selection == 'Quadratic Discriminant Analysis':
+            df_cleaned = df.copy()
+            for col in df_cleaned.select_dtypes(include='number'):
+                q1, q3 = df_cleaned[col].quantile([0.25, 0.75])
+                iqr = q3 - q1
+                lower_bound = q1 - 1.5 * iqr
+                upper_bound = q3 + 1.5 * iqr
+                df_cleaned = df_cleaned[(df_cleaned[col] >= lower_bound) & (df_cleaned[col] <= upper_bound)]
+            numeric_cols = df_cleaned.select_dtypes(include=['number']).columns.drop(target_column, errors='ignore')
+            x = df_cleaned[numeric_cols]
+            y = df_cleaned[target_column]
+            x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.3, random_state=42)
+            scaler = StandardScaler()
+            x_train = scaler.fit_transform(x_train)
+            x_test = scaler.transform(x_test)
+            model = QuadraticDiscriminantAnalysis()
+            model.fit(x_train, y_train)
+            y_pred = model.predict(x_test)
+        
+            acc = accuracy_score(y_test, y_pred)
+            prec = precision_score(y_test, y_pred, average='weighted', zero_division=0)
+            rec = recall_score(y_test, y_pred, average='weighted')
+            f1 = f1_score(y_test, y_pred, average='weighted')
+            cm = confusion_matrix(y_test, y_pred)
+        
+            st.sidebar.header("Quadratic Discriminant Analysis Metrics")
+            st.sidebar.write(f"Accuracy: {acc:.4f}")
+            st.sidebar.write(f"Precision: {prec:.4f}")
+            st.sidebar.write(f"Recall: {rec:.4f}")
+            st.sidebar.write(f"F1 Score: {f1:.4f}")
+            st.sidebar.write(f"Confusion Matrix:\n{cm}")
+        
+            totalcolumns = df_cleaned.select_dtypes(include='number').columns.drop(target_column, errors='ignore')
+            st.header("Input feature values for prediction")
+        
+            input_data = {}
+        
+            for col in totalcolumns:
+                q1 = df[col].quantile(0.25)
+                q3 = df[col].quantile(0.75)
+                iqr = q3 - q1
+                lower_bound = q1 - 1.5 * iqr
+                upper_bound = q3 + 1.5 * iqr
+        
+                if pd.api.types.is_integer_dtype(df[col]):
+                    step = 1
+                    min_val = int(np.floor(lower_bound))
+                    max_val = int(np.ceil(upper_bound))
+                    default_val = int(df[col].median())
+                else:
+                    step = 0.01
+                    min_val = float(lower_bound)
+                    max_val = float(upper_bound)
+                    default_val = float(df[col].median())
+                if min_val >= max_val:
+                    max_val = min_val + step if pd.api.types.is_integer_dtype(df[col]) else min_val + 0.01
+                    if default_val < min_val or default_val > max_val:
+                        default_val = min_val
+                input_data[col] = st.slider(
+                    label=col,
+                    min_value=min_val,
+                    max_value=max_val,
+                    value=default_val,
+                    step=step
+                )
+            input_df = pd.DataFrame([input_data])
+            input_df = scaler.transform(input_df)
+            user_prediction = model.predict(input_df)
+            st.success(f"Predicted Class for the given input is {user_prediction[0]}")
+        
+        
+        if model_selection == 'XGBoost Classifier':
+            df_cleaned = df.copy()
+            for col in df_cleaned.select_dtypes(include='number'):
+                q1, q3 = df_cleaned[col].quantile([0.25, 0.75])
+                iqr = q3 - q1
+                lower_bound = q1 - 1.5 * iqr
+                upper_bound = q3 + 1.5 * iqr
+                df_cleaned = df_cleaned[(df_cleaned[col] >= lower_bound) & (df_cleaned[col] <= upper_bound)]
+            numeric_cols = df_cleaned.select_dtypes(include=['number']).columns.drop(target_column, errors='ignore')
+            x = df_cleaned[numeric_cols]
+            y = df_cleaned[target_column]
+            x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.3, random_state=42)
+            scaler = StandardScaler()
+            x_train = scaler.fit_transform(x_train)
+            x_test = scaler.transform(x_test)
+            model = XGBClassifier(use_label_encoder=False, eval_metric='logloss')
+            model.fit(x_train, y_train)
+            y_pred = model.predict(x_test)
+        
+            acc = accuracy_score(y_test, y_pred)
+            prec = precision_score(y_test, y_pred, average='weighted', zero_division=0)
+            rec = recall_score(y_test, y_pred, average='weighted')
+            f1 = f1_score(y_test, y_pred, average='weighted')
+            cm = confusion_matrix(y_test, y_pred)
+        
+            st.sidebar.header("XGBoost Classifier Metrics")
+            st.sidebar.write(f"Accuracy: {acc:.4f}")
+            st.sidebar.write(f"Precision: {prec:.4f}")
+            st.sidebar.write(f"Recall: {rec:.4f}")
+            st.sidebar.write(f"F1 Score: {f1:.4f}")
+            st.sidebar.write(f"Confusion Matrix:\n{cm}")
+        
+            totalcolumns = df_cleaned.select_dtypes(include='number').columns.drop(target_column, errors='ignore')
+            st.header("Input feature values for prediction")
+        
+            input_data = {}
+        
+            for col in totalcolumns:
+                q1 = df[col].quantile(0.25)
+                q3 = df[col].quantile(0.75)
+                iqr = q3 - q1
+                lower_bound = q1 - 1.5 * iqr
+                upper_bound = q3 + 1.5 * iqr
+        
+                if pd.api.types.is_integer_dtype(df[col]):
+                    step = 1
+                    min_val = int(np.floor(lower_bound))
+                    max_val = int(np.ceil(upper_bound))
+                    default_val = int(df[col].median())
+                else:
+                    step = 0.01
+                    min_val = float(lower_bound)
+                    max_val = float(upper_bound)
+                    default_val = float(df[col].median())
+                if min_val >= max_val:
+                    max_val = min_val + step if pd.api.types.is_integer_dtype(df[col]) else min_val + 0.01
+                    if default_val < min_val or default_val > max_val:
+                        default_val = min_val
+                input_data[col] = st.slider(
+                    label=col,
+                    min_value=min_val,
+                    max_value=max_val,
+                    value=default_val,
+                    step=step
+                )
+            input_df = pd.DataFrame([input_data])
+            input_df = scaler.transform(input_df)
+            user_prediction = model.predict(input_df)
+            st.success(f"Predicted Class for the given input is {user_prediction[0]}")
+        
+        
+        if model_selection == 'LightGBM Classifier':
+            df_cleaned = df.copy()
+            for col in df_cleaned.select_dtypes(include='number'):
+                q1, q3 = df_cleaned[col].quantile([0.25, 0.75])
+                iqr = q3 - q1
+                lower_bound = q1 - 1.5 * iqr
+                upper_bound = q3 + 1.5 * iqr
+                df_cleaned = df_cleaned[(df_cleaned[col] >= lower_bound) & (df_cleaned[col] <= upper_bound)]
+            numeric_cols = df_cleaned.select_dtypes(include=['number']).columns.drop(target_column, errors='ignore')
+            x = df_cleaned[numeric_cols]
+            y = df_cleaned[target_column]
+            x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.3, random_state=42)
+            scaler = StandardScaler()
+            x_train = scaler.fit_transform(x_train)
+            x_test = scaler.transform(x_test)
+            model = LGBMClassifier()
+            model.fit(x_train, y_train)
+            y_pred = model.predict(x_test)
+        
+            acc = accuracy_score(y_test, y_pred)
+            prec = precision_score(y_test, y_pred, average='weighted', zero_division=0)
+            rec = recall_score(y_test, y_pred, average='weighted')
+            f1 = f1_score(y_test, y_pred, average='weighted')
+            cm = confusion_matrix(y_test, y_pred)
+        
+            st.sidebar.header("LightGBM Classifier Metrics")
+            st.sidebar.write(f"Accuracy: {acc:.4f}")
+            st.sidebar.write(f"Precision: {prec:.4f}")
+            st.sidebar.write(f"Recall: {rec:.4f}")
+            st.sidebar.write(f"F1 Score: {f1:.4f}")
+            st.sidebar.write(f"Confusion Matrix:\n{cm}")
+        
+            totalcolumns = df_cleaned.select_dtypes(include='number').columns.drop(target_column, errors='ignore')
+            st.header("Input feature values for prediction")
+        
+            input_data = {}
+        
+            for col in totalcolumns:
+                q1 = df[col].quantile(0.25)
+                q3 = df[col].quantile(0.75)
+                iqr = q3 - q1
+                lower_bound = q1 - 1.5 * iqr
+                upper_bound = q3 + 1.5 * iqr
+        
+                if pd.api.types.is_integer_dtype(df[col]):
+                    step = 1
+                    min_val = int(np.floor(lower_bound))
+                    max_val = int(np.ceil(upper_bound))
+                    default_val = int(df[col].median())
+                else:
+                    step = 0.01
+                    min_val = float(lower_bound)
+                    max_val = float(upper_bound)
+                    default_val = float(df[col].median())
+                if min_val >= max_val:
+                    max_val = min_val + step if pd.api.types.is_integer_dtype(df[col]) else min_val + 0.01
+                    if default_val < min_val or default_val > max_val:
+                        default_val = min_val
+                input_data[col] = st.slider(
+                    label=col,
+                    min_value=min_val,
+                    max_value=max_val,
+                    value=default_val,
+                    step=step
+                )
+            input_df = pd.DataFrame([input_data])
+            input_df = scaler.transform(input_df)
+            user_prediction = model.predict(input_df)
+            st.success(f"Predicted Class for the given input is {user_prediction[0]}")
+        
+        
+        if model_selection == 'Neural Network (MLPClassifier)':
+            df_cleaned = df.copy()
+            for col in df_cleaned.select_dtypes(include='number'):
+                q1, q3 = df_cleaned[col].quantile([0.25, 0.75])
+                iqr = q3 - q1
+                lower_bound = q1 - 1.5 * iqr
+                upper_bound = q3 + 1.5 * iqr
+                df_cleaned = df_cleaned[(df_cleaned[col] >= lower_bound) & (df_cleaned[col] <= upper_bound)]
+            numeric_cols = df_cleaned.select_dtypes(include=['number']).columns.drop(target_column, errors='ignore')
+            x = df_cleaned[numeric_cols]
+            y = df_cleaned[target_column]
+            x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.3, random_state=42)
+            scaler = StandardScaler()
+            x_train = scaler.fit_transform(x_train)
+            x_test = scaler.transform(x_test)
+            model = MLPClassifier(max_iter=500)
+            model.fit(x_train, y_train)
+            y_pred = model.predict(x_test)
+        
+            acc = accuracy_score(y_test, y_pred)
+            prec = precision_score(y_test, y_pred, average='weighted', zero_division=0)
+            rec = recall_score(y_test, y_pred, average='weighted')
+            f1 = f1_score(y_test, y_pred, average='weighted')
+            cm = confusion_matrix(y_test, y_pred)
+        
+            st.sidebar.header("Neural Network (MLP) Metrics")
+            st.sidebar.write(f"Accuracy: {acc:.4f}")
+            st.sidebar.write(f"Precision: {prec:.4f}")
+            st.sidebar.write(f"Recall: {rec:.4f}")
+            st.sidebar.write(f"F1 Score: {f1:.4f}")
+            st.sidebar.write(f"Confusion Matrix:\n{cm}")
+        
+            totalcolumns = df_cleaned.select_dtypes(include='number').columns.drop(target_column, errors='ignore')
+            st.header("Input feature values for prediction")
+        
+            input_data = {}
+        
+            for col in totalcolumns:
+                q1 = df[col].quantile(0.25)
+                q3 = df[col].quantile(0.75)
+                iqr = q3 - q1
+                lower_bound = q1 - 1.5 * iqr
+                upper_bound = q3 + 1.5 * iqr
+        
+                if pd.api.types.is_integer_dtype(df[col]):
+                    step = 1
+                    min_val = int(np.floor(lower_bound))
+                    max_val = int(np.ceil(upper_bound))
+                    default_val = int(df[col].median())
+                else:
+                    step = 0.01
+                    min_val = float(lower_bound)
+                    max_val = float(upper_bound)
+                    default_val = float(df[col].median())
+                if min_val >= max_val:
+                    max_val = min_val + step if pd.api.types.is_integer_dtype(df[col]) else min_val + 0.01
+                    if default_val < min_val or default_val > max_val:
+                        default_val = min_val
+                input_data[col] = st.slider(
+                    label=col,
+                    min_value=min_val,
+                    max_value=max_val,
+                    value=default_val,
+                    step=step
+                )
+            input_df = pd.DataFrame([input_data])
+            input_df = scaler.transform(input_df)
+            user_prediction = model.predict(input_df)
+            st.success(f"Predicted Class for the given input is {user_prediction[0]}")
+
         else:
             st.warning("Please Select your Data Type First")
-
+    
     with tab5:
         num_cols = df.select_dtypes(include="number").columns
         distribution_report = []
