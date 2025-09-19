@@ -39,10 +39,10 @@ col1, col2 = st.columns([1, 6])
 with col1:
     st.image(logo_path, width=400)
 with col2:
-st.markdown(
-    "<h1 style='font-size:60px; font-weight:bold;'>Datset Cleaner and Analyser</h1>",
-    unsafe_allow_html=True
-)
+    st.markdown(
+        "<h1 style='font-size:60px; font-weight:bold;'>Datset Cleaner and Analyser</h1>",
+        unsafe_allow_html=True
+    )
 @st.cache_data
 def load_data(uploaded_file):
     return pd.read_csv(uploaded_file)
