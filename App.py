@@ -50,10 +50,15 @@ if file is not None:
 
         
 
+    if "cleaned_df" not in st.session_state:
+    st.session_state["cleaned_df"] = st.session_state["clean_df"]
+
     with tab3:
-        df = st.session_state["clean_df"]
+        df = st.session_state["cleaned_df"]
     
         actions = st.multiselect("Select Actions :", ["NaN Values", "Duplicates", "Outliers"])
+    
+        # Prepare report before cleaning using current df
         report_before = pd.DataFrame(index=df.columns)
         if "NaN Values" in actions:
             report_before["NaN Values"] = df.isnull().sum()
@@ -75,6 +80,7 @@ if file is not None:
         st.write("### Report Before Cleaning")
         st.dataframe(report_before.fillna('-').astype(str))
     
+        # Clean when button is clicked
         if st.button("Clean"):
             cleaned = df.copy()
             if "Duplicates" in actions:
@@ -90,41 +96,42 @@ if file is not None:
             if "NaN Values" in actions:
                 cleaned = cleaned.dropna()
     
-            # Update session state for next cleaning & reporting iteration
+            # Save the new cleaned dataset to session state
             st.session_state["cleaned_df"] = cleaned
     
-            # Prepare new report after cleaning (for newly cleaned data)
-            report_after = pd.DataFrame(index=cleaned.columns)
-            if "NaN Values" in actions:
-                report_after["NaN Values"] = cleaned.isnull().sum()
-            if "Duplicates" in actions:
-                dup_mask = cleaned.duplicated(keep=False)
-                dup_counts = cleaned.loc[dup_mask].count()
-                report_after["Duplicates"] = dup_counts
-            if "Outliers" in actions:
-                numerics_after = cleaned.select_dtypes(include=np.number)
-                Q1 = numerics_after.quantile(0.25)
-                Q3 = numerics_after.quantile(0.75)
-                IQR = Q3 - Q1
-                outlier_mask_after = (numerics_after < (Q1 - 1.5 * IQR)) | (numerics_after > (Q3 + 1.5 * IQR))
-                outliers_count_after = outlier_mask_after.sum()
-                report_after["Outliers"] = np.nan
-                for col in outliers_count_after.index:
-                    report_after.at[col, "Outliers"] = outliers_count_after[col]
+        # Always generate report_after from latest cleaned_df (even after multiple clean clicks!)
+        cleaned_latest = st.session_state["cleaned_df"]
+        report_after = pd.DataFrame(index=cleaned_latest.columns)
+        if "NaN Values" in actions:
+            report_after["NaN Values"] = cleaned_latest.isnull().sum()
+        if "Duplicates" in actions:
+            dup_mask = cleaned_latest.duplicated(keep=False)
+            dup_counts = cleaned_latest.loc[dup_mask].count()
+            report_after["Duplicates"] = dup_counts
+        if "Outliers" in actions:
+            numerics_after = cleaned_latest.select_dtypes(include=np.number)
+            Q1 = numerics_after.quantile(0.25)
+            Q3 = numerics_after.quantile(0.75)
+            IQR = Q3 - Q1
+            outlier_mask_after = (numerics_after < (Q1 - 1.5 * IQR)) | (numerics_after > (Q3 + 1.5 * IQR))
+            outliers_count_after = outlier_mask_after.sum()
+            report_after["Outliers"] = np.nan
+            for col in outliers_count_after.index:
+                report_after.at[col, "Outliers"] = outliers_count_after[col]
     
-            st.write("### Report After Cleaning")
-            st.dataframe(report_after.fillna('-').astype(str))
+        st.write("### Report After Cleaning")
+        st.dataframe(report_after.fillna('-').astype(str))
     
-            st.write("### Cleaned Data")
-            st.dataframe(cleaned)
+        st.write("### Cleaned Data")
+        st.dataframe(cleaned_latest)
     
-            csv_string = cleaned.to_csv(index=False)
-            st.download_button(
-                label="Download Cleaned Data",
-                data=csv_string,
-                file_name="cleaned_data.csv",
-                mime="text/csv"
-            )
+        csv_string = cleaned_latest.to_csv(index=False)
+        st.download_button(
+            label="Download Cleaned Data",
+            data=csv_string,
+            file_name="cleaned_data.csv",
+            mime="text/csv"
+        )
     with tab4:
         columns = df.columns
         dataset_choice = st.selectbox(
