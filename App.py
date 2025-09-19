@@ -44,8 +44,7 @@ if file is not None:
                 st.line_chart(df[selected_columns], height=250, use_container_width=True) 
             else:
                 st.info("Please select at least one column to display the chart.")
-    with tab2:        
-
+    
 
 
 
