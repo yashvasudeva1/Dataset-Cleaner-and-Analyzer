@@ -47,6 +47,7 @@ with col2:
         """,
         unsafe_allow_html=True
     )
+st.subheader("An app that enables you to clean, analyze and visualize your dataset and make predictions based on your preferred ML model")
 @st.cache_data
 def load_data(uploaded_file):
     return pd.read_csv(uploaded_file)
