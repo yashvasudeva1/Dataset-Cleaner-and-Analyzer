@@ -42,7 +42,7 @@ with col2:
     st.markdown(
         """
         <div style='display: flex; align-items: center;'>
-            <span style="font-size:60px; font-weight:bold; color:#fff; font-family: Arial, Helvetica, sans-serif;">QuickML</span>
+            <span style="font-size:60px; font-weight:bold; font-style: italic; color:#fff; font-family: Arial, Helvetica, sans-serif;">QuickML</span>
         </div>
         """,
         unsafe_allow_html=True
