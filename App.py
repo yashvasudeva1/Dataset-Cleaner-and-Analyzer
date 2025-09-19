@@ -48,10 +48,6 @@ if file is not None:
                     st.line_chart(df.set_index(x_col)[y_col], height=250, use_container_width=True)
                 else:
                     st.warning("Please select exactly two columns for this plot.")
-    
-            elif selected_columns:
-                st.line_chart(df[selected_columns], height=250, use_container_width=True)
-    
             else:
                 st.info("Please select at least one column to display the chart.")
 
