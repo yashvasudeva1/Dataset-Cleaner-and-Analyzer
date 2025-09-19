@@ -40,7 +40,7 @@ with col1:
     st.image(logo_path, width=400)
 with col2:
     st.markdown(
-        "<h1 style='font-size:80px; font-weight:bold;'>QuickMl</h1>",
+        "<h1 style='font-size:55px; font-weight:bold;'>QuickMl</h1>",
         unsafe_allow_html=True
     )
 @st.cache_data
