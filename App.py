@@ -51,23 +51,19 @@ if file is not None:
         
 
     with tab3:
-        df = st.session_state["clean_df"]
+        df = st.session_state["cleaned_df"]
+    
         actions = st.multiselect("Select Actions :", ["NaN Values", "Duplicates", "Outliers"])
-        
+    
         # Prepare base report with column names
         report_before = pd.DataFrame(index=df.columns)
-        
-        # Add NaN counts if selected
+    
         if "NaN Values" in actions:
             report_before["NaN Values"] = df.isnull().sum()
-        
-        # Add Duplicates counts if selected
         if "Duplicates" in actions:
             dup_mask = df.duplicated(keep=False)
             dup_counts = df.loc[dup_mask].count()
             report_before["Duplicates"] = dup_counts
-        
-        # Add Outliers counts if selected
         if "Outliers" in actions:
             numerics = df.select_dtypes(include=np.number)
             Q1 = numerics.quantile(0.25)
@@ -78,18 +74,15 @@ if file is not None:
             report_before["Outliers"] = np.nan
             for col in outliers_count.index:
                 report_before.at[col, "Outliers"] = outliers_count[col]
-        
+    
         st.write("### Report Before Cleaning")
         st.dataframe(report_before.fillna('-').astype(str))
-        
+    
         if st.button("Clean"):
-        
             cleaned = df.copy()
-        
-            # Apply cleaning based on selections
+    
             if "Duplicates" in actions:
                 cleaned = cleaned.drop_duplicates()
-        
             if "Outliers" in actions:
                 numerics_cleaned = cleaned.select_dtypes(include=np.number)
                 Q1 = numerics_cleaned.quantile(0.25)
@@ -98,23 +91,20 @@ if file is not None:
                 outlier_mask = (numerics_cleaned < (Q1 - 1.5 * IQR)) | (numerics_cleaned > (Q3 + 1.5 * IQR))
                 keep_mask = ~outlier_mask.any(axis=1)
                 cleaned = cleaned.loc[keep_mask]
-        
             if "NaN Values" in actions:
                 cleaned = cleaned.dropna()
-        
+    
+            # Update session state with new cleaned data for next iteration
+            st.session_state["cleaned_df"] = cleaned
+    
             # Prepare after cleaning report in same format
-            report_after = pd.DataFrame(index=df.columns)
-        
+            report_after = pd.DataFrame(index=cleaned.columns)
             if "NaN Values" in actions:
                 report_after["NaN Values"] = cleaned.isnull().sum()
-        
             if "Duplicates" in actions:
                 dup_mask = cleaned.duplicated(keep=False)
                 dup_counts = cleaned.loc[dup_mask].count()
                 report_after["Duplicates"] = dup_counts
-            elif "Duplicates" in actions:
-                report_after["Duplicates"] = report_before.get("Duplicates")
-        
             if "Outliers" in actions:
                 numerics_after = cleaned.select_dtypes(include=np.number)
                 Q1 = numerics_after.quantile(0.25)
@@ -125,18 +115,14 @@ if file is not None:
                 report_after["Outliers"] = np.nan
                 for col in outliers_count_after.index:
                     report_after.at[col, "Outliers"] = outliers_count_after[col]
-            elif "Outliers" in actions:
-                report_after["Outliers"] = report_before.get("Outliers")
-        
+    
             st.write("### Report After Cleaning")
             st.dataframe(report_after.fillna('-').astype(str))
-        
+    
             st.write("### Cleaned Data")
             st.dataframe(cleaned)
-        
-            # Export to CSV string for download
+    
             csv_string = cleaned.to_csv(index=False)
-            
             st.download_button(
                 label="Download Cleaned Data",
                 data=csv_string,
