@@ -40,7 +40,7 @@ with col1:
     st.image(logo_path, width=400)
 with col2:
     st.markdown(
-        "<h1 style='font-size:60px; font-weight:bold;'>Datset Cleaner and Analyser</h1>",
+        "<h1 style='font-size:60px; font-weight:bold;'>QickMl</h1>",
         unsafe_allow_html=True
     )
 @st.cache_data
