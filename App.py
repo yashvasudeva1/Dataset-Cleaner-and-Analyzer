@@ -96,11 +96,12 @@ if file is not None:
             else:
                 st.info("Please select at least one column to display the chart.")
     with tab3:
-        df = st.session_state["clean_df"]
-    
+        if "cleaned_df" in st.session_state:
+            df = st.session_state["cleaned_df"]
+        else:
+            df = st.session_state["clean_df"]
+        
         actions = st.multiselect("Select Actions :", ["NaN Values", "Duplicates", "Outliers"])
-    
-        # Prepare report before cleaning using current df
         report_before = pd.DataFrame(index=df.columns)
         if "NaN Values" in actions:
             report_before["NaN Values"] = df.isnull().sum()
@@ -118,13 +119,10 @@ if file is not None:
             report_before["Outliers"] = np.nan
             for col in outliers_count.index:
                 report_before.at[col, "Outliers"] = outliers_count[col]
-    
         st.write("### Report Before Cleaning")
         st.dataframe(report_before.fillna('-').astype(str))
-    
         if st.button("Clean"):
             cleaned = df.copy()
-    
             if "Duplicates" in actions:
                 cleaned = cleaned.drop_duplicates()
             if "Outliers" in actions:
@@ -137,11 +135,8 @@ if file is not None:
                 cleaned = cleaned.loc[keep_mask]
             if "NaN Values" in actions:
                 cleaned = cleaned.dropna()
-    
             st.session_state["cleaned_df"] = cleaned
-        if "cleaned_df" not in st.session_state:
-            st.session_state["cleaned_df"] = st.session_state["clean_df"]
-        cleaned_latest = st.session_state["cleaned_df"]
+        cleaned_latest = st.session_state.get("cleaned_df", st.session_state["clean_df"])
         report_after = pd.DataFrame(index=cleaned_latest.columns)
         if "NaN Values" in actions:
             report_after["NaN Values"] = cleaned_latest.isnull().sum()
@@ -159,13 +154,12 @@ if file is not None:
             report_after["Outliers"] = np.nan
             for col in outliers_count_after.index:
                 report_after.at[col, "Outliers"] = outliers_count_after[col]
-    
         st.write("### Report After Cleaning")
         st.dataframe(report_after.fillna('-').astype(str))
-    
+        
         st.write("### Cleaned Data")
         st.dataframe(cleaned_latest)
-    
+        
         csv_string = cleaned_latest.to_csv(index=False)
         st.download_button(
             label="Download Cleaned Data",
