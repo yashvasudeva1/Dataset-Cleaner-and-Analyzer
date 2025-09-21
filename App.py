@@ -40,7 +40,7 @@ def shapiro_safe(x):
 logo_path = "logo.png"
 col1, col2 = st.columns([1, 6])
 with col1:
-    st.image(logo_path, width=400)
+    st.image(logo_path, width='content'=400)
 with col2:
     st.markdown(
         """
@@ -60,7 +60,7 @@ if file is not None:
     if "clean_df" not in st.session_state:
         st.session_state["clean_df"] = df.copy()
     st.write("Preview of your dataset:")
-    st.dataframe(st.session_state["clean_df"], width=True)
+    st.dataframe(st.session_state["clean_df"], width='content'=True)
     
     tab0, tab1 , tab3, tab4, tab5 = st.tabs(
         ["Analysis", "Visualisation" ,"Cleaning", "Predictor", "Distribution"]
@@ -88,11 +88,11 @@ if file is not None:
                         )
                         .properties(
                             title=f"Line plot of {y_col} vs {x_col}",
-                            width=600,
+                            width='content'=600,
                             height=300
                         )
                     )
-                    st.altair_chart(chart, width=True)
+                    st.altair_chart(chart, width='content'=True)
                 else:
                     st.warning("Please select exactly two columns for this plot.")
             else:
@@ -2103,10 +2103,10 @@ if file is not None:
                             },
                             "y": {"aggregate": "count", "type": "quantitative", "title": "Count"},
                         },
-                        "width": "container",
+                        "width='content'": "container",
                         "height": 280,
                     },
-                    width=True,
+                    width='content'=True,
                 )
 
 
