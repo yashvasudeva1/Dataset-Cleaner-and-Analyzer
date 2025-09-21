@@ -8,4 +8,4 @@ scikit-learn
 lightgbm
 xgboost
 requests
-PIL
+Pillow
