@@ -60,7 +60,7 @@ if file is not None:
     if "clean_df" not in st.session_state:
         st.session_state["clean_df"] = df.copy()
     st.write("Preview of your dataset:")
-    st.dataframe(st.session_state["clean_df"], width='content'=True)
+    st.dataframe(st.session_state["clean_df"], width='content')
     
     tab0, tab1 , tab3, tab4, tab5 = st.tabs(
         ["Analysis", "Visualisation" ,"Cleaning", "Predictor", "Distribution"]
@@ -88,11 +88,11 @@ if file is not None:
                         )
                         .properties(
                             title=f"Line plot of {y_col} vs {x_col}",
-                            width='content'=600,
+                            width='content',
                             height=300
                         )
                     )
-                    st.altair_chart(chart, width='content'=True)
+                    st.altair_chart(chart, width='content')
                 else:
                     st.warning("Please select exactly two columns for this plot.")
             else:
@@ -2103,10 +2103,10 @@ if file is not None:
                             },
                             "y": {"aggregate": "count", "type": "quantitative", "title": "Count"},
                         },
-                        "width='content'": "container",
+                        "width": "container",
                         "height": 280,
                     },
-                    width='content'=True,
+                    width==True,
                 )
 
 
