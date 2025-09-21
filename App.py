@@ -72,12 +72,13 @@ if file is not None:
             numeric_columns = df.select_dtypes(include='number').columns.tolist()    
             selected_two = st.multiselect("Select exactly two columns to plot one against the other", numeric_columns)
     
-             if selected_two:
+            if selected_two:
                 if len(selected_two) == 2:
                     x_col, y_col = selected_two
-            
+    
+                    # Sort by x for a sensible line plot
                     df_sorted = df.sort_values(by=x_col, ascending=True)
-            
+    
                     chart = (
                         alt.Chart(df_sorted)
                         .mark_line()
@@ -87,11 +88,13 @@ if file is not None:
                         )
                         .properties(
                             title=f"Line plot of {y_col} vs {x_col}",
-                            width='container',   # or a number like 600
+                            width="container",   # responsive to parent
                             height=300
                         )
                     )
-                    st.altair_chart(chart, use_container_width=True)  # not width='content'
+    
+                    # Let Streamlit make the chart fill the column
+                    st.altair_chart(chart, use_container_width=True)
                 else:
                     st.warning("Please select exactly two columns for this plot.")
             else:
