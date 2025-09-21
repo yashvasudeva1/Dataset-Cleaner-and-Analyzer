@@ -1887,8 +1887,8 @@ if file is not None:
                 try:
                     if 'xgb_le' not in st.session_state:
                         st.session_state['xgb_le'] = LabelEncoder().fit(y)
-                    le = LabelEncoder()
-                    y_encoded = le.fit_transform(y)  
+                    le = st.session_state['xgb_le']
+                    y_encoded = le.transform(y)
                     x_train, x_test, y_train, y_test = train_test_split(x, y_encoded, test_size=0.3, random_state=42,stratify=y_encoded)
                     scaler = StandardScaler()
                     x_train = scaler.fit_transform(x_train)
