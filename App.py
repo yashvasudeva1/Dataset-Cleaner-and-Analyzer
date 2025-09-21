@@ -60,7 +60,7 @@ if file is not None:
     if "clean_df" not in st.session_state:
         st.session_state["clean_df"] = df.copy()
     st.write("Preview of your dataset:")
-    st.dataframe(st.session_state["clean_df"], use_container_width=True)
+    st.dataframe(st.session_state["clean_df"], width=True)
     
     tab0, tab1 , tab3, tab4, tab5 = st.tabs(
         ["Analysis", "Visualisation" ,"Cleaning", "Predictor", "Distribution"]
@@ -92,7 +92,7 @@ if file is not None:
                             height=300
                         )
                     )
-                    st.altair_chart(chart, use_container_width=True)
+                    st.altair_chart(chart, width=True)
                 else:
                     st.warning("Please select exactly two columns for this plot.")
             else:
@@ -2147,7 +2147,7 @@ if file is not None:
                         "width": "container",
                         "height": 280,
                     },
-                    use_container_width=True,
+                    width=True,
                 )
 
 
