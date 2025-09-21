@@ -8,6 +8,7 @@ import warnings
 import io
 import requests
 import altair as alt
+from sklearn.utils.multiclass import type_of_target
 from sklearn.svm import SVR, SVC
 from sklearn.linear_model import LinearRegression, Ridge, Lasso, ElasticNet, LogisticRegression
 from sklearn.tree import DecisionTreeRegressor, DecisionTreeClassifier
