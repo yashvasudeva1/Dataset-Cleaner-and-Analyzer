@@ -8,4 +8,4 @@ scikit-learn
 lightgbm
 xgboost
 requests
-Pillow
+Pillow==11.3.0
