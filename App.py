@@ -39,8 +39,8 @@ def shapiro_safe(x):
         return stats.shapiro(x)
 logo_path = "logo.png"
 col1, col2 = st.columns([1, 6])
-with col1:
-    st.image(logo_path, width=400)
+# with col1:
+#     st.image(logo_path, width=400)
 with col2:
     st.markdown(
         """
