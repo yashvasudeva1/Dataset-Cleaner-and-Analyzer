@@ -40,7 +40,7 @@ def shapiro_safe(x):
 logo_path = "logo.png"
 col1, col2 = st.columns([1, 6])
 with col1:
-    st.image(logo_path, width='content'=400)
+    st.image(logo_path, width='content')
 with col2:
     st.markdown(
         """
