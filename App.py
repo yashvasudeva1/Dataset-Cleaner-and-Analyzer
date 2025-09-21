@@ -7,6 +7,8 @@ from scipy import stats
 import warnings
 import io
 import requests
+from PIL import Image
+Image.MAX_IMAGE_PIXELS = 200_000_000 
 import altair as alt
 from sklearn.svm import SVR, SVC
 from sklearn.linear_model import LinearRegression, Ridge, Lasso, ElasticNet, LogisticRegression
