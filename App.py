@@ -8,7 +8,8 @@ import warnings
 import io
 import requests
 from PIL import Image
-Image.MAX_IMAGE_PIXELS = 200_000_000 
+Image.MAX_IMAGE_PIXELS = 200_000_000
+from sklearn.utils.multiclass import type_of_target
 import altair as alt
 from sklearn.svm import SVR, SVC
 from sklearn.linear_model import LinearRegression, Ridge, Lasso, ElasticNet, LogisticRegression
@@ -1139,6 +1140,15 @@ if file is not None:
                 numeric_cols = df_cleaned.select_dtypes(include=['number']).columns.drop(target_column, errors='ignore')
                 x = df_cleaned[numeric_cols]
                 y = df_cleaned[target_column]
+                t = type_of_target(y)
+                too_many_classes = (pd.api.types.is_integer_dtype(y) and y.nunique() > 20)
+                if t == 'continuous' or too_many_classes:
+                    st.warning(
+                        f"Detected target type: {t}. The selected target appears numeric/continuous "
+                        "and is not suitable for classification. Please choose a categorical target "
+                        "or switch to a regression model."
+                    )
+                    st.stop()
                 x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.3, random_state=42)
                 scaler = StandardScaler()
                 x_train = scaler.fit_transform(x_train)
@@ -1210,6 +1220,15 @@ if file is not None:
                 numeric_cols = df_cleaned.select_dtypes(include=['number']).columns.drop(target_column, errors='ignore')
                 x = df_cleaned[numeric_cols]
                 y = df_cleaned[target_column]
+                t = type_of_target(y)
+                too_many_classes = (pd.api.types.is_integer_dtype(y) and y.nunique() > 20)
+                if t == 'continuous' or too_many_classes:
+                    st.warning(
+                        f"Detected target type: {t}. The selected target appears numeric/continuous "
+                        "and is not suitable for classification. Please choose a categorical target "
+                        "or switch to a regression model."
+                    )
+                    st.stop()
                 x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.3, random_state=42)
                 scaler = StandardScaler()
                 x_train = scaler.fit_transform(x_train)
@@ -1281,6 +1300,15 @@ if file is not None:
                 numeric_cols = df_cleaned.select_dtypes(include=['number']).columns.drop(target_column, errors='ignore')
                 x = df_cleaned[numeric_cols]
                 y = df_cleaned[target_column]
+                t = type_of_target(y)
+                too_many_classes = (pd.api.types.is_integer_dtype(y) and y.nunique() > 20)
+                if t == 'continuous' or too_many_classes:
+                    st.warning(
+                        f"Detected target type: {t}. The selected target appears numeric/continuous "
+                        "and is not suitable for classification. Please choose a categorical target "
+                        "or switch to a regression model."
+                    )
+                    st.stop()
                 x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.3, random_state=42)
                 scaler = StandardScaler()
                 x_train = scaler.fit_transform(x_train)
@@ -1352,6 +1380,15 @@ if file is not None:
                 numeric_cols = df_cleaned.select_dtypes(include=['number']).columns.drop(target_column, errors='ignore')
                 x = df_cleaned[numeric_cols]
                 y = df_cleaned[target_column]
+                t = type_of_target(y)
+                too_many_classes = (pd.api.types.is_integer_dtype(y) and y.nunique() > 20)
+                if t == 'continuous' or too_many_classes:
+                    st.warning(
+                        f"Detected target type: {t}. The selected target appears numeric/continuous "
+                        "and is not suitable for classification. Please choose a categorical target "
+                        "or switch to a regression model."
+                    )
+                    st.stop()
                 x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.3, random_state=42)
                 scaler = StandardScaler()
                 x_train = scaler.fit_transform(x_train)
@@ -1423,6 +1460,15 @@ if file is not None:
                 numeric_cols = df_cleaned.select_dtypes(include=['number']).columns.drop(target_column, errors='ignore')
                 x = df_cleaned[numeric_cols]
                 y = df_cleaned[target_column]
+                t = type_of_target(y)
+                too_many_classes = (pd.api.types.is_integer_dtype(y) and y.nunique() > 20)
+                if t == 'continuous' or too_many_classes:
+                    st.warning(
+                        f"Detected target type: {t}. The selected target appears numeric/continuous "
+                        "and is not suitable for classification. Please choose a categorical target "
+                        "or switch to a regression model."
+                    )
+                    st.stop()
                 x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.3, random_state=42)
                 scaler = StandardScaler()
                 x_train = scaler.fit_transform(x_train)
@@ -1494,6 +1540,15 @@ if file is not None:
                 numeric_cols = df_cleaned.select_dtypes(include=['number']).columns.drop(target_column, errors='ignore')
                 x = df_cleaned[numeric_cols]
                 y = df_cleaned[target_column]
+                t = type_of_target(y)
+                too_many_classes = (pd.api.types.is_integer_dtype(y) and y.nunique() > 20)
+                if t == 'continuous' or too_many_classes:
+                    st.warning(
+                        f"Detected target type: {t}. The selected target appears numeric/continuous "
+                        "and is not suitable for classification. Please choose a categorical target "
+                        "or switch to a regression model."
+                    )
+                    st.stop()
                 x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.3, random_state=42)
                 scaler = StandardScaler()
                 x_train = scaler.fit_transform(x_train)
@@ -1565,6 +1620,15 @@ if file is not None:
                 numeric_cols = df_cleaned.select_dtypes(include=['number']).columns.drop(target_column, errors='ignore')
                 x = df_cleaned[numeric_cols]
                 y = df_cleaned[target_column]
+                t = type_of_target(y)
+                too_many_classes = (pd.api.types.is_integer_dtype(y) and y.nunique() > 20)
+                if t == 'continuous' or too_many_classes:
+                    st.warning(
+                        f"Detected target type: {t}. The selected target appears numeric/continuous "
+                        "and is not suitable for classification. Please choose a categorical target "
+                        "or switch to a regression model."
+                    )
+                    st.stop()
                 x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.3, random_state=42)
                 scaler = StandardScaler()
                 x_train = scaler.fit_transform(x_train)
@@ -1636,6 +1700,15 @@ if file is not None:
                 numeric_cols = df_cleaned.select_dtypes(include=['number']).columns.drop(target_column, errors='ignore')
                 x = df_cleaned[numeric_cols]
                 y = df_cleaned[target_column]
+                t = type_of_target(y)
+                too_many_classes = (pd.api.types.is_integer_dtype(y) and y.nunique() > 20)
+                if t == 'continuous' or too_many_classes:
+                    st.warning(
+                        f"Detected target type: {t}. The selected target appears numeric/continuous "
+                        "and is not suitable for classification. Please choose a categorical target "
+                        "or switch to a regression model."
+                    )
+                    st.stop()
                 x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.3, random_state=42)
                 scaler = StandardScaler()
                 x_train = scaler.fit_transform(x_train)
@@ -1707,6 +1780,15 @@ if file is not None:
                 numeric_cols = df_cleaned.select_dtypes(include=['number']).columns.drop(target_column, errors='ignore')
                 x = df_cleaned[numeric_cols]
                 y = df_cleaned[target_column]
+                t = type_of_target(y)
+                too_many_classes = (pd.api.types.is_integer_dtype(y) and y.nunique() > 20)
+                if t == 'continuous' or too_many_classes:
+                    st.warning(
+                        f"Detected target type: {t}. The selected target appears numeric/continuous "
+                        "and is not suitable for classification. Please choose a categorical target "
+                        "or switch to a regression model."
+                    )
+                    st.stop()
                 x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.3, random_state=42)
                 scaler = StandardScaler()
                 x_train = scaler.fit_transform(x_train)
@@ -1778,6 +1860,15 @@ if file is not None:
                 numeric_cols = df_cleaned.select_dtypes(include=['number']).columns.drop(target_column, errors='ignore')
                 x = df_cleaned[numeric_cols]
                 y = df_cleaned[target_column]
+                t = type_of_target(y)
+                too_many_classes = (pd.api.types.is_integer_dtype(y) and y.nunique() > 20)
+                if t == 'continuous' or too_many_classes:
+                    st.warning(
+                        f"Detected target type: {t}. The selected target appears numeric/continuous "
+                        "and is not suitable for classification. Please choose a categorical target "
+                        "or switch to a regression model."
+                    )
+                    st.stop()
                 x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.3, random_state=42)
                 scaler = StandardScaler()
                 x_train = scaler.fit_transform(x_train)
@@ -1849,7 +1940,21 @@ if file is not None:
                 numeric_cols = df_cleaned.select_dtypes(include=['number']).columns.drop(target_column, errors='ignore')
                 x = df_cleaned[numeric_cols]
                 y = df_cleaned[target_column]
-                x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.3, random_state=42)
+                t = type_of_target(y)
+                too_many_classes = (pd.api.types.is_integer_dtype(y) and y.nunique() > 20)
+                if t == 'continuous' or too_many_classes:
+                    st.warning(
+                        f"Detected target type: {t}. The selected target appears numeric/continuous "
+                        "and is not suitable for classification. Please choose a categorical target "
+                        "or switch to a regression model."
+                    )
+                    st.stop()
+                if 'xgb_le' not in st.session_state:
+                    st.session_state['xgb_le'] = LabelEncoder().fit(y)
+                le = st.session_state['xgb_le']
+                y_encoded = le.transform(y)
+                x_train, x_test, y_train, y_test = train_test_split(
+                    x, y_encoded, test_size=0.3, random_state=42, stratify=y_encoded)
                 scaler = StandardScaler()
                 x_train = scaler.fit_transform(x_train)
                 x_test = scaler.transform(x_test)
@@ -1920,6 +2025,15 @@ if file is not None:
                 numeric_cols = df_cleaned.select_dtypes(include=['number']).columns.drop(target_column, errors='ignore')
                 x = df_cleaned[numeric_cols]
                 y = df_cleaned[target_column]
+                t = type_of_target(y)
+                too_many_classes = (pd.api.types.is_integer_dtype(y) and y.nunique() > 20)
+                if t == 'continuous' or too_many_classes:
+                    st.warning(
+                        f"Detected target type: {t}. The selected target appears numeric/continuous "
+                        "and is not suitable for classification. Please choose a categorical target "
+                        "or switch to a regression model."
+                    )
+                    st.stop()
                 x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.3, random_state=42)
                 scaler = StandardScaler()
                 x_train = scaler.fit_transform(x_train)
@@ -1991,6 +2105,15 @@ if file is not None:
                 numeric_cols = df_cleaned.select_dtypes(include=['number']).columns.drop(target_column, errors='ignore')
                 x = df_cleaned[numeric_cols]
                 y = df_cleaned[target_column]
+                t = type_of_target(y)
+                too_many_classes = (pd.api.types.is_integer_dtype(y) and y.nunique() > 20)
+                if t == 'continuous' or too_many_classes:
+                    st.warning(
+                        f"Detected target type: {t}. The selected target appears numeric/continuous "
+                        "and is not suitable for classification. Please choose a categorical target "
+                        "or switch to a regression model."
+                    )
+                    st.stop()
                 x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.3, random_state=42)
                 scaler = StandardScaler()
                 x_train = scaler.fit_transform(x_train)
