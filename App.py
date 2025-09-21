@@ -1880,16 +1880,23 @@ if file is not None:
                 numeric_cols = df_cleaned.select_dtypes(include=['number']).columns.drop(target_column, errors='ignore')
                 x = df_cleaned[numeric_cols]
                 y = df_cleaned[target_column]
+                t = type_of_target(y)
+                if t == 'continuous':
+                    st.warning("Continuous target detected; choose a categorical target or switch to regression.", icon="⚠️")
+                    st.stop()
                 try:
+                    if 'xgb_le' not in st.session_state:
+                        st.session_state['xgb_le'] = LabelEncoder().fit(y)
                     le = LabelEncoder()
                     y_encoded = le.fit_transform(y)  
-                    x_train, x_test, y_train, y_test = train_test_split(x, y_encoded, test_size=0.3, random_state=42)
+                    x_train, x_test, y_train, y_test = train_test_split(x, y_encoded, test_size=0.3, random_state=42,stratify=y_encoded)
                     scaler = StandardScaler()
                     x_train = scaler.fit_transform(x_train)
                     x_test = scaler.transform(x_test)
-                    model = XGBClassifier(use_label_encoder=False, eval_metric='logloss')
+                    model = XGBClassifier(eval_metric='mlogloss', random_state=42)
                     model.fit(x_train, y_train)
-                    y_pred = model.predict(x_test)
+                    y_pred_enc = model.predict(x_test)
+                    y_pred = le.inverse_transform(y_pred_enc)
                 except Exception as e:
                     st.warning("Training skipped: target is not valid for classification.")
                     st.stop()
