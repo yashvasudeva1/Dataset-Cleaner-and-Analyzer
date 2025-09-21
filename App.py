@@ -1210,14 +1210,17 @@ if file is not None:
                 numeric_cols = df_cleaned.select_dtypes(include=['number']).columns.drop(target_column, errors='ignore')
                 x = df_cleaned[numeric_cols]
                 y = df_cleaned[target_column]
-                x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.3, random_state=42)
-                scaler = StandardScaler()
-                x_train = scaler.fit_transform(x_train)
-                x_test = scaler.transform(x_test)
-                model = KNeighborsClassifier(n_neighbors=5)
-                model.fit(x_train, y_train)
-                y_pred = model.predict(x_test)
-            
+                try:
+                    x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.3, random_state=42)
+                    scaler = StandardScaler()
+                    x_train = scaler.fit_transform(x_train)
+                    x_test = scaler.transform(x_test)
+                    model = KNeighborsClassifier(n_neighbors=5)
+                    model.fit(x_train, y_train)
+                    y_pred = model.predict(x_test)
+                except Exception as e:
+                    st.warning("Training skipped: target is not valid for classification.")
+                    st.stop()            
                 acc = accuracy_score(y_test, y_pred)
                 prec = precision_score(y_test, y_pred, average='weighted', zero_division=0)
                 rec = recall_score(y_test, y_pred, average='weighted')
@@ -1281,14 +1284,17 @@ if file is not None:
                 numeric_cols = df_cleaned.select_dtypes(include=['number']).columns.drop(target_column, errors='ignore')
                 x = df_cleaned[numeric_cols]
                 y = df_cleaned[target_column]
-                x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.3, random_state=42)
-                scaler = StandardScaler()
-                x_train = scaler.fit_transform(x_train)
-                x_test = scaler.transform(x_test)
-                model = SVC(probability=True)
-                model.fit(x_train, y_train)
-                y_pred = model.predict(x_test)
-            
+                try:
+                    x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.3, random_state=42)
+                    scaler = StandardScaler()
+                    x_train = scaler.fit_transform(x_train)
+                    x_test = scaler.transform(x_test)
+                    model = SVC(probability=True)
+                    model.fit(x_train, y_train)
+                    y_pred = model.predict(x_test)
+                except Exception as e:
+                    st.warning("Training skipped: target is not valid for classification.")
+                    st.stop()
                 acc = accuracy_score(y_test, y_pred)
                 prec = precision_score(y_test, y_pred, average='weighted', zero_division=0)
                 rec = recall_score(y_test, y_pred, average='weighted')
@@ -1352,14 +1358,17 @@ if file is not None:
                 numeric_cols = df_cleaned.select_dtypes(include=['number']).columns.drop(target_column, errors='ignore')
                 x = df_cleaned[numeric_cols]
                 y = df_cleaned[target_column]
-                x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.3, random_state=42)
-                scaler = StandardScaler()
-                x_train = scaler.fit_transform(x_train)
-                x_test = scaler.transform(x_test)
-                model = DecisionTreeClassifier()
-                model.fit(x_train, y_train)
-                y_pred = model.predict(x_test)
-            
+                try:
+                    x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.3, random_state=42)
+                    scaler = StandardScaler()
+                    x_train = scaler.fit_transform(x_train)
+                    x_test = scaler.transform(x_test)
+                    model = DecisionTreeClassifier()
+                    model.fit(x_train, y_train)
+                    y_pred = model.predict(x_test)
+                except Exception as e:
+                    st.warning("Training skipped: target is not valid for classification.")
+                    st.stop()
                 acc = accuracy_score(y_test, y_pred)
                 prec = precision_score(y_test, y_pred, average='weighted', zero_division=0)
                 rec = recall_score(y_test, y_pred, average='weighted')
@@ -1423,14 +1432,17 @@ if file is not None:
                 numeric_cols = df_cleaned.select_dtypes(include=['number']).columns.drop(target_column, errors='ignore')
                 x = df_cleaned[numeric_cols]
                 y = df_cleaned[target_column]
-                x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.3, random_state=42)
-                scaler = StandardScaler()
-                x_train = scaler.fit_transform(x_train)
-                x_test = scaler.transform(x_test)
-                model = RandomForestClassifier()
-                model.fit(x_train, y_train)
-                y_pred = model.predict(x_test)
-            
+                try:    
+                    x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.3, random_state=42)
+                    scaler = StandardScaler()
+                    x_train = scaler.fit_transform(x_train)
+                    x_test = scaler.transform(x_test)
+                    model = RandomForestClassifier()
+                    model.fit(x_train, y_train)
+                    y_pred = model.predict(x_test)
+                except Exception as e:
+                    st.warning("Training skipped: target is not valid for classification.")
+                    st.stop()           
                 acc = accuracy_score(y_test, y_pred)
                 prec = precision_score(y_test, y_pred, average='weighted', zero_division=0)
                 rec = recall_score(y_test, y_pred, average='weighted')
@@ -1494,14 +1506,17 @@ if file is not None:
                 numeric_cols = df_cleaned.select_dtypes(include=['number']).columns.drop(target_column, errors='ignore')
                 x = df_cleaned[numeric_cols]
                 y = df_cleaned[target_column]
-                x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.3, random_state=42)
-                scaler = StandardScaler()
-                x_train = scaler.fit_transform(x_train)
-                x_test = scaler.transform(x_test)
-                model = GradientBoostingClassifier()
-                model.fit(x_train, y_train)
-                y_pred = model.predict(x_test)
-            
+                try:
+                    x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.3, random_state=42)
+                    scaler = StandardScaler()
+                    x_train = scaler.fit_transform(x_train)
+                    x_test = scaler.transform(x_test)
+                    model = GradientBoostingClassifier()
+                    model.fit(x_train, y_train)
+                    y_pred = model.predict(x_test)
+                except Exception as e:
+                    st.warning("Training skipped: target is not valid for classification.")
+                    st.stop()
                 acc = accuracy_score(y_test, y_pred)
                 prec = precision_score(y_test, y_pred, average='weighted', zero_division=0)
                 rec = recall_score(y_test, y_pred, average='weighted')
@@ -1565,14 +1580,17 @@ if file is not None:
                 numeric_cols = df_cleaned.select_dtypes(include=['number']).columns.drop(target_column, errors='ignore')
                 x = df_cleaned[numeric_cols]
                 y = df_cleaned[target_column]
-                x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.3, random_state=42)
-                scaler = StandardScaler()
-                x_train = scaler.fit_transform(x_train)
-                x_test = scaler.transform(x_test)
-                model = AdaBoostClassifier()
-                model.fit(x_train, y_train)
-                y_pred = model.predict(x_test)
-            
+                try:
+                    x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.3, random_state=42)
+                    scaler = StandardScaler()
+                    x_train = scaler.fit_transform(x_train)
+                    x_test = scaler.transform(x_test)
+                    model = AdaBoostClassifier()
+                    model.fit(x_train, y_train)
+                    y_pred = model.predict(x_test)
+                except Exception as e:
+                    st.warning("Training skipped: target is not valid for classification.")
+                    st.stop()
                 acc = accuracy_score(y_test, y_pred)
                 prec = precision_score(y_test, y_pred, average='weighted', zero_division=0)
                 rec = recall_score(y_test, y_pred, average='weighted')
@@ -1636,14 +1654,17 @@ if file is not None:
                 numeric_cols = df_cleaned.select_dtypes(include=['number']).columns.drop(target_column, errors='ignore')
                 x = df_cleaned[numeric_cols]
                 y = df_cleaned[target_column]
-                x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.3, random_state=42)
-                scaler = StandardScaler()
-                x_train = scaler.fit_transform(x_train)
-                x_test = scaler.transform(x_test)
-                model = GaussianNB()
-                model.fit(x_train, y_train)
-                y_pred = model.predict(x_test)
-            
+                try: 
+                    x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.3, random_state=42)
+                    scaler = StandardScaler()
+                    x_train = scaler.fit_transform(x_train)
+                    x_test = scaler.transform(x_test)
+                    model = GaussianNB()
+                    model.fit(x_train, y_train)
+                    y_pred = model.predict(x_test)
+                except Exception as e:
+                    st.warning("Training skipped: target is not valid for classification.")
+                    st.stop()
                 acc = accuracy_score(y_test, y_pred)
                 prec = precision_score(y_test, y_pred, average='weighted', zero_division=0)
                 rec = recall_score(y_test, y_pred, average='weighted')
@@ -1707,14 +1728,17 @@ if file is not None:
                 numeric_cols = df_cleaned.select_dtypes(include=['number']).columns.drop(target_column, errors='ignore')
                 x = df_cleaned[numeric_cols]
                 y = df_cleaned[target_column]
-                x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.3, random_state=42)
-                scaler = StandardScaler()
-                x_train = scaler.fit_transform(x_train)
-                x_test = scaler.transform(x_test)
-                model = LinearDiscriminantAnalysis()
-                model.fit(x_train, y_train)
-                y_pred = model.predict(x_test)
-            
+                try:    
+                    x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.3, random_state=42)
+                    scaler = StandardScaler()
+                    x_train = scaler.fit_transform(x_train)
+                    x_test = scaler.transform(x_test)
+                    model = LinearDiscriminantAnalysis()
+                    model.fit(x_train, y_train)
+                    y_pred = model.predict(x_test)
+                except Exception as e:
+                    st.warning("Training skipped: target is not valid for classification.")
+                    st.stop()
                 acc = accuracy_score(y_test, y_pred)
                 prec = precision_score(y_test, y_pred, average='weighted', zero_division=0)
                 rec = recall_score(y_test, y_pred, average='weighted')
@@ -1778,14 +1802,17 @@ if file is not None:
                 numeric_cols = df_cleaned.select_dtypes(include=['number']).columns.drop(target_column, errors='ignore')
                 x = df_cleaned[numeric_cols]
                 y = df_cleaned[target_column]
-                x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.3, random_state=42)
-                scaler = StandardScaler()
-                x_train = scaler.fit_transform(x_train)
-                x_test = scaler.transform(x_test)
-                model = QuadraticDiscriminantAnalysis()
-                model.fit(x_train, y_train)
-                y_pred = model.predict(x_test)
-            
+                try:    
+                    x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.3, random_state=42)
+                    scaler = StandardScaler()
+                    x_train = scaler.fit_transform(x_train)
+                    x_test = scaler.transform(x_test)
+                    model = QuadraticDiscriminantAnalysis()
+                    model.fit(x_train, y_train)
+                    y_pred = model.predict(x_test)
+                except Exception as e:
+                    st.warning("Training skipped: target is not valid for classification.")
+                    st.stop()
                 acc = accuracy_score(y_test, y_pred)
                 prec = precision_score(y_test, y_pred, average='weighted', zero_division=0)
                 rec = recall_score(y_test, y_pred, average='weighted')
@@ -1851,14 +1878,17 @@ if file is not None:
                 y = df_cleaned[target_column]
                 le = LabelEncoder()
                 y_encoded = le.fit_transform(y)  
-                x_train, x_test, y_train, y_test = train_test_split(x, y_encoded, test_size=0.3, random_state=42)
-                scaler = StandardScaler()
-                x_train = scaler.fit_transform(x_train)
-                x_test = scaler.transform(x_test)
-                model = XGBClassifier(use_label_encoder=False, eval_metric='logloss')
-                model.fit(x_train, y_train)
-                y_pred = model.predict(x_test)
-            
+                try: 
+                    x_train, x_test, y_train, y_test = train_test_split(x, y_encoded, test_size=0.3, random_state=42)
+                    scaler = StandardScaler()
+                    x_train = scaler.fit_transform(x_train)
+                    x_test = scaler.transform(x_test)
+                    model = XGBClassifier(use_label_encoder=False, eval_metric='logloss')
+                    model.fit(x_train, y_train)
+                    y_pred = model.predict(x_test)
+                except Exception as e:
+                    st.warning("Training skipped: target is not valid for classification.")
+                    st.stop()
                 acc = accuracy_score(y_test, y_pred)
                 prec = precision_score(y_test, y_pred, average='weighted', zero_division=0)
                 rec = recall_score(y_test, y_pred, average='weighted')
@@ -1922,14 +1952,17 @@ if file is not None:
                 numeric_cols = df_cleaned.select_dtypes(include=['number']).columns.drop(target_column, errors='ignore')
                 x = df_cleaned[numeric_cols]
                 y = df_cleaned[target_column]
-                x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.3, random_state=42)
-                scaler = StandardScaler()
-                x_train = scaler.fit_transform(x_train)
-                x_test = scaler.transform(x_test)
-                model = LGBMClassifier()
-                model.fit(x_train, y_train)
-                y_pred = model.predict(x_test)
-            
+                try:   
+                    x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.3, random_state=42)
+                    scaler = StandardScaler()
+                    x_train = scaler.fit_transform(x_train)
+                    x_test = scaler.transform(x_test)
+                    model = LGBMClassifier()
+                    model.fit(x_train, y_train)
+                    y_pred = model.predict(x_test)
+                except Exception as e:
+                    st.warning("Training skipped: target is not valid for classification.")
+                    st.stop()
                 acc = accuracy_score(y_test, y_pred)
                 prec = precision_score(y_test, y_pred, average='weighted', zero_division=0)
                 rec = recall_score(y_test, y_pred, average='weighted')
@@ -1993,14 +2026,17 @@ if file is not None:
                 numeric_cols = df_cleaned.select_dtypes(include=['number']).columns.drop(target_column, errors='ignore')
                 x = df_cleaned[numeric_cols]
                 y = df_cleaned[target_column]
-                x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.3, random_state=42)
-                scaler = StandardScaler()
-                x_train = scaler.fit_transform(x_train)
-                x_test = scaler.transform(x_test)
-                model = MLPClassifier(max_iter=500)
-                model.fit(x_train, y_train)
-                y_pred = model.predict(x_test)
-            
+                try:    
+                    x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.3, random_state=42)
+                    scaler = StandardScaler()
+                    x_train = scaler.fit_transform(x_train)
+                    x_test = scaler.transform(x_test)
+                    model = MLPClassifier(max_iter=500)
+                    model.fit(x_train, y_train)
+                    y_pred = model.predict(x_test)
+                except Exception as e:
+                    st.warning("Training skipped: target is not valid for classification.")
+                    st.stop()
                 acc = accuracy_score(y_test, y_pred)
                 prec = precision_score(y_test, y_pred, average='weighted', zero_division=0)
                 rec = recall_score(y_test, y_pred, average='weighted')
