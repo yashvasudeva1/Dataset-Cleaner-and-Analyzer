@@ -1123,7 +1123,7 @@ if file is not None:
                 ]
             )
             target_column = st.selectbox("Select the Target Column:", columns)
-            if target_column == 'continuous' or too_many_classes:
+            if target_column == 'continuous':
                 st.warning(
                     f"Detected target type: {t}. The selected target appears numeric/continuous "
                     "and is not suitable for classification. Please choose a categorical target "
