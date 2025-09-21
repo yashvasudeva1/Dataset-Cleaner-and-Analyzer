@@ -1873,73 +1873,56 @@ if file is not None:
                     lower_bound = q1 - 1.5 * iqr
                     upper_bound = q3 + 1.5 * iqr
                     df_cleaned = df_cleaned[(df_cleaned[col] >= lower_bound) & (df_cleaned[col] <= upper_bound)]
-                numeric_cols = df_cleaned.select_dtypes(include=['number']).columns.drop(target_column, errors='ignore')
-                x = df_cleaned[numeric_cols]
-                y = df_cleaned[target_column]
-                le = LabelEncoder()
-                y_encoded = le.fit_transform(y)  
-                try: 
-                    x_train, x_test, y_train, y_test = train_test_split(x, y_encoded, test_size=0.3, random_state=42)
+                    numeric_cols = df_cleaned.select_dtypes(include=['number']).columns.drop(target_column, errors='ignore')
+                    x = df_cleaned[numeric_cols]
+                    y = df_cleaned[target_column]
+                    
+                    # Encode target once and store encoder for UI/prediction
+                    if 'xgb_le' not in st.session_state:
+                        st.session_state['xgb_le'] = LabelEncoder().fit(y)
+                    le = st.session_state['xgb_le']
+                    y_encoded = le.transform(y)
+                    
+                    # Split with stratification
+                    x_train, x_test, y_train, y_test = train_test_split(
+                        x, y_encoded, test_size=0.3, random_state=42, stratify=y_encoded
+                    )
+                    
+                    # Scale numeric features
                     scaler = StandardScaler()
                     x_train = scaler.fit_transform(x_train)
                     x_test = scaler.transform(x_test)
-                    model = XGBClassifier(use_label_encoder=False, eval_metric='logloss')
+                    
+                    # Train XGBClassifier (no use_label_encoder; use mlogloss for multiclass)
+                    model = XGBClassifier(eval_metric='mlogloss', random_state=42)
                     model.fit(x_train, y_train)
-                    y_pred = model.predict(x_test)
-                except Exception as e:
-                    st.warning("Training skipped: target is not valid for classification.")
-                    st.stop()
-                acc = accuracy_score(y_test, y_pred)
-                prec = precision_score(y_test, y_pred, average='weighted', zero_division=0)
-                rec = recall_score(y_test, y_pred, average='weighted')
-                f1 = f1_score(y_test, y_pred, average='weighted')
-                cm = confusion_matrix(y_test, y_pred)
-            
-                st.sidebar.header("XGBoost Classifier Metrics")
-                st.sidebar.write(f"Accuracy: {acc:.4f}")
-                st.sidebar.write(f"Precision: {prec:.4f}")
-                st.sidebar.write(f"Recall: {rec:.4f}")
-                st.sidebar.write(f"F1 Score: {f1:.4f}")
-                st.sidebar.write(f"Confusion Matrix:\n{cm}")
-            
-                totalcolumns = df_cleaned.select_dtypes(include='number').columns.drop(target_column, errors='ignore')
-                st.header("Input feature values for prediction")
-            
-                input_data = {}
-            
-                for col in totalcolumns:
-                    q1 = df[col].quantile(0.25)
-                    q3 = df[col].quantile(0.75)
-                    iqr = q3 - q1
-                    lower_bound = q1 - 1.5 * iqr
-                    upper_bound = q3 + 1.5 * iqr
-            
-                    if pd.api.types.is_integer_dtype(df[col]):
-                        step = 1
-                        min_val = int(np.floor(lower_bound))
-                        max_val = int(np.ceil(upper_bound))
-                        default_val = int(df[col].median())
-                    else:
-                        step = 0.01
-                        min_val = float(lower_bound)
-                        max_val = float(upper_bound)
-                        default_val = float(df[col].median())
-                    if min_val >= max_val:
-                        max_val = min_val + step if pd.api.types.is_integer_dtype(df[col]) else min_val + 0.01
-                        if default_val < min_val or default_val > max_val:
-                            default_val = min_val
-                    input_data[col] = st.slider(
-                        label=col,
-                        min_value=min_val,
-                        max_value=max_val,
-                        value=default_val,
-                        step=step
-                    )
-                input_df = pd.DataFrame([input_data])
-                input_df = scaler.transform(input_df)
-                user_prediction = model.predict(input_df)
-                st.success(f"Predicted Class for the given input is {user_prediction[0]}")
-            
+                    
+                    # Predict and decode for UI
+                    y_pred_enc = model.predict(x_test)
+                    y_pred = le.inverse_transform(y_pred_enc)  # readable labels for display
+                    
+                    # If computing metrics that require ints, compute on encoded; for UI, show decoded
+                    acc = accuracy_score(y_test, y_pred_enc)
+                    prec = precision_score(y_test, y_pred_enc, average='weighted', zero_division=0)
+                    rec = recall_score(y_test, y_pred_enc, average='weighted')
+                    f1 = f1_score(y_test, y_pred_enc, average='weighted')
+                    cm = confusion_matrix(y_test, y_pred_enc)
+                    
+                    st.sidebar.header("XGBoost Classifier Metrics")
+                    st.sidebar.write(f"Accuracy: {acc:.4f}")
+                    st.sidebar.write(f"Precision: {prec:.4f}")
+                    st.sidebar.write(f"Recall: {rec:.4f}")
+                    st.sidebar.write(f"F1 Score: {f1:.4f}")
+                    st.sidebar.write(f"Confusion Matrix:\n{cm}")
+                    
+                    # Inference UI
+                    # ... build input_df as you already do ...
+                    input_df = pd.DataFrame([input_data])
+                    input_df = scaler.transform(input_df)
+                    user_pred_enc = model.predict(input_df)
+                    user_pred = le.inverse_transform(user_pred_enc)
+                    st.success(f"Predicted Class for the given input is {user_pred[0]}")
+                            
             
             if model_selection == 'LightGBM Classifier':
                 df_cleaned = df.copy()
