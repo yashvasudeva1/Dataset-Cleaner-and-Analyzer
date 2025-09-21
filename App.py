@@ -1873,56 +1873,65 @@ if file is not None:
                     lower_bound = q1 - 1.5 * iqr
                     upper_bound = q3 + 1.5 * iqr
                     df_cleaned = df_cleaned[(df_cleaned[col] >= lower_bound) & (df_cleaned[col] <= upper_bound)]
-                    numeric_cols = df_cleaned.select_dtypes(include=['number']).columns.drop(target_column, errors='ignore')
-                    x = df_cleaned[numeric_cols]
-                    y = df_cleaned[target_column]
-                    
-                    # Encode target once and store encoder for UI/prediction
-                    if 'xgb_le' not in st.session_state:
-                        st.session_state['xgb_le'] = LabelEncoder().fit(y)
-                    le = st.session_state['xgb_le']
-                    y_encoded = le.transform(y)
-                    
-                    # Split with stratification
-                    x_train, x_test, y_train, y_test = train_test_split(
-                        x, y_encoded, test_size=0.3, random_state=42, stratify=y_encoded
-                    )
-                    
-                    # Scale numeric features
-                    scaler = StandardScaler()
-                    x_train = scaler.fit_transform(x_train)
-                    x_test = scaler.transform(x_test)
-                    
-                    # Train XGBClassifier (no use_label_encoder; use mlogloss for multiclass)
-                    model = XGBClassifier(eval_metric='mlogloss', random_state=42)
-                    model.fit(x_train, y_train)
-                    
-                    # Predict and decode for UI
-                    y_pred_enc = model.predict(x_test)
-                    y_pred = le.inverse_transform(y_pred_enc)  # readable labels for display
-                    
-                    # If computing metrics that require ints, compute on encoded; for UI, show decoded
-                    acc = accuracy_score(y_test, y_pred_enc)
-                    prec = precision_score(y_test, y_pred_enc, average='weighted', zero_division=0)
-                    rec = recall_score(y_test, y_pred_enc, average='weighted')
-                    f1 = f1_score(y_test, y_pred_enc, average='weighted')
-                    cm = confusion_matrix(y_test, y_pred_enc)
-                    
-                    st.sidebar.header("XGBoost Classifier Metrics")
-                    st.sidebar.write(f"Accuracy: {acc:.4f}")
-                    st.sidebar.write(f"Precision: {prec:.4f}")
-                    st.sidebar.write(f"Recall: {rec:.4f}")
-                    st.sidebar.write(f"F1 Score: {f1:.4f}")
-                    st.sidebar.write(f"Confusion Matrix:\n{cm}")
-                    
-                    # Inference UI
-                    # ... build input_df as you already do ...
-                    input_df = pd.DataFrame([input_data])
-                    input_df = scaler.transform(input_df)
-                    user_pred_enc = model.predict(input_df)
-                    user_pred = le.inverse_transform(user_pred_enc)
-                    st.success(f"Predicted Class for the given input is {user_pred[0]}")
-                            
+    
+                numeric_cols = df_cleaned.select_dtypes(include=['number']).columns.drop(target_column, errors='ignore')
+                x = df_cleaned[numeric_cols]
+                y = df_cleaned[target_column]
+                
+                # 2) Guard: if target is continuous/high-cardinality integer, stop early (prevents red panel)
+                t = type_of_target(y)
+                too_many_classes = (pd.api.types.is_integer_dtype(y) and y.nunique() > 20)
+                if t == 'continuous' or too_many_classes:
+                    st.warning("Continuous or high-cardinality target detected; use regression or bin the target.", icon="⚠️")
+                    st.stop()
+                
+                # 3) Encode target ONCE and keep encoder in session for decoding predictions
+                if 'xgb_le' not in st.session_state:
+                    st.session_state['xgb_le'] = LabelEncoder().fit(y)
+                le = st.session_state['xgb_le']
+                y_encoded = le.transform(y)  # ensures 0..K-1 labels
+                
+                # 4) Split with stratification to preserve class balance
+                x_train, x_test, y_train, y_test = train_test_split(
+                    x, y_encoded, test_size=0.3, random_state=42, stratify=y_encoded
+                )
+                
+                # 5) Scale features
+                scaler = StandardScaler()
+                x_train = scaler.fit_transform(x_train)
+                x_test = scaler.transform(x_test)
+                
+                # 6) Train XGBoost (drop deprecated use_label_encoder; use mlogloss for multiclass)
+                model = XGBClassifier(eval_metric='mlogloss', random_state=42)
+                model.fit(x_train, y_train)
+                
+                # 7) Predict
+                y_pred_enc = model.predict(x_test)
+                
+                # 8) Compute metrics on encoded ints (correct for sklearn metrics)
+                acc = accuracy_score(y_test, y_pred_enc)
+                prec = precision_score(y_test, y_pred_enc, average='weighted', zero_division=0)
+                rec = recall_score(y_test, y_pred_enc, average='weighted')
+                f1 = f1_score(y_test, y_pred_enc, average='weighted')
+                cm = confusion_matrix(y_test, y_pred_enc)
+                
+                # 9) Decode predictions for human-readable UI
+                y_pred = le.inverse_transform(y_pred_enc)
+                
+                st.sidebar.header("XGBoost Classifier Metrics")
+                st.sidebar.write(f"Accuracy: {acc:.4f}")
+                st.sidebar.write(f"Precision: {prec:.4f}")
+                st.sidebar.write(f"Recall: {rec:.4f}")
+                st.sidebar.write(f"F1 Score: {f1:.4f}")
+                st.sidebar.write(f"Confusion Matrix:\n{cm}")
+                
+                # 10) Build sliders (your existing code) and predict for user input
+                input_df = pd.DataFrame([input_data])
+                input_df = scaler.transform(input_df)
+                user_pred_enc = model.predict(input_df)
+                user_pred = le.inverse_transform(user_pred_enc)
+                st.success(f"Predicted Class for the given input is {user_pred[0]}")
+                       
             
             if model_selection == 'LightGBM Classifier':
                 df_cleaned = df.copy()
