@@ -1124,11 +1124,11 @@ if file is not None:
             )
             target_column = st.selectbox("Select the Target Column:", columns)
             if target_column == 'continuous' or too_many_classes:
-            st.warning(
-                f"Detected target type: {t}. The selected target appears numeric/continuous "
-                "and is not suitable for classification. Please choose a categorical target "
-                "or switch to a regression model."
-            )
+                st.warning(
+                    f"Detected target type: {t}. The selected target appears numeric/continuous "
+                    "and is not suitable for classification. Please choose a categorical target "
+                    "or switch to a regression model."
+                )
             if model_selection == 'Logistic Regression':
                 df_cleaned = df.copy()
                 for col in df_cleaned.select_dtypes(include='number'):
