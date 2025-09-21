@@ -2085,28 +2085,28 @@ if file is not None:
             st.stop()
         bins = st.slider("Bins", 10, 100, 20, 5)
         for i in range(0, len(num_cols), 2):
-    pair = num_cols[i:i+2]
-    cols = st.columns(len(pair))
-    for holder, col in zip(cols, pair):
-        holder.caption(f"Histogram: {col}")
-        data = df[[col]].rename(columns={col: "value"}).dropna()
-        holder.vega_lite_chart(
-            data,
-            {
-                "mark": "bar",
-                "encoding": {
-                    "x": {
-                        "field": "value",
-                        "type": "quantitative",
-                        "bin": {"maxbins": int(bins)},
-                        "title": col
+            pair = num_cols[i:i+2]
+            cols = st.columns(len(pair))
+            for holder, col in zip(cols, pair):
+                holder.caption(f"Histogram: {col}")
+                data = df[[col]].rename(columns={col: "value"}).dropna()
+                holder.vega_lite_chart(
+                    data,
+                    {
+                        "mark": "bar",
+                        "encoding": {
+                            "x": {
+                                "field": "value",
+                                "type": "quantitative",
+                                "bin": {"maxbins": int(bins)},
+                                "title": col
+                            },
+                            "y": {"aggregate": "count", "type": "quantitative", "title": "Count"},
+                        },
+                        "height": 280
                     },
-                    "y": {"aggregate": "count", "type": "quantitative", "title": "Count"},
-                },
-                "height": 280
-            },
-            use_container_width=True,  
-        )
+                    use_container_width=True,  
+                )
 
 
 
