@@ -72,30 +72,30 @@ if file is not None:
             numeric_columns = df.select_dtypes(include='number').columns.tolist()    
             selected_two = st.multiselect("Select exactly two columns to plot one against the other", numeric_columns)
     
-         if selected_two:
-            if len(selected_two) == 2:
-                x_col, y_col = selected_two
-        
-                df_sorted = df.sort_values(by=x_col, ascending=True)
-        
-                chart = (
-                    alt.Chart(df_sorted)
-                    .mark_line()
-                    .encode(
-                        x=alt.X(x_col, title=x_col),
-                        y=alt.Y(y_col, title=y_col),
+             if selected_two:
+                if len(selected_two) == 2:
+                    x_col, y_col = selected_two
+            
+                    df_sorted = df.sort_values(by=x_col, ascending=True)
+            
+                    chart = (
+                        alt.Chart(df_sorted)
+                        .mark_line()
+                        .encode(
+                            x=alt.X(x_col, title=x_col),
+                            y=alt.Y(y_col, title=y_col),
+                        )
+                        .properties(
+                            title=f"Line plot of {y_col} vs {x_col}",
+                            width='container',   # or a number like 600
+                            height=300
+                        )
                     )
-                    .properties(
-                        title=f"Line plot of {y_col} vs {x_col}",
-                        width='container',   # or a number like 600
-                        height=300
-                    )
-                )
-                st.altair_chart(chart, use_container_width=True)  # not width='content'
+                    st.altair_chart(chart, use_container_width=True)  # not width='content'
+                else:
+                    st.warning("Please select exactly two columns for this plot.")
             else:
-                st.warning("Please select exactly two columns for this plot.")
-        else:
-            st.info("Please select at least one column to display the chart.")
+                st.info("Please select at least one column to display the chart.")
 
     with tab3:
         if "cleaned_df" in st.session_state:
