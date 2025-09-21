@@ -1124,12 +1124,6 @@ if file is not None:
                 ]
             )
             target_column = st.selectbox("Select the Target Column:", columns)
-            if target_column == 'continuous':
-                st.warning(
-                    f"Detected target type: {t}. The selected target appears numeric/continuous "
-                    "and is not suitable for classification. Please choose a categorical target "
-                    "or switch to a regression model."
-                )
             if model_selection == 'Logistic Regression':
                 df_cleaned = df.copy()
                 for col in df_cleaned.select_dtypes(include='number'):
@@ -1141,6 +1135,14 @@ if file is not None:
                 numeric_cols = df_cleaned.select_dtypes(include=['number']).columns.drop(target_column, errors='ignore')
                 x = df_cleaned[numeric_cols]
                 y = df_cleaned[target_column]
+                t = type_of_target(y)
+                too_many_classes = (pd.api.types.is_integer_dtype(y) and y.nunique() > 20)
+                if t == 'continuous' or too_many_classes:
+                    st.warning(
+                        f"Detected target type: {t}. The selected target appears numeric/continuous "
+                        "or has too many unique values for classification. Choose a categorical target "
+                        "or switch to a regression model."
+                    )
                 x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.3, random_state=42)
                 scaler = StandardScaler()
                 x_train = scaler.fit_transform(x_train)
