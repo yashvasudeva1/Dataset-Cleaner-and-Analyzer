@@ -2173,8 +2173,8 @@ if file is not None:
                 user_prediction = model.predict(input_df)
                 st.success(f"Predicted Class for the given input is {user_prediction[0]}")
     
-            else:
-                st.warning("Please Select your Data Type First")
+            # else:
+            #     st.warning("Please Select your Data Type First")
     
     with tab5:
         num_cols = df.select_dtypes(include="number").columns
