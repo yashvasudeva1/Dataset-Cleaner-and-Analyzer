@@ -1937,9 +1937,11 @@ if file is not None:
                     lower_bound = q1 - 1.5 * iqr
                     upper_bound = q3 + 1.5 * iqr
                     df_cleaned = df_cleaned[(df_cleaned[col] >= lower_bound) & (df_cleaned[col] <= upper_bound)]
+            
                 numeric_cols = df_cleaned.select_dtypes(include=['number']).columns.drop(target_column, errors='ignore')
                 x = df_cleaned[numeric_cols]
                 y = df_cleaned[target_column]
+            
                 t = type_of_target(y)
                 too_many_classes = (pd.api.types.is_integer_dtype(y) and y.nunique() > 20)
                 if t == 'continuous' or too_many_classes:
@@ -1949,17 +1951,25 @@ if file is not None:
                         "or switch to a regression model."
                     )
                     st.stop()
+            
+                # Fit once and reuse
                 if 'xgb_le' not in st.session_state:
                     st.session_state['xgb_le'] = LabelEncoder().fit(y)
                 le = st.session_state['xgb_le']
+            
                 y_encoded = le.transform(y)
+            
                 x_train, x_test, y_train, y_test = train_test_split(
-                    x, y_encoded, test_size=0.3, random_state=42, stratify=y_encoded)
+                    x, y_encoded, test_size=0.3, random_state=42, stratify=y_encoded
+                )
+            
                 scaler = StandardScaler()
                 x_train = scaler.fit_transform(x_train)
                 x_test = scaler.transform(x_test)
+            
                 model = XGBClassifier(use_label_encoder=False, eval_metric='logloss')
                 model.fit(x_train, y_train)
+            
                 y_pred = model.predict(x_test)
             
                 acc = accuracy_score(y_test, y_pred)
@@ -1979,7 +1989,6 @@ if file is not None:
                 st.header("Input feature values for prediction")
             
                 input_data = {}
-            
                 for col in totalcolumns:
                     q1 = df[col].quantile(0.25)
                     q3 = df[col].quantile(0.75)
@@ -1997,10 +2006,12 @@ if file is not None:
                         min_val = float(lower_bound)
                         max_val = float(upper_bound)
                         default_val = float(df[col].median())
+            
                     if min_val >= max_val:
-                        max_val = min_val + step if pd.api.types.is_integer_dtype(df[col]) else min_val + 0.01
+                        max_val = min_val + (step if pd.api.types.is_integer_dtype(df[col]) else 0.01)
                         if default_val < min_val or default_val > max_val:
                             default_val = min_val
+            
                     input_data[col] = st.slider(
                         label=col,
                         min_value=min_val,
@@ -2008,10 +2019,14 @@ if file is not None:
                         value=default_val,
                         step=step
                     )
+            
                 input_df = pd.DataFrame([input_data])
                 input_df = scaler.transform(input_df)
-                user_prediction = model.predict(input_df)
-                st.success(f"Predicted Class for the given input is {user_prediction[0]}")
+            
+                user_pred_codes = model.predict(input_df)
+                user_pred_labels = le.inverse_transform(user_pred_codes)
+                st.success(f"Predicted Class for the given input is {user_pred_labels[0]}")
+
             
             
             if model_selection == 'LightGBM Classifier':
