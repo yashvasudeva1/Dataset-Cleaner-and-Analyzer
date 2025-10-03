@@ -46,7 +46,10 @@ class DataApp:
         logo_path = "logo.png"
         col1, col2 = st.columns([1, 6])
         with col1:
-            st.image(logo_path, width='content')
+            try:
+                st.image(logo_path, width=120)
+            except:
+                st.write("🖼️")
         with col2:
             st.markdown(
                 """
@@ -63,7 +66,7 @@ class DataApp:
         if file is not None:
             self.data = pd.read_csv(file)
             st.write("Preview of your dataset")
-            st.dataframe(self.data, width='100%')
+            st.dataframe(self.data, use_container_width=True)
             if 'cleaned_data' not in st.session_state:
                 st.session_state.cleaned_data = self.data.copy()
 
@@ -114,7 +117,7 @@ class DataApp:
                 for col in outliers_count.index:
                     report_before.at[col, "Outliers"] = outliers_count[col]
             st.write("Report Before Cleaning")
-            st.dataframe(report_before.fillna("-").astype(str))
+            st.dataframe(report_before.fillna("-").astype(str), use_container_width=True)
 
             if st.button("Clean"):
                 cleaned = df.copy()
@@ -152,9 +155,9 @@ class DataApp:
                 for col in outliers_count_after.index:
                     report_after.at[col, "Outliers"] = outliers_count_after[col]
             st.write("Report After Cleaning")
-            st.dataframe(report_after.fillna("-").astype(str))
+            st.dataframe(report_after.fillna("-").astype(str), use_container_width=True)
             st.write("Cleaned Data")
-            st.dataframe(cleaned_latest)
+            st.dataframe(cleaned_latest, use_container_width=True)
             csv_string = cleaned_latest.to_csv(index=False)
             st.download_button(
                 label="Download Cleaned Data",
@@ -309,17 +312,12 @@ class DataApp:
                 cols = st.columns(len(pair))
                 for holder, col in zip(cols, pair):
                     holder.caption(f"Histogram: {col}")
-                    data = self.data[col].rename(col).dropna()
-                    holder.vega_lite_chart(
-                        data,
-                        mark='bar',
-                        encoding={
-                            'x': {'field': col, 'type': 'quantitative', 'bin': {'maxbins': int(bins)}},
-                            'y': {'aggregate': 'count', 'type': 'quantitative', 'title': 'Count'}
-                        },
-                        height=280,
-                        use_container_width=True
-                    )
+                    data = self.data[col].dropna()
+                    chart = alt.Chart(data.to_frame(name=col)).mark_bar().encode(
+                        x=alt.X(f'{col}:Q', bin=alt.Bin(maxbins=int(bins))),
+                        y=alt.Y('count():Q', title='Count')
+                    ).properties(height=280)
+                    holder.altair_chart(chart, use_container_width=True)
 
     def run(self):
         self.load_data()
