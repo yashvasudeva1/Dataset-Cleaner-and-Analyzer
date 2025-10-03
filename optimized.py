@@ -305,7 +305,7 @@ class DataApp:
                 ax.set_title(f"Confusion Matrix - {model_selection}")
                 st.pyplot(fig)
 
-                st.success("✅ Classification Model Trained Successfully!")
+                st.success("Classification Model Trained Successfully!")
 
                 st.write("### Enter Feature Values for Prediction")
                 input_data = {}
@@ -327,18 +327,18 @@ class DataApp:
                 input_df = pd.DataFrame([input_data])
                 input_scaled = self.scaler.transform(input_df)
 
-                if st.button("🔮 Predict Class"):
+                if st.button("Predict Class"):
                     pred = model.predict(input_scaled)[0]
                     predicted_label = pred
                     if df_cleaned[target_column].dtype == 'object':
                         predicted_label = self.le.inverse_transform([pred])[0]
-                    st.success(f"🎯 Predicted Class: **{predicted_label}**")
+                    st.success(f"Predicted Class: **{predicted_label}**")
 
                     if hasattr(model, "predict_proba"):
                         proba = model.predict_proba(input_scaled)[0]
                         class_names = self.le.classes_ if hasattr(self.le, 'classes_') else np.unique(y)
                         proba_str = ", ".join([f"{cls}: {p:.2f}" for cls, p in zip(class_names, proba)])
-                        st.info(f"📊 Prediction Probabilities: {proba_str}")
+                        st.info(f"Prediction Probabilities: {proba_str}")
 
     def show_distribution(self):
         if self.data is not None:
