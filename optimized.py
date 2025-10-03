@@ -6,7 +6,6 @@ import seaborn as sns
 from scipy import stats
 import warnings
 import io
-import requests
 from PIL import Image
 Image.MAX_IMAGE_PIXELS = 200_000_000
 from sklearn.utils.multiclass import type_of_target
@@ -22,7 +21,7 @@ from xgboost import XGBClassifier
 from lightgbm import LGBMClassifier
 from sklearn.neural_network import MLPClassifier
 from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, confusion_matrix
-from sklearn.model_selection import train_test_split, cross_val_score, GridSearchCV
+from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import StandardScaler, PolynomialFeatures, LabelEncoder
 from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 
@@ -36,8 +35,6 @@ def shapiro_safe(x):
 class DataApp:
     def __init__(self):
         self.data = None
-        self.cleaned_data = None
-        self.model = None
         self.scaler = StandardScaler()
         self.le = LabelEncoder()
         self._setup_ui()
@@ -166,268 +163,182 @@ class DataApp:
                 mime="text/csv"
             )
 
-    def _train_and_evaluate_regression(self, model, X_train, X_test, y_train, y_test, model_name, target_column):
-        model.fit(X_train, y_train)
-        y_pred = model.predict(X_test)
-        mae = mean_absolute_error(y_test, y_pred)
-        mse = mean_squared_error(y_test, y_pred)
-        rmse = np.sqrt(mse)
-        r2 = r2_score(y_test, y_pred)
-        n = len(y_test)
-        p = X_test.shape[1]
-        adj_r2 = 1 - (1 - r2) * (n - 1) / (n - p - 1)
-        mape = np.mean(np.abs((y_test - y_pred) / y_test)) * 100
-        st.sidebar.subheader(f"{model_name} Metrics")
-        st.sidebar.write(f"Mean Absolute Error (MAE): {mae:.4f}")
-        st.sidebar.write(f"Mean Squared Error (MSE): {mse:.4f}")
-        st.sidebar.write(f"Root Mean Squared Error (RMSE): {rmse:.4f}")
-        st.sidebar.write(f"R-squared (R²): {r2:.4f}")
-        st.sidebar.write(f"Adjusted R²: {adj_r2:.4f}")
-        st.sidebar.write(f"Mean Absolute Percentage Error (MAPE): {mape:.2f}%")
-        return model, y_pred
-
-    def _get_input_for_prediction(self, df, target_column):
-        total_columns = df.select_dtypes(include='number').columns.drop(target_column, errors='ignore')
-        input_data = {}
-        for col in total_columns:
-            q1 = df[col].quantile(0.25)
-            q3 = df[col].quantile(0.75)
-            iqr = q3 - q1
-            lower_bound = q1 - 1.5 * iqr
-            upper_bound = q3 + 1.5 * iqr
-            if pd.api.types.is_integer_dtype(df[col]):
-                step = 1
-                min_val = int(np.floor(lower_bound))
-                max_val = int(np.ceil(upper_bound))
-                default_val = int(df[col].median())
-            else:
-                step = 0.01
-                min_val = float(lower_bound)
-                max_val = float(upper_bound)
-                default_val = float(df[col].median())
-            if min_val >= max_val:
-                max_val = min_val + step
-            if default_val < min_val or default_val > max_val:
-                default_val = min_val
-            input_data[col] = st.slider(label=col, min_value=min_val, max_value=max_val, value=default_val, step=step)
-        return pd.DataFrame([input_data])
+    def _get_classification_model(self, model_name):
+        if model_name == "Logistic Regression":
+            return LogisticRegression(max_iter=1000)
+        elif model_name == "Decision Tree":
+            return DecisionTreeClassifier()
+        elif model_name == "Random Forest":
+            return RandomForestClassifier()
+        elif model_name == "Gradient Boosting":
+            return GradientBoostingClassifier()
+        elif model_name == "AdaBoost":
+            return AdaBoostClassifier()
+        elif model_name == "K-Nearest Neighbors":
+            return KNeighborsClassifier()
+        elif model_name == "Naive Bayes":
+            return GaussianNB()
+        elif model_name == "SVM":
+            return SVC()
+        elif model_name == "XGBoost":
+            return XGBClassifier(use_label_encoder=False, eval_metric='logloss')
+        elif model_name == "LightGBM":
+            return LGBMClassifier()
+        elif model_name == "MLP Neural Network":
+            return MLPClassifier(max_iter=500)
+        elif model_name == "Linear Discriminant Analysis":
+            return LinearDiscriminantAnalysis()
+        elif model_name == "Quadratic Discriminant Analysis":
+            return QuadraticDiscriminantAnalysis()
+        else:
+            st.error("Invalid model selected.")
+            return None
 
     def predict(self):
         if self.data is not None:
-            columns = self.data.columns
-            dataset_choice = st.selectbox("Choose the Type of Data you uploaded", ["None", "Numeric Type", "Classification Type"])
+            if 'dataset_choice' not in st.session_state:
+                st.session_state.dataset_choice = "None"
+
+            dataset_choice = st.selectbox(
+                "Choose the Type of Data you uploaded",
+                ["None", "Numeric Type", "Classification Type"],
+                key="dataset_type_select"
+            )
+
+            if dataset_choice != st.session_state.get('dataset_choice'):
+                st.session_state.dataset_choice = dataset_choice
+                st.rerun()
+
+            if dataset_choice == "None":
+                return
+
             if dataset_choice == "Numeric Type":
-                model_selection = st.selectbox("Choose the Machine Learning Model you want the prediction from", [
-                    "None", "Linear Regression", "Polynomial Regression", "Ridge Regression", "Lasso Regression",
-                    "Elastic Net Regression", "Decision Tree Regression", "Random Forest Regression",
-                    "Gradient Boosting Regression", "Support Vector Regression", "K-Nearest Neighbors Regression",
-                    "AdaBoost Regression"
-                ])
-                target_column = st.selectbox("Select the Target Column", options=columns)
-                if model_selection != "None":
-                    df_cleaned = st.session_state.cleaned_data.copy()
-                    for col in df_cleaned.select_dtypes(include='number'):
-                        q1, q3 = df_cleaned[col].quantile(0.25), df_cleaned[col].quantile(0.75)
-                        iqr = q3 - q1
-                        lower_bound = q1 - 1.5 * iqr
-                        upper_bound = q3 + 1.5 * iqr
-                        df_cleaned = df_cleaned[(df_cleaned[col] >= lower_bound) & (df_cleaned[col] <= upper_bound)]
-                    numeric_cols = df_cleaned.select_dtypes(include='number').columns.drop(target_column, errors='ignore')
-                    X = df_cleaned[numeric_cols]
-                    y = df_cleaned[target_column]
-                    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42)
-                    X_train_scaled = self.scaler.fit_transform(X_train)
-                    X_test_scaled = self.scaler.transform(X_test)
-                    if model_selection == "Linear Regression":
-                        model = LinearRegression()
-                        model, y_pred = self._train_and_evaluate_regression(model, X_train_scaled, X_test_scaled, y_train, y_test, "Linear Regression", target_column)
-                        st.success("Model Trained Successfully! You can now Proceed to Predict the Target column")
-                    elif model_selection == "Polynomial Regression":
-                        poly = PolynomialFeatures(degree=2, include_bias=False)
-                        X_train_poly = poly.fit_transform(X_train_scaled)
-                        X_test_poly = poly.transform(X_test_scaled)
-                        model = LinearRegression()
-                        model.fit(X_train_poly, y_train)
-                        y_pred = model.predict(X_test_poly)
-                        mae = mean_absolute_error(y_test, y_pred)
-                        mse = mean_squared_error(y_test, y_pred)
-                        rmse = np.sqrt(mse)
-                        r2 = r2_score(y_test, y_pred)
-                        n = len(y_test)
-                        p = X_test_poly.shape[1]
-                        adj_r2 = 1 - (1 - r2) * (n - 1) / (n - p - 1)
-                        mape = np.mean(np.abs((y_test - y_pred) / y_test)) * 100
-                        st.sidebar.subheader("Polynomial Regression Metrics")
-                        st.sidebar.write(f"MAE: {mae:.4f}")
-                        st.sidebar.write(f"MSE: {mse:.4f}")
-                        st.sidebar.write(f"RMSE: {rmse:.4f}")
-                        st.sidebar.write(f"R²: {r2:.4f}")
-                        st.sidebar.write(f"Adjusted R²: {adj_r2:.4f}")
-                        st.sidebar.write(f"MAPE: {mape:.2f}%")
-                        st.success("Model Trained Successfully with Polynomial Regression! You can now Proceed to Predict the Target column")
-                    # Add other models similarly...
-                    input_df = self._get_input_for_prediction(df_cleaned, target_column)
-                    input_scaled = self.scaler.transform(input_df)
-                    if model_selection == "Polynomial Regression":
-                        input_scaled = poly.transform(input_scaled)
-                    user_prediction = model.predict(input_scaled)
-                    st.success(f"Predicted Value for the given Target Class is {user_prediction[0]:.4f}")
-            elif dataset_choice == "Classification Type":
-                # Similar structure for classification
-                pass
-        def predict(self):
-            if self.data is not None:
-                columns = self.data.columns
-                dataset_choice = st.selectbox("Choose the Type of Data you uploaded", ["None", "Numeric Type", "Classification Type"])
-                
-                if dataset_choice == "Numeric Type":
-                    model_selection = st.selectbox("Choose the Machine Learning Model you want the prediction from", [
-                        "None", "Linear Regression", "Polynomial Regression", "Ridge Regression", "Lasso Regression",
-                        "Elastic Net Regression", "Decision Tree Regression", "Random Forest Regression",
-                        "Gradient Boosting Regression", "Support Vector Regression", "K-Nearest Neighbors Regression",
+                model_selection = st.selectbox(
+                    "Choose the Machine Learning Model for Regression",
+                    [
+                        "None", "Linear Regression", "Polynomial Regression", "Ridge Regression",
+                        "Lasso Regression", "Elastic Net Regression", "Decision Tree Regression",
+                        "Random Forest Regression", "Gradient Boosting Regression",
+                        "Support Vector Regression", "K-Nearest Neighbors Regression",
                         "AdaBoost Regression"
-                    ])
-                    target_column = st.selectbox("Select the Target Column", options=columns)
-                    if model_selection != "None":
-                        df_cleaned = st.session_state.cleaned_data.copy()
-                        numeric_cols = df_cleaned.select_dtypes(include='number').columns.drop(target_column, errors='ignore')
-                        X = df_cleaned[numeric_cols]
-                        y = df_cleaned[target_column]
-                        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42)
-                        X_train_scaled = self.scaler.fit_transform(X_train)
-                        X_test_scaled = self.scaler.transform(X_test)
-    
-                        if model_selection == "Linear Regression":
-                            model = LinearRegression()
-                            model, y_pred = self._train_and_evaluate_regression(model, X_train_scaled, X_test_scaled, y_train, y_test, "Linear Regression", target_column)
-                            st.success("Model Trained Successfully! You can now Proceed to Predict the Target column")
-                        elif model_selection == "Polynomial Regression":
-                            poly = PolynomialFeatures(degree=2, include_bias=False)
-                            X_train_poly = poly.fit_transform(X_train_scaled)
-                            X_test_poly = poly.transform(X_test_scaled)
-                            model = LinearRegression()
-                            model.fit(X_train_poly, y_train)
-                            y_pred = model.predict(X_test_poly)
-                            mae = mean_absolute_error(y_test, y_pred)
-                            mse = mean_squared_error(y_test, y_pred)
-                            rmse = np.sqrt(mse)
-                            r2 = r2_score(y_test, y_pred)
-                            n = len(y_test)
-                            p = X_test_poly.shape[1]
-                            adj_r2 = 1 - (1 - r2) * (n - 1) / (n - p - 1)
-                            mape = np.mean(np.abs((y_test - y_pred) / y_test)) * 100
-                            st.sidebar.subheader("Polynomial Regression Metrics")
-                            st.sidebar.write(f"MAE: {mae:.4f}")
-                            st.sidebar.write(f"MSE: {mse:.4f}")
-                            st.sidebar.write(f"RMSE: {rmse:.4f}")
-                            st.sidebar.write(f"R²: {r2:.4f}")
-                            st.sidebar.write(f"Adjusted R²: {adj_r2:.4f}")
-                            st.sidebar.write(f"MAPE: {mape:.2f}%")
-                            st.success("Model Trained Successfully with Polynomial Regression! You can now Proceed to Predict the Target column")
-                        # Add other regression models similarly...
-    
-                        input_df = self._get_input_for_prediction(df_cleaned, target_column)
-                        input_scaled = self.scaler.transform(input_df)
-                        if model_selection == "Polynomial Regression":
-                            input_scaled = poly.transform(input_scaled)
-                        user_prediction = model.predict(input_scaled)
-                        st.success(f"Predicted Value for the given Target Class is {user_prediction[0]:.4f}")
-    
-                elif dataset_choice == "Classification Type":
-                    model_selection = st.selectbox("Choose the Machine Learning Model for Classification", [
+                    ],
+                    key="reg_model_select"
+                )
+                if model_selection == "None":
+                    return
+
+                target_column = st.selectbox(
+                    "Select the Target Column (Numeric)",
+                    options=self.data.columns,
+                    key="reg_target_select"
+                )
+
+                if not np.issubdtype(self.data[target_column].dtype, np.number):
+                    st.error("Selected target column is not numeric. Choose a valid numeric column.")
+                    return
+
+                st.info(f"Regression: {model_selection} on {target_column}")
+                # Add regression logic later
+
+            elif dataset_choice == "Classification Type":
+                model_selection = st.selectbox(
+                    "Choose the Machine Learning Model for Classification",
+                    [
                         "None", "Logistic Regression", "Decision Tree", "Random Forest", "Gradient Boosting",
                         "AdaBoost", "K-Nearest Neighbors", "Naive Bayes", "SVM", "XGBoost", "LightGBM",
                         "MLP Neural Network", "Linear Discriminant Analysis", "Quadratic Discriminant Analysis"
-                    ])
-                    target_column = st.selectbox("Select the Target (Class) Column", options=columns)
-                    if model_selection != "None":
-                        df_cleaned = st.session_state.cleaned_data.copy()
-                        # Encode target if string
-                        if df_cleaned[target_column].dtype == 'object':
-                            y = self.le.fit_transform(df_cleaned[target_column])
-                        else:
-                            y = df_cleaned[target_column].values
-                        X = df_cleaned.select_dtypes(include='number').drop(columns=[target_column], errors='ignore')
-                        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42)
-                        X_train_scaled = self.scaler.fit_transform(X_train)
-                        X_test_scaled = self.scaler.transform(X_test)
-    
-                        # Model selection
-                        if model_selection == "Logistic Regression":
-                            model = LogisticRegression(max_iter=1000)
-                        elif model_selection == "Decision Tree":
-                            model = DecisionTreeClassifier()
-                        elif model_selection == "Random Forest":
-                            model = RandomForestClassifier()
-                        elif model_selection == "Gradient Boosting":
-                            model = GradientBoostingClassifier()
-                        elif model_selection == "AdaBoost":
-                            model = AdaBoostClassifier()
-                        elif model_selection == "K-Nearest Neighbors":
-                            model = KNeighborsClassifier()
-                        elif model_selection == "Naive Bayes":
-                            model = GaussianNB()
-                        elif model_selection == "SVM":
-                            model = SVC()
-                        elif model_selection == "XGBoost":
-                            model = XGBClassifier(use_label_encoder=False, eval_metric='logloss')
-                        elif model_selection == "LightGBM":
-                            model = LGBMClassifier()
-                        elif model_selection == "MLP Neural Network":
-                            model = MLPClassifier(max_iter=500)
-                        elif model_selection == "Linear Discriminant Analysis":
-                            model = LinearDiscriminantAnalysis()
-                        elif model_selection == "Quadratic Discriminant Analysis":
-                            model = QuadraticDiscriminantAnalysis()
-                        else:
-                            model = None
-    
-                        if model is not None:
-                            model.fit(X_train_scaled, y_train)
-                            y_pred = model.predict(X_test_scaled)
-                            acc = accuracy_score(y_test, y_pred)
-                            prec = precision_score(y_test, y_pred, average='weighted', zero_division=0)
-                            rec = recall_score(y_test, y_pred, average='weighted', zero_division=0)
-                            f1 = f1_score(y_test, y_pred, average='weighted', zero_division=0)
-                            cm = confusion_matrix(y_test, y_pred)
-    
-                            st.sidebar.subheader(f"{model_selection} Metrics")
-                            st.sidebar.write(f"Accuracy: {acc:.4f}")
-                            st.sidebar.write(f"Precision: {prec:.4f}")
-                            st.sidebar.write(f"Recall: {rec:.4f}")
-                            st.sidebar.write(f"F1-Score: {f1:.4f}")
-    
-                            st.write("Confusion Matrix")
-                            fig, ax = plt.subplots(figsize=(6, 4))
-                            sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', ax=ax)
-                            ax.set_title(f"Confusion Matrix - {model_selection}")
-                            st.pyplot(fig)
-    
-                            st.success("Classification Model Trained Successfully!")
+                    ],
+                    key="clf_model_select"
+                )
+                if model_selection == "None":
+                    return
 
-                        # Input for prediction
-                        input_data = {}
-                        numeric_cols = X.columns
-                        for col in numeric_cols:
-                            min_val = float(df_cleaned[col].min())
-                            max_val = float(df_cleaned[col].max())
-                            default_val = float(df_cleaned[col].median())
-                            if min_val == max_val:
-                                max_val = min_val + 1.0
-                            input_data[col] = st.slider(f"Input {col}", min_value=min_val, max_value=max_val, value=default_val, step=0.01)
-    
-                        input_df = pd.DataFrame([input_data])
-                        input_scaled = self.scaler.transform(input_df)
-    
-                        if st.button("Predict Class"):
-                            pred = model.predict(input_scaled)[0]
-                            if hasattr(model, "predict_proba"):
-                                proba = model.predict_proba(input_scaled)[0]
-                                class_names = self.le.classes_ if hasattr(self.le, 'classes_') else np.unique(y)
-                                proba_str = ", ".join([f"{cls}: {p:.2f}" for cls, p in zip(class_names, proba)])
-                                st.info(f"Prediction Probabilities: {proba_str}")
-                            predicted_label = pred if df_cleaned[target_column].dtype != 'object' else self.le.inverse_transform([int(pred)])[0]
-                            st.success(f"Predicted Class: **{predicted_label}**")
+                target_column = st.selectbox(
+                    "Select the Target Column (Class Label)",
+                    options=self.data.columns,
+                    key="clf_target_select"
+                )
+
+                if self.data[target_column].nunique() < 2:
+                    st.error("Target column must have at least 2 unique classes.")
+                    return
+
+                st.info(f"Training {model_selection} on {target_column}...")
+
+                df_cleaned = st.session_state.cleaned_data.copy()
+                if df_cleaned[target_column].dtype == 'object':
+                    y = self.le.fit_transform(df_cleaned[target_column])
+                else:
+                    y = df_cleaned[target_column].values
+
+                X = df_cleaned.select_dtypes(include='number').drop(columns=[target_column], errors='ignore')
+                if X.empty:
+                    st.error("No numeric features available for training.")
+                    return
+
+                X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.3, random_state=42)
+                X_train_scaled = self.scaler.fit_transform(X_train)
+                X_test_scaled = self.scaler.transform(X_test)
+
+                model = self._get_classification_model(model_selection)
+                if model is None:
+                    return
+
+                with st.spinner("Training model..."):
+                    model.fit(X_train_scaled, y_train)
+                    y_pred = model.predict(X_test_scaled)
+
+                acc = accuracy_score(y_test, y_pred)
+                prec = precision_score(y_test, y_pred, average='weighted', zero_division=0)
+                rec = recall_score(y_test, y_pred, average='weighted', zero_division=0)
+                f1 = f1_score(y_test, y_pred, average='weighted', zero_division=0)
+
+                st.sidebar.subheader(f"{model_selection} Metrics")
+                st.sidebar.write(f"Accuracy: {acc:.4f}")
+                st.sidebar.write(f"Precision: {prec:.4f}")
+                st.sidebar.write(f"Recall: {rec:.4f}")
+                st.sidebar.write(f"F1-Score: {f1:.4f}")
+
+                cm = confusion_matrix(y_test, y_pred)
+                fig, ax = plt.subplots(figsize=(6, 4))
+                sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', ax=ax)
+                ax.set_title(f"Confusion Matrix - {model_selection}")
+                st.pyplot(fig)
+
+                st.success("✅ Classification Model Trained Successfully!")
+
+                st.write("### Enter Feature Values for Prediction")
+                input_data = {}
+                for col in X.columns:
+                    min_val = float(df_cleaned[col].min())
+                    max_val = float(df_cleaned[col].max())
+                    default_val = float(df_cleaned[col].median())
+                    if min_val == max_val:
+                        max_val = min_val + 1.0
+                    input_data[col] = st.slider(
+                        f"{col}",
+                        min_value=min_val,
+                        max_value=max_val,
+                        value=default_val,
+                        step=0.01,
+                        key=f"slider_{col}"
+                    )
+
+                input_df = pd.DataFrame([input_data])
+                input_scaled = self.scaler.transform(input_df)
+
+                if st.button("🔮 Predict Class"):
+                    pred = model.predict(input_scaled)[0]
+                    predicted_label = pred
+                    if df_cleaned[target_column].dtype == 'object':
+                        predicted_label = self.le.inverse_transform([pred])[0]
+                    st.success(f"🎯 Predicted Class: **{predicted_label}**")
+
+                    if hasattr(model, "predict_proba"):
+                        proba = model.predict_proba(input_scaled)[0]
+                        class_names = self.le.classes_ if hasattr(self.le, 'classes_') else np.unique(y)
+                        proba_str = ", ".join([f"{cls}: {p:.2f}" for cls, p in zip(class_names, proba)])
+                        st.info(f"📊 Prediction Probabilities: {proba_str}")
 
     def show_distribution(self):
         if self.data is not None:
@@ -488,7 +399,6 @@ class DataApp:
                 self.show_distribution()
 
 
-# Run the app
 if __name__ == "__main__":
     app = DataApp()
     app.run()
