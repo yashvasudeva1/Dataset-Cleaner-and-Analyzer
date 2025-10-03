@@ -5,16 +5,14 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from scipy import stats
 import warnings
-import io
 from PIL import Image
 Image.MAX_IMAGE_PIXELS = 200_000_000
-from sklearn.utils.multiclass import type_of_target
 import altair as alt
-from sklearn.svm import SVR, SVC
-from sklearn.linear_model import LinearRegression, Ridge, Lasso, ElasticNet, LogisticRegression
-from sklearn.tree import DecisionTreeRegressor, DecisionTreeClassifier
-from sklearn.ensemble import RandomForestRegressor, GradientBoostingRegressor, AdaBoostRegressor, RandomForestClassifier, GradientBoostingClassifier, AdaBoostClassifier
-from sklearn.neighbors import KNeighborsRegressor, KNeighborsClassifier
+from sklearn.svm import SVC
+from sklearn.linear_model import LinearRegression, LogisticRegression
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier, AdaBoostClassifier
+from sklearn.neighbors import KNeighborsClassifier
 from sklearn.naive_bayes import GaussianNB
 from sklearn.discriminant_analysis import LinearDiscriminantAnalysis, QuadraticDiscriminantAnalysis
 from xgboost import XGBClassifier
@@ -22,7 +20,7 @@ from lightgbm import LGBMClassifier
 from sklearn.neural_network import MLPClassifier
 from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, confusion_matrix
 from sklearn.model_selection import train_test_split
-from sklearn.preprocessing import StandardScaler, PolynomialFeatures, LabelEncoder
+from sklearn.preprocessing import StandardScaler, LabelEncoder
 from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 
 
@@ -32,19 +30,33 @@ def shapiro_safe(x):
         return stats.shapiro(x)
 
 
+@st.cache_data
+def load_data(uploaded_file):
+    return pd.read_csv(uploaded_file)
+
+
+@st.cache_data
+def get_numeric_columns(df):
+    return df.select_dtypes(include='number').columns.tolist()
+
+
+@st.cache_resource
+def get_scaler():
+    return StandardScaler()
+
+
 class DataApp:
     def __init__(self):
         self.data = None
-        self.scaler = StandardScaler()
         self.le = LabelEncoder()
+        self.scaler = get_scaler()
         self._setup_ui()
 
     def _setup_ui(self):
-        logo_path = "logo.png"
         col1, col2 = st.columns([1, 6])
         with col1:
             try:
-                st.image(logo_path, width=120)
+                st.image("logo.png", width=120)
             except:
                 st.write("🖼️")
         with col2:
@@ -61,11 +73,13 @@ class DataApp:
     def load_data(self):
         file = st.file_uploader("Upload CSV", type="csv", label_visibility="collapsed")
         if file is not None:
-            self.data = pd.read_csv(file)
+            self.data = load_data(file)
             st.write("Preview of your dataset")
             st.dataframe(self.data, use_container_width=True)
             if 'cleaned_data' not in st.session_state:
                 st.session_state.cleaned_data = self.data.copy()
+            if 'numeric_cols' not in st.session_state:
+                st.session_state.numeric_cols = get_numeric_columns(self.data)
 
     def show_analysis(self):
         if self.data is not None:
@@ -73,19 +87,15 @@ class DataApp:
 
     def show_visualization(self):
         if self.data is not None:
-            numeric_columns = self.data.select_dtypes(include='number').columns.tolist()
+            numeric_columns = st.session_state.numeric_cols
             selected_two = st.multiselect("Select exactly two columns to plot one against the other", numeric_columns)
             if len(selected_two) == 2:
                 x_col, y_col = selected_two
                 df_sorted = self.data.sort_values(by=x_col, ascending=True)
                 chart = alt.Chart(df_sorted).mark_line().encode(
-                    x=alt.X(x_col, title=x_col),
-                    y=alt.Y(y_col, title=y_col),
-                ).properties(
-                    title=f"Line plot of {y_col} vs {x_col}",
-                    width='container',
-                    height=300
-                )
+                    x=alt.X(f'{x_col}:Q', title=x_col),
+                    y=alt.Y(f'{y_col}:Q', title=y_col),
+                ).properties(title=f"Line plot of {y_col} vs {x_col}", width='container', height=300)
                 st.altair_chart(chart, use_container_width=True)
             elif len(selected_two) > 0:
                 st.warning("Please select exactly two columns for this plot.")
@@ -163,36 +173,30 @@ class DataApp:
                 mime="text/csv"
             )
 
-    def _get_classification_model(self, model_name):
-        if model_name == "Logistic Regression":
-            return LogisticRegression(max_iter=1000)
-        elif model_name == "Decision Tree":
-            return DecisionTreeClassifier()
-        elif model_name == "Random Forest":
-            return RandomForestClassifier()
-        elif model_name == "Gradient Boosting":
-            return GradientBoostingClassifier()
-        elif model_name == "AdaBoost":
-            return AdaBoostClassifier()
-        elif model_name == "K-Nearest Neighbors":
-            return KNeighborsClassifier()
-        elif model_name == "Naive Bayes":
-            return GaussianNB()
-        elif model_name == "SVM":
-            return SVC()
-        elif model_name == "XGBoost":
-            return XGBClassifier(use_label_encoder=False, eval_metric='logloss')
-        elif model_name == "LightGBM":
-            return LGBMClassifier()
-        elif model_name == "MLP Neural Network":
-            return MLPClassifier(max_iter=500)
-        elif model_name == "Linear Discriminant Analysis":
-            return LinearDiscriminantAnalysis()
-        elif model_name == "Quadratic Discriminant Analysis":
-            return QuadraticDiscriminantAnalysis()
-        else:
-            st.error("Invalid model selected.")
-            return None
+    @st.cache_resource
+    def _get_classification_model(_self, model_name):
+        models = {
+            "Logistic Regression": LogisticRegression(max_iter=1000),
+            "Decision Tree": DecisionTreeClassifier(),
+            "Random Forest": RandomForestClassifier(n_estimators=100, n_jobs=-1),
+            "Gradient Boosting": GradientBoostingClassifier(),
+            "AdaBoost": AdaBoostClassifier(),
+            "K-Nearest Neighbors": KNeighborsClassifier(n_neighbors=5, n_jobs=-1),
+            "Naive Bayes": GaussianNB(),
+            "SVM": SVC(),
+            "XGBoost": XGBClassifier(use_label_encoder=False, eval_metric='logloss', n_jobs=-1),
+            "LightGBM": LGBMClassifier(n_jobs=-1),
+            "MLP Neural Network": MLPClassifier(max_iter=500),
+            "Linear Discriminant Analysis": LinearDiscriminantAnalysis(),
+            "Quadratic Discriminant Analysis": QuadraticDiscriminantAnalysis()
+        }
+        return models.get(model_name)
+
+    @st.cache_data
+    def _train_model(_self, X_train_scaled, y_train, model_name):
+        model = _self._get_classification_model(model_name)
+        model.fit(X_train_scaled, y_train)
+        return model
 
     def predict(self):
         if self.data is not None:
@@ -212,35 +216,7 @@ class DataApp:
             if dataset_choice == "None":
                 return
 
-            if dataset_choice == "Numeric Type":
-                model_selection = st.selectbox(
-                    "Choose the Machine Learning Model for Regression",
-                    [
-                        "None", "Linear Regression", "Polynomial Regression", "Ridge Regression",
-                        "Lasso Regression", "Elastic Net Regression", "Decision Tree Regression",
-                        "Random Forest Regression", "Gradient Boosting Regression",
-                        "Support Vector Regression", "K-Nearest Neighbors Regression",
-                        "AdaBoost Regression"
-                    ],
-                    key="reg_model_select"
-                )
-                if model_selection == "None":
-                    return
-
-                target_column = st.selectbox(
-                    "Select the Target Column (Numeric)",
-                    options=self.data.columns,
-                    key="reg_target_select"
-                )
-
-                if not np.issubdtype(self.data[target_column].dtype, np.number):
-                    st.error("Selected target column is not numeric. Choose a valid numeric column.")
-                    return
-
-                st.info(f"Regression: {model_selection} on {target_column}")
-                # Add regression logic later
-
-            elif dataset_choice == "Classification Type":
+            if dataset_choice == "Classification Type":
                 model_selection = st.selectbox(
                     "Choose the Machine Learning Model for Classification",
                     [
@@ -263,8 +239,6 @@ class DataApp:
                     st.error("Target column must have at least 2 unique classes.")
                     return
 
-                st.info(f"Training {model_selection} on {target_column}...")
-
                 df_cleaned = st.session_state.cleaned_data.copy()
                 if df_cleaned[target_column].dtype == 'object':
                     y = self.le.fit_transform(df_cleaned[target_column])
@@ -280,14 +254,9 @@ class DataApp:
                 X_train_scaled = self.scaler.fit_transform(X_train)
                 X_test_scaled = self.scaler.transform(X_test)
 
-                model = self._get_classification_model(model_selection)
-                if model is None:
-                    return
+                model = self._train_model(X_train_scaled, y_train, model_selection)
 
-                with st.spinner("Training model..."):
-                    model.fit(X_train_scaled, y_train)
-                    y_pred = model.predict(X_test_scaled)
-
+                y_pred = model.predict(X_test_scaled)
                 acc = accuracy_score(y_test, y_pred)
                 prec = precision_score(y_test, y_pred, average='weighted', zero_division=0)
                 rec = recall_score(y_test, y_pred, average='weighted', zero_division=0)
@@ -305,7 +274,7 @@ class DataApp:
                 ax.set_title(f"Confusion Matrix - {model_selection}")
                 st.pyplot(fig)
 
-                st.success("Classification Model Trained Successfully!")
+                st.success("✅ Classification Model Trained Successfully!")
 
                 st.write("### Enter Feature Values for Prediction")
                 input_data = {}
@@ -327,22 +296,22 @@ class DataApp:
                 input_df = pd.DataFrame([input_data])
                 input_scaled = self.scaler.transform(input_df)
 
-                if st.button("Predict Class"):
+                if st.button("🔮 Predict Class"):
                     pred = model.predict(input_scaled)[0]
                     predicted_label = pred
                     if df_cleaned[target_column].dtype == 'object':
                         predicted_label = self.le.inverse_transform([pred])[0]
-                    st.success(f"Predicted Class: **{predicted_label}**")
+                    st.success(f"🎯 Predicted Class: **{predicted_label}**")
 
                     if hasattr(model, "predict_proba"):
                         proba = model.predict_proba(input_scaled)[0]
                         class_names = self.le.classes_ if hasattr(self.le, 'classes_') else np.unique(y)
                         proba_str = ", ".join([f"{cls}: {p:.2f}" for cls, p in zip(class_names, proba)])
-                        st.info(f"Prediction Probabilities: {proba_str}")
+                        st.info(f"📊 Prediction Probabilities: {proba_str}")
 
     def show_distribution(self):
         if self.data is not None:
-            num_cols = self.data.select_dtypes(include='number').columns
+            num_cols = st.session_state.numeric_cols
             distribution_report = []
             alpha = 0.05
             for col in num_cols:
@@ -377,8 +346,11 @@ class DataApp:
                 for holder, col in zip(cols, pair):
                     holder.caption(f"Histogram: {col}")
                     data = self.data[col].dropna()
-                    chart = alt.Chart(data.to_frame(name=col)).mark_bar().encode(
-                        x=alt.X(f'{col}:Q', bin=alt.Bin(maxbins=int(bins))),
+                    # Fix: Ensure column name is string and not numeric-like
+                    safe_col = str(col).strip()
+                    df_plot = data.to_frame(name=safe_col)
+                    chart = alt.Chart(df_plot).mark_bar().encode(
+                        x=alt.X(f'{safe_col}:Q', bin=alt.Bin(maxbins=int(bins)), title=safe_col),
                         y=alt.Y('count():Q', title='Count')
                     ).properties(height=280)
                     holder.altair_chart(chart, use_container_width=True)
