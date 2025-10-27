@@ -1174,7 +1174,7 @@ if file is not None:
                     st.error(f"An error occurred during model fitting or evaluation: {e}")
                     st.stop()
                 input_data = {}
-            
+                totalcolumns = df_cleaned.select_dtypes(include='number').columns.drop(target_column, errors='ignore')
                 for col in totalcolumns:
                     q1 = df[col].quantile(0.25)
                     q3 = df[col].quantile(0.75)
