@@ -1149,30 +1149,30 @@ if file is not None:
                         "or switch to a regression model."
                     )
                     st.stop()
-                x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.3, random_state=42)
-                scaler = StandardScaler()
-                x_train = scaler.fit_transform(x_train)
-                x_test = scaler.transform(x_test)
-                model = LogisticRegression(max_iter=1000)
-                model.fit(x_train, y_train)
-                y_pred = model.predict(x_test)
-            
-                acc = accuracy_score(y_test, y_pred)
-                prec = precision_score(y_test, y_pred, average='weighted', zero_division=0)
-                rec = recall_score(y_test, y_pred, average='weighted')
-                f1 = f1_score(y_test, y_pred, average='weighted')
-                cm = confusion_matrix(y_test, y_pred)
-            
-                st.sidebar.header("Logistic Regression Metrics")
-                st.sidebar.write(f"Accuracy: {acc:.4f}")
-                st.sidebar.write(f"Precision: {prec:.4f}")
-                st.sidebar.write(f"Recall: {rec:.4f}")
-                st.sidebar.write(f"F1 Score: {f1:.4f}")
-                st.sidebar.write(f"Confusion Matrix:\n{cm}")
-            
-                totalcolumns = df_cleaned.select_dtypes(include='number').columns.drop(target_column, errors='ignore')
-                st.header("Input feature values for prediction")
-            
+                try:
+                    x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.3, random_state=42)
+                    scaler = StandardScaler()
+                    x_train = scaler.fit_transform(x_train)
+                    x_test = scaler.transform(x_test)
+                    model = LogisticRegression(max_iter=1000)
+                    model.fit(x_train, y_train)
+                    y_pred = model.predict(x_test)
+                
+                    acc = accuracy_score(y_test, y_pred)
+                    prec = precision_score(y_test, y_pred, average='weighted', zero_division=0)
+                    rec = recall_score(y_test, y_pred, average='weighted')
+                    f1 = f1_score(y_test, y_pred, average='weighted')
+                    cm = confusion_matrix(y_test, y_pred)
+                
+                    st.sidebar.header("Logistic Regression Metrics")
+                    st.sidebar.write(f"Accuracy: {acc:.4f}")
+                    st.sidebar.write(f"Precision: {prec:.4f}")
+                    st.sidebar.write(f"Recall: {rec:.4f}")
+                    st.sidebar.write(f"F1 Score: {f1:.4f}")
+                    st.sidebar.write(f"Confusion Matrix:\n{cm}")
+                except Exception as e:
+                    st.error(f"An error occurred during model fitting or evaluation: {e}")
+                    st.stop()
                 input_data = {}
             
                 for col in totalcolumns:
