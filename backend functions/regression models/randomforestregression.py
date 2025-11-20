@@ -1,3 +1,6 @@
+import sys
+sys.path.append("backend functions/functionalities")
+from importlibraries import *
 def random_forest_regression_model(x_train, y_train, x_test, y_test):
     param_grid = {
         "n_estimators": [100, 200],
@@ -20,3 +23,4 @@ def random_forest_regression_model(x_train, y_train, x_test, y_test):
         "R²": r2_score(y_test, y_pred)
     }
     return best_model, pd.DataFrame([metrics])
+
