@@ -145,7 +145,7 @@ if not df.empty:
                     "Metric": ["Total Null Values", "Total Outliers", "Total Duplicates"],
                     "Count": [new_nulls, new_outliers, new_duplicates]
                 })
-    
+                return cleaned_df
     
         # ========== AFTER CLEANING (right column) ==========
         with col2:
