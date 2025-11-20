@@ -1,3 +1,6 @@
+import sys
+sys.path.append("backend functions/functionalities")
+from importlibraries import *
 def linear_regression_model(x_train, y_train, x_test, y_test):
     model = LinearRegression()
     model.fit(x_train, y_train)
@@ -11,3 +14,4 @@ def linear_regression_model(x_train, y_train, x_test, y_test):
         "R²": r2_score(y_test, y_pred)
     }
     return model, pd.DataFrame([metrics])
+
