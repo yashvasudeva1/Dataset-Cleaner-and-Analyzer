@@ -19,7 +19,7 @@
 # from scipy.stats import shapiro
 import joblib
 from my_imports import import_all_libs   # MUST match name + module
-loaded_func = joblib.load("imports.pkl")
+loaded_func = joblib.load("my_imports.py")
 loaded_func()
 st.set_page_config(page_title="QuickML", layout="wide")
 st.title("QuickMl")
