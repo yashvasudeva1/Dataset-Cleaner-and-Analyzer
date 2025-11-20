@@ -22,6 +22,16 @@ st.set_page_config(page_title="QuickML", layout="wide")
 st.title("QuickML")
 st.text("An app that enables you to clean, analyze & visualize your dataset and make predictions based on your preferred ML model")
 st.divider()
+import os
+
+st.write("Current directory:", os.getcwd())
+st.write("Files here:", os.listdir())
+
+if os.path.exists("pickel_files"):
+    st.write("Pickel folder exists.")
+    st.write("Files inside pickel_files:", os.listdir("pickel_files"))
+else:
+    st.write("Pickel folder does NOT exist!")
 
 uploaded_file = st.file_uploader("Upload a CSV or Excel file", type=["csv", "xlsx"])
 
