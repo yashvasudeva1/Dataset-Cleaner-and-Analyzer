@@ -271,7 +271,7 @@ if not df.empty:
                 from gradientboosting import tune_gradient_boosting
                 from adaboost import tune_adaboost
                 from knn import tune_knn
-                from svmclassifier import tune_svm
+                from svm import tune_svm
                 from naivebayes import tune_naive_bayes
                 from mlp import tune_mlp
                 from lightgbm import tune_lightgbm
