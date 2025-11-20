@@ -100,16 +100,25 @@ if not df.empty:
         def load_pickle(path):
             with open(path, "rb") as f:
                 return pickle.load(f)
-        nulls_func = load_pickle("nullcount.pkl")         
-        outliers_func = load_pickle("totaloutlier.pkl")    
-        duplicate_func = load_pickle("duplicatcounts.pkl")  
-        df_nulls = 
-        df_duplicates = pd.DataFrame({"duplicate_count": [duplicate_count]})
+        nulls_func = load_pickle("pickel_files/nullcount.pkl")          # returns DataFrame
+        outliers_func = load_pickle("pickel_files/totaloutlier.pkl")    # returns DataFrame
+        duplicate_func = load_pickle("pickel_files/duplicatcounts.pkl") # returns integer
+
+        df_nulls = nulls_func(df)       # DataFrame
+        df_outliers = outliers_func(df) # DataFrame
+        dfduplicates = duplicate_func(df)  # int
+
+        # Convert duplicate count to DataFrame
+        df_duplicates = pd.DataFrame({"duplicate_count": [dfduplicates]})
+
+        # Combine summary reports (not the full df)
         combined_df = pd.concat(
-            [df_nulls, df_outliers, df],
-            ignore_index=True
+            [df_nulls, df_outliers, df_duplicates],
+            axis=1
         )
-        col1,col2=st.columns(2)
+
+        col1, col2 = st.columns(2)
+
         with col1:
-          st.subheader("Report before cleaning")
-          st.dataframe(combined_df)
+            st.subheader("Report before cleaning")
+            st.dataframe(combined_df)
