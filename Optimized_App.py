@@ -162,9 +162,12 @@ if not df.empty:
         st.dataframe(result_df, use_container_width=True)
         st.write("### Histogram Preview")
         numeric_cols = current_df.select_dtypes(include=['int64','float64']).columns
-        for col in numeric_cols:
-            st.write(f"**{col}**")
-            st.bar_chart(current_df[col])
+        selected_hist = st.selectbox("View Histogram", num_cols)
+        chart = alt.Chart(current_df).mark_bar().encode(
+            x=alt.X(selected_hist, bin=True),
+            y='count()'
+        ).properties(height=300)
+        st.altair_chart(chart, use_container_width=True)
 
 
 
