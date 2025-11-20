@@ -105,7 +105,7 @@ if not df.empty:
         
         nulls_func = load_pickle("pickel_files/nullcount.pkl")
         outliers_func = load_pickle("pickel_files/totaloutliers.pkl")
-        duplicate_func = load_pickle("pickel_files/duplicatcounts.pkl")
+        duplicate_func = load_pickle("pickel_files/duplicatcount.pkl")
         # Run functions
         df_nulls = nulls_func(df)                     # DataFrame
         df_outliers = outliers_func(df)               # DataFrame
