@@ -1,6 +1,7 @@
 import sys
 sys.path.append("backend functions/functionalities")
-from importlibraries import *def tune_adaboost(x_train, y_train, x_test, y_test):
+from importlibraries import *
+def tune_adaboost(x_train, y_train, x_test, y_test):
     model = AdaBoostClassifier()
     params = {'n_estimators': [50, 100, 200], 'learning_rate': [0.01, 0.1, 1]}
     grid = GridSearchCV(model, params, cv=5, scoring='accuracy', n_jobs=-1)
@@ -16,5 +17,6 @@ from importlibraries import *def tune_adaboost(x_train, y_train, x_test, y_test)
         "F1-score": f1_score(y_test, y_pred, average='weighted')
     }
     return best_model, pd.DataFrame([metrics])
+
 
 
