@@ -1,3 +1,6 @@
+import sys
+sys.path.append("backend functions/functionalities")
+from importlibraries import *
 def tune_logistic_regression(x_train, y_train, x_test, y_test):
     model = LogisticRegression(max_iter=10000)
     params = {'C': [0.01, 0.1, 1, 10, 100], 'solver': ['liblinear', 'saga']}
@@ -14,3 +17,4 @@ def tune_logistic_regression(x_train, y_train, x_test, y_test):
         "F1-score": f1_score(y_test, y_pred, average='weighted')
     }
     return best_model, pd.DataFrame([metrics])
+
