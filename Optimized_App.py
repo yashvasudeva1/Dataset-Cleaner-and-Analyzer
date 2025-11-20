@@ -187,24 +187,42 @@ if not df.empty:
 
     with tab5:
         st.title("Prediction")
+    
         current_df = st.session_state.get("df", df)
+    
         target_column = st.selectbox("Select Target Column", current_df.columns)
+    
         if target_column:
             y = current_df[target_column]
+    
+            # Detect problem type
             if y.dtype in ["int64", "float64"]:
                 problem_type = "Regression"
             else:
                 problem_type = "Classification"
+    
             st.subheader("Problem Type Detected")
             st.success(f"This is a **{problem_type}** problem.")
+    
+            # ------------------------------
+            # IMPORT DATA SPLIT + PREPROCESS
+            # ------------------------------
             from traintestsplit import create_train_test_split
             from preprocessdata import preprocess_data
+    
+            # 1. Split (NO LEAK)
             X_train, X_test, y_train, y_test = create_train_test_split(
                 current_df, target_column, test_size=0.2
             )
+    
+            # 2. Preprocess (NO LEAK)
             X_train_prep, X_test_prep, y_train_prep, y_test_prep, encoders, scaler = preprocess_data(
                 X_train, X_test, y_train, y_test
             )
+    
+            # ----------------------------------------------------
+            # MODEL OPTIONS BASED ON PROBLEM TYPE
+            # ----------------------------------------------------
             if problem_type == "Regression":
                 from linearregression import linear_regression_model
                 from ridgeregression import ridge_regression_model
@@ -243,9 +261,6 @@ if not df.empty:
                     "SVR Regressor": svr_regression_model
                 }
     
-            # ----------------------------
-            # CLASSIFICATION MODELS
-            # ----------------------------
             else:
                 from logisticregression import logistic_regression_model
                 from decisiontree import decision_tree_classifier_model
@@ -281,15 +296,15 @@ if not df.empty:
                     "Neural Network (MLP)": mlp_classifier_model
                 }
     
-            # ----------------------------
-            # MODEL SELECTION UI
-            # ----------------------------
+            # ------------------------------
+            # SELECT MODEL
+            # ------------------------------
             selected_model_name = st.selectbox("Select Model", model_options)
             model_function = model_map[selected_model_name]
     
-            # ----------------------------
+            # ------------------------------
             # TRAIN MODEL
-            # ----------------------------
+            # ------------------------------
             if st.button("Train Model"):
                 model, metrics_df = model_function(
                     X_train_prep, y_train_prep, X_test_prep, y_test_prep
@@ -298,6 +313,8 @@ if not df.empty:
                 st.success("Model Trained Successfully!")
                 st.subheader("Model Performance")
                 st.dataframe(metrics_df, use_container_width=True)
+    
+
 
    
 
