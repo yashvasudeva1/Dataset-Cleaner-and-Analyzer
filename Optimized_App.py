@@ -154,7 +154,7 @@ if not df.empty:
                     file_name="cleaned_dataset.csv",
                     mime="text/csv"
                 )
-   with tab4:
+    with tab4:
         st.title("Normality Check")
     
         from typeofdata import analyze_distribution
