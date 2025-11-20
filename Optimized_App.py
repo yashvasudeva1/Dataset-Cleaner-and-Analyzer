@@ -96,3 +96,20 @@ if not df.empty:
             )
 
             st.altair_chart(chart, width='stretch')
+    with tab3:
+        def load_pickle(path):
+            with open(path, "rb") as f:
+                return pickle.load(f)
+        nulls_func = load_pickle("nullcount.pkl")         
+        outliers_func = load_pickle("totaloutlier.pkl")    
+        duplicate_func = load_pickle("duplicatcounts.pkl")  
+        df_nulls = 
+        df_duplicates = pd.DataFrame({"duplicate_count": [duplicate_count]})
+        combined_df = pd.concat(
+            [df_nulls, df_outliers, df],
+            ignore_index=True
+        )
+        col1,col2=st.columns(2)
+        with col1:
+          st.subheader("Report before cleaning")
+          st.dataframe(combined_df)
