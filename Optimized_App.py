@@ -108,7 +108,7 @@ if not df.empty:
             total_outliers,
             total_duplicates
         )
-        from handle_null_duplicate_outlier import handle_null_and_duplicates_and_outliers
+        from handlenullduplicateoutlier import handle_null_and_duplicates_and_outliers
         df_nulls = total_null(current_df)
         total_null_count = df_nulls["count"].sum()
     
