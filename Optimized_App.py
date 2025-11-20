@@ -146,7 +146,6 @@ if not df.empty:
                     "Count": [new_nulls, new_outliers, new_duplicates]
                 })
     
-                st.session_state["clean_preview"] = cleaned_df
     
         # ========== AFTER CLEANING (right column) ==========
         with col2:
@@ -157,6 +156,7 @@ if not df.empty:
                 st.success("Dataset Cleaned Successfully!")
             else:
                 st.info("Click 'Clean Data' to generate the cleaning report.")
+        st.session_state["clean_preview"] = cleaned_df
         st.write("### Preview of Cleaned Data")
         st.dataframe(st.session_state["clean_preview"], use_container_width=True)
 
