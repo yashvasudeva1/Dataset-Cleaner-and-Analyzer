@@ -105,11 +105,11 @@ if not df.empty:
         from countsofnullduplicateandoutlier import (
             total_null,
             total_outliers,
-            duplicate_count
+            total_duplicates
         )
         df_nulls = total_null(df)          
         df_outliers = total_outliers(df)     
-        duplicates_count = duplicate_count(df) 
+        duplicates_count = total_duplicates(df) 
         df_duplicates = pd.DataFrame({"duplicate_count": [duplicates_count]})
         df_nulls.index = [0]
         df_outliers.index = [0]
