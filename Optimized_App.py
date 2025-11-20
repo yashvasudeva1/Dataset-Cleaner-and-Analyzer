@@ -154,20 +154,37 @@ if not df.empty:
                     file_name="cleaned_dataset.csv",
                     mime="text/csv"
                 )
-    with tab4:
+   with tab4:
         st.title("Normality Check")
-        from typeofdata import analyze_distribution    
+    
+        from typeofdata import analyze_distribution
+    
         current_df = st.session_state.get("df", df)
+    
         result_df = analyze_distribution(current_df)
         st.dataframe(result_df, use_container_width=True)
+    
         st.write("### Histogram Preview")
-        numeric_cols = current_df.select_dtypes(include=['int64','float64']).columns
-        selected_hist = st.selectbox("View Histogram", num_cols)
-        chart = alt.Chart(current_df).mark_bar().encode(
-            x=alt.X(selected_hist, bin=True),
-            y='count()'
-        ).properties(height=300)
-        st.altair_chart(chart, use_container_width=True)
+    
+        numeric_cols = current_df.select_dtypes(include=['int64', 'float64']).columns
+    
+        if len(numeric_cols) == 0:
+            st.info("No numeric columns found for histogram.")
+        else:
+            selected_hist = st.selectbox("Select Column", numeric_cols)
+    
+            chart = (
+                alt.Chart(current_df)
+                .mark_bar()
+                .encode(
+                    x=alt.X(selected_hist, bin=alt.Bin(maxbins=30)),
+                    y='count()'
+                )
+                .properties(height=300)
+            )
+    
+            st.altair_chart(chart, use_container_width=True)
+
 
 
 
