@@ -107,7 +107,7 @@ if not df.empty:
             total_outliers,
             total_duplicates
         )
-        from handlenullduplicateoutlier import clean_data
+        from handlenullduplicateoutlier import handle_null_and_duplicates_and_outliers
     
         # ========== BEFORE CLEANING ==========
         df_nulls = total_null(df)
