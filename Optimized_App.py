@@ -146,14 +146,14 @@ if not df.empty:
             st.write("### Preview of Cleaned Data")
             st.dataframe(st.session_state["clean_preview"])
             if "df" in st.session_state:
-            cleaned_df = st.session_state["df"]
-            csv = cleaned_df.to_csv(index=False).encode('utf-8')
-            st.download_button(
-                label="Download Cleaned Dataset",
-                data=csv,
-                file_name="cleaned_dataset.csv",
-                mime="text/csv"
-            )
+                cleaned_df = st.session_state["df"]
+                csv = cleaned_df.to_csv(index=False).encode('utf-8')
+                st.download_button(
+                    label="Download Cleaned Dataset",
+                    data=csv,
+                    file_name="cleaned_dataset.csv",
+                    mime="text/csv"
+                )
 
 
 
