@@ -1,3 +1,6 @@
+import sys
+sys.path.append("backend functions/functionalities")
+from importlibraries import *
 def tune_mlp(x_train, y_train, x_test, y_test):
     model = MLPClassifier(max_iter=1000)
     params = {'hidden_layer_sizes': [(50,), (100,), (50, 50)], 'activation': ['relu', 'tanh'], 'solver': ['adam', 'lbfgs']}
@@ -14,3 +17,4 @@ def tune_mlp(x_train, y_train, x_test, y_test):
         "F1-score": f1_score(y_test, y_pred, average='weighted')
     }
     return best_model, pd.DataFrame([metrics])
+
