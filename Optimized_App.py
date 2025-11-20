@@ -154,7 +154,17 @@ if not df.empty:
                     file_name="cleaned_dataset.csv",
                     mime="text/csv"
                 )
-
+    with tab4:
+        st.title("Normality Check")
+        from typeofdata import analyze_distribution    
+        current_df = st.session_state.get("df", df)
+        result_df = analyze_distribution(current_df)
+        st.dataframe(result_df, use_container_width=True)
+        st.write("### Histogram Preview")
+        numeric_cols = current_df.select_dtypes(include=['int64','float64']).columns
+        for col in numeric_cols:
+            st.write(f"**{col}**")
+            st.bar_chart(current_df[col])
 
 
 
