@@ -1,57 +1,82 @@
 import streamlit as st
-import numpy as np
 import pandas as pd
-import matplotlib.pyplot as plt
-import seaborn as sns
-from scipy import stats
-import warnings
-import io
+import numpy as np
+import joblib
 import altair as alt
-from sklearn.svm import SVR, SVC
-from sklearn.linear_model import LinearRegression, Ridge, Lasso, ElasticNet, LogisticRegression
-from sklearn.tree import DecisionTreeRegressor, DecisionTreeClassifier
-from sklearn.ensemble import RandomForestRegressor, GradientBoostingRegressor, AdaBoostRegressor, RandomForestClassifier, GradientBoostingClassifier, AdaBoostClassifier
-from sklearn.neighbors import KNeighborsRegressor, KNeighborsClassifier
+import math
+from sklearn.linear_model import LogisticRegression, LinearRegression, Ridge, Lasso, ElasticNet
+from sklearn.tree import DecisionTreeClassifier, DecisionTreeRegressor
+from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor, GradientBoostingClassifier, GradientBoostingRegressor, AdaBoostClassifier, AdaBoostRegressor
+from sklearn.neighbors import KNeighborsClassifier, KNeighborsRegressor
 from sklearn.naive_bayes import GaussianNB
 from sklearn.discriminant_analysis import LinearDiscriminantAnalysis, QuadraticDiscriminantAnalysis
-from lightgbm import LGBMClassifier
 from sklearn.neural_network import MLPClassifier
-from sklearn.model_selection import train_test_split, cross_val_score, GridSearchCV
-from sklearn.preprocessing import StandardScaler, PolynomialFeatures
-from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
+from xgboost import XGBClassifier
+from lightgbm import LGBMClassifier
+from sklearn.preprocessing import StandardScaler
+from sklearn.pipeline import make_pipeline
+from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, r2_score, mean_absolute_error, mean_squared_error
+from scipy.stats import shapiro
 
-st.title(":material/folder: Dataset Cleaner and Analyser")
-st.write("This app helps in making your dataset cleaner, outlier-free, and ready for training")
-
+st.set_page_config(page_title="QuickML", layout="wide")
+st.title("QuickMl")
+st.text("An app that enables you to clean, analyze & visualize your dataset and make predictions based on your preferred ML model")
+st.divider()
+uploaded_file=st.file_uploader("Upload a CSV or Excel file", type=["csv", "xlsx"])
 @st.cache_data
-def load_data(uploaded_file):
-    return pd.read_csv(uploaded_file)
+def load_csv(uploaded_file):
+    try:
+        if uploaded_file.name.endswith((".xlsx", ".xls")):
+            return pd.read_excel(uploaded_file)
+        else:
+            return pd.read_csv(uploaded_file)
+    except Exception as e:
+        st.error(f"Error loading file: {e}")
+        return pd.DataFrame()
 
-def calculate_outliers(df_numeric):
-    Q1 = df_numeric.quantile(0.25)
-    Q3 = df_numeric.quantile(0.75)
-    IQR = Q3 - Q1
-    outlier_mask = (df_numeric < (Q1 - 1.5 * IQR)) | (df_numeric > (Q3 + 1.5 * IQR))
-    outliers_count = outlier_mask.sum()
-    lower_bound = q1 - 1.5 * iqr
-    upper_bound = q3 + 1.5 * iqr
-    return lower_bound, upper_bound, outlier_mask, outliers_count
-    
-def clean_outliers(df, target_col):
-    df_clean = df.copy()
-    numeric_cols = df_clean.select_dtypes(include=np.number).columns.drop(target_col, errors='ignore')
-    for col in numeric_cols:
-        lower_bound = df_clean[col].quantile(0.25) - 1.5 * (df_clean[col].quantile(0.75) - df_clean[col].quantile(0.25))
-        upper_bound = df_clean[col].quantile(0.75) + 1.5 * (df_clean[col].quantile(0.75) - df_clean[col].quantile(0.25))
-        df_clean = df_clean[(df_clean[col] >= lower_bound) & (df_clean[col] <= upper_bound)]
-    return df_clean
+if uploaded_file is not None:
+    df = load_csv(uploaded_file)
+    if not df.empty:
+        st.success(f"File '{uploaded_file.name}' uploaded successfully!")
+        st.session_state["df"] = df
+    else:
+        st.warning("Uploaded file could not be processed.")
+else:
+    st.info("Please upload a dataset to begin.")
+    df = pd.DataFrame()
 
-def prepare_data(df, target_col, test_size=0.3, random_state=42):
-    df_clean = clean_outliers(df, target_col)
-    X = df_clean.drop(columns=[target_col])
-    y = df_clean[target_col]
-    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=test_size, random_state=random_state)
-    scaler = StandardScaler()
-    X_train_scaled = scaler.fit_transform(X_train)
-    X_test_scaled = scaler.transform(X_test)
-    return X_train, X_test, y_train, y_test, X_train_scaled, X_test_scaled, scaler, df_clean
+tab1,tab2,tab3,tab4,tab4,tab6=st.tabs(["Overview","Visualization","Cleaning","Normality","Prediction","AI Assistant"])
+with tab1:
+    st.title("Data Overview")
+    col_a, col_b = st.columns(2)
+    with col_a:
+        st.write("### First 5 Rows")
+        st.dataframe(df.head())
+    with col_b:
+        st.write("### Data Types")
+        st.dataframe(df.dtypes.astype(str), height=200)
+
+    st.write("### Summary Statistics")
+    st.dataframe(df.describe(include='all'))
+
+with tab2:
+    st.title("Bivariate Analysis")
+    numeric_columns=df.select_dtypes(include='number').columns.tolist()
+    if len(numeric_columns)>=2:
+        col1, col2 = st.columns(2)
+        x_col = col1.selectbox("X Axis", numeric_columns, index=0)
+        y_col = col2.selectbox("Y Axis", numeric_columns, index=1)
+        # Downsample for Altair if data is huge to prevent crashes
+        plot_df = df.copy()
+        if len(plot_df)>5000:
+            st.warning("Dataset > 5000 rows. Plotting a random sample of 5000 points for performance.")
+            plot_df = plot_df.sample(n=5000, random_state=42)
+        chart = (
+            alt.Chart(plot_df)
+            .mark_line()
+            .encode(
+                x=x_col,
+                y=y_col,
+                tooltip=[x_col, y_col]
+        ).interactive().properties(height=400))
+        st.altair_chart(chart, width='stretch')
