@@ -17,7 +17,7 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.pipeline import make_pipeline
 from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, r2_score, mean_absolute_error, mean_squared_error
 from scipy.stats import shapiro
-
+import pickle
 st.set_page_config(page_title="QuickML", layout="wide")
 st.title("QuickML")
 st.text("An app that enables you to clean, analyze & visualize your dataset and make predictions based on your preferred ML model")
