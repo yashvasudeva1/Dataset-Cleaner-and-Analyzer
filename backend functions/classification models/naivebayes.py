@@ -1,4 +1,6 @@
-
+import sys
+sys.path.append("backend functions/functionalities")
+from importlibraries import *
 def tune_naive_bayes(x_train, y_train, x_test, y_test):
     model = GaussianNB()
     params = {'var_smoothing': [1e-9, 1e-8, 1e-7, 1e-6]}
@@ -15,3 +17,4 @@ def tune_naive_bayes(x_train, y_train, x_test, y_test):
         "F1-score": f1_score(y_test, y_pred, average='weighted')
     }
     return best_model, pd.DataFrame([metrics])
+
