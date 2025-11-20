@@ -28,7 +28,7 @@ st.set_page_config(page_title="QuickML", layout="wide")
 logo_path = "logo.png"
 col1, col2 = st.columns([1, 6])
 with col1:
-    st.image(logo_path, width=400)
+    st.image(logo_path, width=40)
 with col2:
     st.markdown(
     """
