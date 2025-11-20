@@ -1,3 +1,5 @@
+import sys
+sys.path.append("backend functions/functionalities")
 from importlibraries import *
 def total_null(df):
     total_null=df.isnull().sum().to_frame(name='count')
@@ -23,4 +25,5 @@ def total_outliers(df):
 
     outliers=pd.DataFrame(outlier_counts,index=[0]).transpose()
     return outliers
+
 
