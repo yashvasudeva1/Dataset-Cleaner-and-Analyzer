@@ -102,53 +102,50 @@ if not df.empty:
 
             st.altair_chart(chart, width='stretch')
     with tab3:
-        from countsofnullduplicateandoutlier import total_null, total_outliers, total_duplicates
-        from handlenullduplicateoutlier import handle_null_and_duplicates_and_outliers
-        
+        from countsofnullduplicateandoutlier import total_null,total_outliers,total_duplicates
+        from handle_null_duplicate_outlier import handle_null_and_duplicates_and_outliers
+    
         current_df = st.session_state.get("df", df)
-        
+    
         before_nulls = total_null(current_df)["count"].sum()
         before_outliers = total_outliers(current_df)[0].sum()
         before_duplicates = total_duplicates(current_df)
-        
+    
         summary_df = pd.DataFrame({
-            "Metric": ["Total Null Values", "Total Outliers", "Total Duplicates"],
-            "Count": [before_nulls, before_outliers, before_duplicates]
+            "Metric": ["Total Null Values","Total Outliers","Total Duplicates"],
+            "Count": [before_nulls,before_outliers,before_duplicates]
         })
-        
+    
         col1, col2 = st.columns(2)
-        
+    
         with col1:
             st.subheader("Report Before Cleaning")
             st.dataframe(summary_df)
-            # Clean Data button moved **below** the before cleaning report
             if st.button("Clean Data"):
-                # Always use the latest df from session state for cleaning
-                current_df = st.session_state.get("df", df)
                 cleaned_df = handle_null_and_duplicates_and_outliers(current_df)
                 st.session_state["df"] = cleaned_df
+                after_nulls = total_null(cleaned_df)["count"].sum()
+                after_outliers = total_outliers(cleaned_df)[0].sum()
+                after_duplicates = total_duplicates(cleaned_df)
+                st.session_state["after_df"] = pd.DataFrame({
+                    "Metric": ["Total Null Values","Total Outliers","Total Duplicates"],
+                    "Count": [after_nulls,after_outliers,after_duplicates]
+                })
                 st.session_state["clean_preview"] = cleaned_df.head()
-                st.rerun()  # This triggers rerun after cleaning
-        
-        # After cleaning, get updated session df for after stats
-        after_df_object = st.session_state.get("df", df)
-        after_nulls = total_null(after_df_object)["count"].sum()
-        after_outliers = total_outliers(after_df_object)[0].sum()
-        after_duplicates = total_duplicates(after_df_object)
-        
-        after_df = pd.DataFrame({
-            "Metric": ["Total Null Values", "Total Outliers", "Total Duplicates"],
-            "Count": [after_nulls, after_outliers, after_duplicates]
-        })
-        
+                st.rerun()
+    
         with col2:
             st.subheader("Report After Cleaning")
-            st.dataframe(after_df)
-        
+            if "after_df" in st.session_state:
+                st.dataframe(st.session_state["after_df"])
+            else:
+                st.info("Click Clean Data to generate the report.")
+    
         if "clean_preview" in st.session_state:
             st.success("Dataset Cleaned Successfully!")
             st.write("### Preview of Cleaned Data")
             st.dataframe(st.session_state["clean_preview"])
+
 
 
 
