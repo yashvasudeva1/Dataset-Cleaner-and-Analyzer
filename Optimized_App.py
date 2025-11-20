@@ -274,7 +274,7 @@ if not df.empty:
                 from svm import tune_svm
                 from naivebayes import tune_naive_bayes
                 from mlp import tune_mlp
-                from lightgbm import tune_lightgbm
+                # from lightgbm import tune_lightgbm
     
                 model_options = [
                     "Logistic Regression",
@@ -286,7 +286,7 @@ if not df.empty:
                     "SVM Classifier",
                     "Naive Bayes",
                     "Neural Network (MLP)",
-                    "LightGBM Classifier"
+                    # "LightGBM Classifier"
                 ]
     
                 model_map = {
@@ -299,23 +299,14 @@ if not df.empty:
                     "SVM Classifier": tune_svm,
                     "Naive Bayes": tune_naive_bayes,
                     "Neural Network (MLP)": tune_mlp,
-                    "LightGBM Classifier": tune_lightgbm
+                    # "LightGBM Classifier": tune_lightgbm
                 }
-    
-            # ------------------------------
-            # SELECT MODEL
-            # ------------------------------
             selected_model_name = st.selectbox("Select Model", model_options)
             model_function = model_map[selected_model_name]
-    
-            # ------------------------------
-            # TRAIN MODEL
-            # ------------------------------
             if st.button("Train Model"):
                 model, metrics_df = model_function(
                     X_train_prep, y_train_prep, X_test_prep, y_test_prep
                 )
-    
                 st.success("Model Trained Successfully!")
                 st.subheader("Model Performance")
                 st.dataframe(metrics_df, use_container_width=True)
