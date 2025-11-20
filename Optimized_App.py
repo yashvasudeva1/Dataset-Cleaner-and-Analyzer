@@ -150,7 +150,10 @@ if not df.empty:
         
                 # Save preview
                 st.session_state["clean_preview"] = cleaned_df.head()
-        
+                st.session_state["after_df"] = after_df
+                
+                st.rerun()
+
         
         # ========== AFTER CLEANING (right column) ==========
         with col2:
