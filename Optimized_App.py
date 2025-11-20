@@ -51,7 +51,6 @@ def load_csv(uploaded_file):
         st.error(f"Error loading file: {e}")
         return pd.DataFrame()
 
-# ---------------- FILE LOADING ----------------
 if uploaded_file is not None:
     df = load_csv(uploaded_file)
     if not df.empty:
@@ -63,9 +62,6 @@ else:
     st.info("Please upload a dataset to begin.")
     df = pd.DataFrame()
 
-# --------------------------------------------------
-#   LOAD FURTHER CODE ONLY IF df IS NOT EMPTY
-# --------------------------------------------------
 if not df.empty:
 
     tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs(["Overview","Visualization","Cleaning","Normality","Prediction","AI Assistant"])
@@ -93,11 +89,9 @@ if not df.empty:
             y_col = col2.selectbox("Y Axis", numeric_columns, index=1)
 
             plot_df = df.copy()
-
             if len(plot_df) > 5000:
                 st.warning("Dataset > 5000 rows. Plotting a random sample of 5000 points for performance.")
                 plot_df = plot_df.sample(n=5000, random_state=42)
-
             chart = (
                 alt.Chart(plot_df)
                 .mark_line()
@@ -109,25 +103,19 @@ if not df.empty:
                 .interactive()
                 .properties(height=400)
             )
-
             st.altair_chart(chart, width='stretch')
     with tab3:
         from countsofnullduplicateandoutlier import total_null,total_outliers,total_duplicates
         from handlenullduplicateoutlier import handle_null_and_duplicates_and_outliers
-    
         current_df = st.session_state.get("df", df)
-    
         before_nulls = total_null(current_df)["count"].sum()
         before_outliers = total_outliers(current_df)[0].sum()
         before_duplicates = total_duplicates(current_df)
-    
         summary_df = pd.DataFrame({
             "Metric": ["Total Null Values","Total Outliers","Total Duplicates"],
             "Count": [before_nulls,before_outliers,before_duplicates]
         })
-    
         col1, col2 = st.columns(2)
-    
         with col1:
             st.subheader("Report Before Cleaning")
             st.dataframe(summary_df)
@@ -143,14 +131,12 @@ if not df.empty:
                 })
                 st.session_state["clean_preview"] = cleaned_df.head()
                 st.rerun()
-    
         with col2:
             st.subheader("Report After Cleaning")
             if "after_df" in st.session_state:
                 st.dataframe(st.session_state["after_df"])
             else:
                 st.info("Click Clean Data to generate the report.")
-    
         if "clean_preview" in st.session_state:
             st.success("Dataset Cleaned Successfully!")
             st.write("### Preview of Cleaned Data")
@@ -166,23 +152,16 @@ if not df.empty:
                 )
     with tab4:
         st.title("Normality Check")
-    
         from typeofdata import analyze_distribution
-    
         current_df = st.session_state.get("df", df)
-    
         result_df = analyze_distribution(current_df)
         st.dataframe(result_df, use_container_width=True)
-    
         st.write("### Histogram Preview")
-    
         numeric_cols = current_df.select_dtypes(include=['int64', 'float64']).columns
-    
         if len(numeric_cols) == 0:
             st.info("No numeric columns found for histogram.")
         else:
             selected_hist = st.selectbox("Select Column", numeric_cols)
-    
             chart = (
                 alt.Chart(current_df)
                 .mark_bar()
@@ -192,47 +171,27 @@ if not df.empty:
                 )
                 .properties(height=300)
             )
-    
             st.altair_chart(chart, use_container_width=True)
-
     with tab5:
         st.title("Prediction")
-    
         current_df = st.session_state.get("df", df)
-    
         target_column = st.selectbox("Select Target Column", current_df.columns)
-    
         if target_column:
             y = current_df[target_column]
-    
-            # Detect problem type
             if y.dtype in ["int64", "float64"]:
                 problem_type = "Regression"
             else:
                 problem_type = "Classification"
-    
             st.subheader("Problem Type Detected")
             st.success(f"This is a **{problem_type}** problem.")
-    
-            # ------------------------------
-            # IMPORT SPLIT + PREPROCESS
-            # ------------------------------
             from traintestsplit import create_train_test_split
             from preprocessdata import preprocess_data
-    
-            # Split
             X_train, X_test, y_train, y_test = create_train_test_split(
                 current_df, target_column, test_size=0.2
             )
-    
-            # Preprocess safely (no-leak)
             X_train_prep, X_test_prep, y_train_prep, y_test_prep, encoders, scaler = preprocess_data(
                 X_train, X_test, y_train, y_test
             )
-    
-            # ----------------------------------------------------
-            # REGRESSION MODELS
-            # ----------------------------------------------------
             if problem_type == "Regression":
                 from linearregression import linear_regression_model
                 from ridgeregression import ridge_regression_model
@@ -244,7 +203,6 @@ if not df.empty:
                 from adaboostregression import adaboost_regression_model
                 from knnregression import knn_regression_model
                 from svrregression import svr_regression_model
-    
                 model_options = [
                     "Linear Regression",
                     "Ridge Regression",
@@ -257,7 +215,6 @@ if not df.empty:
                     "KNN Regressor",
                     "SVR Regressor"
                 ]
-    
                 model_map = {
                     "Linear Regression": linear_regression_model,
                     "Ridge Regression": ridge_regression_model,
@@ -270,10 +227,6 @@ if not df.empty:
                     "KNN Regressor": knn_regression_model,
                     "SVR Regressor": svr_regression_model
                 }
-    
-            # ----------------------------------------------------
-            # CLASSIFICATION MODELS
-            # ----------------------------------------------------
             else:
                 from logisticregression import tune_logistic_regression
                 from decisiontree import tune_decision_tree
@@ -284,8 +237,6 @@ if not df.empty:
                 from svm import tune_svm
                 from naivebayes import tune_naive_bayes
                 from mlp import tune_mlp
-                # from lightgbm import tune_lightgbm
-    
                 model_options = [
                     "Logistic Regression",
                     "Decision Tree Classifier",
@@ -295,10 +246,8 @@ if not df.empty:
                     "KNN Classifier",
                     "SVM Classifier",
                     "Naive Bayes",
-                    "Neural Network (MLP)",
-                    # "LightGBM Classifier"
+                    "Neural Network (MLP)"
                 ]
-    
                 model_map = {
                     "Logistic Regression": tune_logistic_regression,
                     "Decision Tree Classifier": tune_decision_tree,
@@ -308,8 +257,7 @@ if not df.empty:
                     "KNN Classifier": tune_knn,
                     "SVM Classifier": tune_svm,
                     "Naive Bayes": tune_naive_bayes,
-                    "Neural Network (MLP)": tune_mlp,
-                    # "LightGBM Classifier": tune_lightgbm
+                    "Neural Network (MLP)": tune_mlp
                 }
             selected_model_name = st.selectbox("Select Model", model_options)
             model_function = model_map[selected_model_name]
