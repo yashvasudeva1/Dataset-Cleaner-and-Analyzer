@@ -24,6 +24,13 @@ def preprocess_data(x_train, x_test, y_train=None, y_test=None):
     else:
         y_train_prep, y_test_prep = y_train, y_test
     numeric_cols = x_train_prep.select_dtypes(include=['int64', 'float64']).columns
-    x_train_prep[numeric_cols] = scaler.fit_transform(x_train_prep[numeric_cols])
-    x_test_prep[numeric_cols] = scaler.transform(x_test_prep[numeric_cols])
+    x_train_prep = x_train_prep.fillna(0)
+    x_test_prep = x_test_prep.fillna(0)
+
+    if y_train_prep is not None:
+        if isinstance(y_train_prep, pd.Series):
+            y_train_prep = y_train_prep.fillna(0)
+        if isinstance(y_test_prep, pd.Series):
+            y_test_prep = y_test_prep.fillna(0)
+
     return x_train_prep, x_test_prep, y_train_prep, y_test_prep, encoders, scaler
