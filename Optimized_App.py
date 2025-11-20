@@ -45,38 +45,38 @@ else:
     st.info("Please upload a dataset to begin.")
     df = pd.DataFrame()
 
-tab1,tab2,tab3,tab4,tab4,tab6=st.tabs(["Overview","Visualization","Cleaning","Normality","Prediction","AI Assistant"])
-with tab1:
-    st.title("Data Overview")
-    col_a, col_b = st.columns(2)
-    with col_a:
-        st.write("### First 5 Rows")
-        st.dataframe(df.head())
-    with col_b:
-        st.write("### Data Types")
-        st.dataframe(df.dtypes.astype(str), height=200)
-
-    st.write("### Summary Statistics")
-    st.dataframe(df.describe(include='all'))
-
-with tab2:
-    st.title("Bivariate Analysis")
-    numeric_columns=df.select_dtypes(include='number').columns.tolist()
-    if len(numeric_columns)>=2:
-        col1, col2 = st.columns(2)
-        x_col = col1.selectbox("X Axis", numeric_columns, index=0)
-        y_col = col2.selectbox("Y Axis", numeric_columns, index=1)
-        # Downsample for Altair if data is huge to prevent crashes
-        plot_df = df.copy()
-        if len(plot_df)>5000:
-            st.warning("Dataset > 5000 rows. Plotting a random sample of 5000 points for performance.")
-            plot_df = plot_df.sample(n=5000, random_state=42)
-        chart = (
-            alt.Chart(plot_df)
-            .mark_line()
-            .encode(
-                x=x_col,
-                y=y_col,
-                tooltip=[x_col, y_col]
-        ).interactive().properties(height=400))
-        st.altair_chart(chart, width='stretch')
+    tab1,tab2,tab3,tab4,tab4,tab6=st.tabs(["Overview","Visualization","Cleaning","Normality","Prediction","AI Assistant"])
+    with tab1:
+        st.title("Data Overview")
+        col_a, col_b = st.columns(2)
+        with col_a:
+            st.write("### First 5 Rows")
+            st.dataframe(df.head())
+        with col_b:
+            st.write("### Data Types")
+            st.dataframe(df.dtypes.astype(str), height=200)
+    
+        st.write("### Summary Statistics")
+        st.dataframe(df.describe(include='all'))
+    
+    with tab2:
+        st.title("Bivariate Analysis")
+        numeric_columns=df.select_dtypes(include='number').columns.tolist()
+        if len(numeric_columns)>=2:
+            col1, col2 = st.columns(2)
+            x_col = col1.selectbox("X Axis", numeric_columns, index=0)
+            y_col = col2.selectbox("Y Axis", numeric_columns, index=1)
+            # Downsample for Altair if data is huge to prevent crashes
+            plot_df = df.copy()
+            if len(plot_df)>5000:
+                st.warning("Dataset > 5000 rows. Plotting a random sample of 5000 points for performance.")
+                plot_df = plot_df.sample(n=5000, random_state=42)
+            chart = (
+                alt.Chart(plot_df)
+                .mark_line()
+                .encode(
+                    x=x_col,
+                    y=y_col,
+                    tooltip=[x_col, y_col]
+            ).interactive().properties(height=400))
+            st.altair_chart(chart, width='stretch')
