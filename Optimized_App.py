@@ -105,6 +105,13 @@ if not df.empty:
         from countsofnullduplicateandoutlier import total_null,total_outliers,total_duplicates
         from handlenullduplicateoutlier import handle_null_and_duplicates_and_outliers
     
+        if st.button("Clean Data"):
+            current_df = st.session_state.get("df", df)
+            cleaned_df = handle_null_and_duplicates_and_outliers(current_df)
+            st.session_state["df"] = cleaned_df
+            st.session_state["clean_preview"] = cleaned_df.head()
+            st.rerun()
+    
         current_df = st.session_state.get("df", df)
     
         before_nulls = total_null(current_df)["count"].sum()
@@ -116,35 +123,24 @@ if not df.empty:
             "Count": [before_nulls,before_outliers,before_duplicates]
         })
     
+        after_df = pd.DataFrame({
+            "Metric": ["Total Null Values","Total Outliers","Total Duplicates"],
+            "Count": [before_nulls,before_outliers,before_duplicates]
+        })
+    
         col1, col2 = st.columns(2)
     
         with col1:
             st.subheader("Report Before Cleaning")
             st.dataframe(summary_df)
-            if st.button("Clean Data"):
-                cleaned_df = handle_null_and_duplicates_and_outliers(current_df)
-                st.session_state["df"] = cleaned_df
-                after_nulls = total_null(cleaned_df)["count"].sum()
-                after_outliers = total_outliers(cleaned_df)[0].sum()
-                after_duplicates = total_duplicates(cleaned_df)
-                st.session_state["after_df"] = pd.DataFrame({
-                    "Metric": ["Total Null Values","Total Outliers","Total Duplicates"],
-                    "Count": [after_nulls,after_outliers,after_duplicates]
-                })
-                st.session_state["clean_preview"] = cleaned_df.head()
-                st.rerun()
     
         with col2:
             st.subheader("Report After Cleaning")
-            if "after_df" in st.session_state:
-                st.dataframe(st.session_state["after_df"])
-            else:
-                st.info("Click Clean Data to generate the report.")
+            st.dataframe(after_df)
     
         if "clean_preview" in st.session_state:
             st.success("Dataset Cleaned Successfully!")
             st.write("### Preview of Cleaned Data")
             st.dataframe(st.session_state["clean_preview"])
-    
 
 
