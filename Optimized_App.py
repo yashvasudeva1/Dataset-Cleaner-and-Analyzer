@@ -206,16 +206,16 @@ if not df.empty:
                 X_train, X_test, y_train, y_test
             )
             if problem_type == "Regression":
-                from backend_functions.regression.linearregression import linear_regression_model
-                from backend_functions.regression.ridgeregression import ridge_regression_model
-                from backend_functions.regression.lassoregression import lasso_regression_model
-                from backend_functions.regression.elasticnetregression import elasticnet_regression_model
-                from backend_functions.regression.decisiontreeregression import decision_tree_regression_model
-                from backend_functions.regression.randomforestregression import random_forest_regression_model
-                from backend_functions.regression.gradientboostregression import gradient_boost_regression_model
-                from backend_functions.regression.adaboostregression import adaboost_regression_model
-                from backend_functions.regression.knnregression import knn_regression_model
-                from backend_functions.regression.svrregression import svr_regression_model
+                from linearregression import linear_regression_model
+                from ridgeregression import ridge_regression_model
+                from lassoregression import lasso_regression_model
+                from elasticnetregression import elasticnet_regression_model
+                from decisiontreeregression import decision_tree_regression_model
+                from randomforestregression import random_forest_regression_model
+                from gradientboostregression import gradient_boost_regression_model
+                from adaboostregression import adaboost_regression_model
+                from knnregression import knn_regression_model
+                from svrregression import svr_regression_model
     
                 model_options = [
                     "Linear Regression",
@@ -247,15 +247,15 @@ if not df.empty:
             # CLASSIFICATION MODELS
             # ----------------------------
             else:
-                from backend_functions.classification.logisticregression import logistic_regression_model
-                from backend_functions.classification.decisiontree import decision_tree_classifier_model
-                from backend_functions.classification.randomforest import random_forest_classifier_model
-                from backend_functions.classification.gradientboostclassifier import gradient_boost_classifier_model
-                from backend_functions.classification.adaboost import adaboost_classifier_model
-                from backend_functions.classification.knnclassifier import knn_classifier_model
-                from backend_functions.classification.svmclassifier import svm_classifier_model
-                from backend_functions.classification.naivebayes import naive_bayes_model
-                from backend_functions.classification.neuralnetwork import mlp_classifier_model
+                from logisticregression import logistic_regression_model
+                from decisiontree import decision_tree_classifier_model
+                from randomforest import random_forest_classifier_model
+                from gradientboostclassifier import gradient_boost_classifier_model
+                from adaboost import adaboost_classifier_model
+                from knnclassifier import knn_classifier_model
+                from svmclassifier import svm_classifier_model
+                from naivebayes import naive_bayes_model
+                from neuralnetwork import mlp_classifier_model
     
                 model_options = [
                     "Logistic Regression",
