@@ -102,35 +102,23 @@ if not df.empty:
 
             st.altair_chart(chart, width='stretch')
     with tab3:
-        # Import your functions directly (NO PICKLE REQUIRED)
-        from counts_null_duplicate_outlier import (
+        from counts of null duplicate and outlier import (
             total_null,
             total_outliers,
             duplicate_count
         )
-        
-        # Run functions (they run instantly because they are normal Python imports)
-        df_nulls = total_null(df)            # returns DataFrame
-        df_outliers = total_outliers(df)     # returns DataFrame
-        duplicates_count = duplicate_count(df)  # returns integer
-        
-        # Convert integer to DataFrame
+        df_nulls = total_null(df)          
+        df_outliers = total_outliers(df)     
+        duplicates_count = duplicate_count(df) 
         df_duplicates = pd.DataFrame({"duplicate_count": [duplicates_count]})
-        
-        # Reset index to align rows before concatenation
         df_nulls.index = [0]
         df_outliers.index = [0]
         df_duplicates.index = [0]
-        
-        # Combine results horizontally
         combined_df = pd.concat(
             [df_nulls, df_outliers, df_duplicates],
             axis=1
         )
-        
-        # Display
         col1, col2 = st.columns(2)
-        
         with col1:
             st.subheader("Report before cleaning")
             st.dataframe(combined_df)
