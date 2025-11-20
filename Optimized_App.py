@@ -103,7 +103,7 @@ if not df.empty:
             st.altair_chart(chart, width='stretch')
     with tab3:
         from countsofnullduplicateandoutlier import total_null,total_outliers,total_duplicates
-        from handle_null_duplicate_outlier import handle_null_and_duplicates_and_outliers
+        from handlenullduplicateoutlier import handle_null_and_duplicates_and_outliers
     
         current_df = st.session_state.get("df", df)
     
