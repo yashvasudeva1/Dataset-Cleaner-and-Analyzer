@@ -184,8 +184,9 @@ if not df.empty:
             )
     
             st.altair_chart(chart, use_container_width=True)
+
     with tab5:
-        st.title("Model Training & Prediction")
+        st.title("Prediction")
         current_df = st.session_state.get("df", df)
         target_column = st.selectbox("Select Target Column", current_df.columns)
         if target_column:
@@ -195,7 +196,109 @@ if not df.empty:
             else:
                 problem_type = "Classification"
             st.subheader("Problem Type Detected")
-            st.success(f"This is a **{problem_type}** problem based on the target column.")
+            st.success(f"This is a **{problem_type}** problem.")
+            from backend_functions.preprocessing.traintestsplit import create_train_test_split
+            from backend_functions.preprocessing.preprocessdata import preprocess_data
+            X_train, X_test, y_train, y_test = create_train_test_split(
+                current_df, target_column, test_size=0.2
+            )
+            X_train_prep, X_test_prep, y_train_prep, y_test_prep, encoders, scaler = preprocess_data(
+                X_train, X_test, y_train, y_test
+            )
+            if problem_type == "Regression":
+                from backend_functions.regression.linearregression import linear_regression_model
+                from backend_functions.regression.ridgeregression import ridge_regression_model
+                from backend_functions.regression.lassoregression import lasso_regression_model
+                from backend_functions.regression.elasticnetregression import elasticnet_regression_model
+                from backend_functions.regression.decisiontreeregression import decision_tree_regression_model
+                from backend_functions.regression.randomforestregression import random_forest_regression_model
+                from backend_functions.regression.gradientboostregression import gradient_boost_regression_model
+                from backend_functions.regression.adaboostregression import adaboost_regression_model
+                from backend_functions.regression.knnregression import knn_regression_model
+                from backend_functions.regression.svrregression import svr_regression_model
+    
+                model_options = [
+                    "Linear Regression",
+                    "Ridge Regression",
+                    "Lasso Regression",
+                    "ElasticNet Regression",
+                    "Decision Tree Regressor",
+                    "Random Forest Regressor",
+                    "Gradient Boosting Regressor",
+                    "AdaBoost Regressor",
+                    "KNN Regressor",
+                    "SVR Regressor"
+                ]
+    
+                model_map = {
+                    "Linear Regression": linear_regression_model,
+                    "Ridge Regression": ridge_regression_model,
+                    "Lasso Regression": lasso_regression_model,
+                    "ElasticNet Regression": elasticnet_regression_model,
+                    "Decision Tree Regressor": decision_tree_regression_model,
+                    "Random Forest Regressor": random_forest_regression_model,
+                    "Gradient Boosting Regressor": gradient_boost_regression_model,
+                    "AdaBoost Regressor": adaboost_regression_model,
+                    "KNN Regressor": knn_regression_model,
+                    "SVR Regressor": svr_regression_model
+                }
+    
+            # ----------------------------
+            # CLASSIFICATION MODELS
+            # ----------------------------
+            else:
+                from backend_functions.classification.logisticregression import logistic_regression_model
+                from backend_functions.classification.decisiontree import decision_tree_classifier_model
+                from backend_functions.classification.randomforest import random_forest_classifier_model
+                from backend_functions.classification.gradientboostclassifier import gradient_boost_classifier_model
+                from backend_functions.classification.adaboost import adaboost_classifier_model
+                from backend_functions.classification.knnclassifier import knn_classifier_model
+                from backend_functions.classification.svmclassifier import svm_classifier_model
+                from backend_functions.classification.naivebayes import naive_bayes_model
+                from backend_functions.classification.neuralnetwork import mlp_classifier_model
+    
+                model_options = [
+                    "Logistic Regression",
+                    "Decision Tree Classifier",
+                    "Random Forest Classifier",
+                    "Gradient Boosting Classifier",
+                    "AdaBoost Classifier",
+                    "KNN Classifier",
+                    "SVM Classifier",
+                    "Naive Bayes",
+                    "Neural Network (MLP)"
+                ]
+    
+                model_map = {
+                    "Logistic Regression": logistic_regression_model,
+                    "Decision Tree Classifier": decision_tree_classifier_model,
+                    "Random Forest Classifier": random_forest_classifier_model,
+                    "Gradient Boosting Classifier": gradient_boost_classifier_model,
+                    "AdaBoost Classifier": adaboost_classifier_model,
+                    "KNN Classifier": knn_classifier_model,
+                    "SVM Classifier": svm_classifier_model,
+                    "Naive Bayes": naive_bayes_model,
+                    "Neural Network (MLP)": mlp_classifier_model
+                }
+    
+            # ----------------------------
+            # MODEL SELECTION UI
+            # ----------------------------
+            selected_model_name = st.selectbox("Select Model", model_options)
+            model_function = model_map[selected_model_name]
+    
+            # ----------------------------
+            # TRAIN MODEL
+            # ----------------------------
+            if st.button("Train Model"):
+                model, metrics_df = model_function(
+                    X_train_prep, y_train_prep, X_test_prep, y_test_prep
+                )
+    
+                st.success("Model Trained Successfully!")
+                st.subheader("Model Performance")
+                st.dataframe(metrics_df, use_container_width=True)
+
    
 
 
