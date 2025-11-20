@@ -197,8 +197,8 @@ if not df.empty:
                 problem_type = "Classification"
             st.subheader("Problem Type Detected")
             st.success(f"This is a **{problem_type}** problem.")
-            from backend_functions.preprocessing.traintestsplit import create_train_test_split
-            from backend_functions.preprocessing.preprocessdata import preprocess_data
+            from traintestsplit import create_train_test_split
+            from preprocessdata import preprocess_data
             X_train, X_test, y_train, y_test = create_train_test_split(
                 current_df, target_column, test_size=0.2
             )
