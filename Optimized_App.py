@@ -107,20 +107,27 @@ if not df.empty:
             total_outliers,
             total_duplicates
         )
-        df_nulls = total_null(df)          
-        df_outliers = total_outliers(df)     
-        duplicates_count = total_duplicates(df) 
-        df_duplicates = pd.DataFrame({"duplicate_count": [duplicates_count]})
-        df_nulls.index = [0]
-        df_outliers.index = [0]
-        df_duplicates.index = [0]
-        combined_df = pd.concat(
-            [df_nulls, df_outliers, df_duplicates],
-            axis=1
-        )
-        col1, col2 = st.columns(2)
-        with col1:
-            st.subheader("Report before cleaning")
-            st.dataframe(combined_df)
+        # Get total null count
+        df_nulls = total_null(df)                # returns per-column count
+        total_null_count = df_nulls["count"].sum()
         
+        # Get total outlier count
+        df_outliers = total_outliers(df)         # returns per-column outliers
+        total_outlier_count = df_outliers[0].sum()
+        
+        # Get total duplicate count
+        total_duplicate_count = total_duplicates(df)
+        
+        # Build a simple summary DataFrame
+        summary_df = pd.DataFrame({
+            "Metric": ["Total Null Values", "Total Outliers", "Total Duplicates"],
+            "Count": [total_null_count, total_outlier_count, total_duplicate_count]
+        })
+        
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            st.subheader("Report Before Cleaning")
+            st.dataframe(summary_df)
+
 
