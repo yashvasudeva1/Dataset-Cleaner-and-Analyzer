@@ -1,22 +1,26 @@
-import streamlit as st
-import pandas as pd
-import numpy as np
+# import streamlit as st
+# import pandas as pd
+# import numpy as np
+# import joblib
+# import altair as alt
+# import math
+# from sklearn.linear_model import LogisticRegression, LinearRegression, Ridge, Lasso, ElasticNet
+# from sklearn.tree import DecisionTreeClassifier, DecisionTreeRegressor
+# from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor, GradientBoostingClassifier, GradientBoostingRegressor, AdaBoostClassifier, AdaBoostRegressor
+# from sklearn.neighbors import KNeighborsClassifier, KNeighborsRegressor
+# from sklearn.naive_bayes import GaussianNB
+# from sklearn.discriminant_analysis import LinearDiscriminantAnalysis, QuadraticDiscriminantAnalysis
+# from sklearn.neural_network import MLPClassifier
+# from xgboost import XGBClassifier
+# from lightgbm import LGBMClassifier
+# from sklearn.preprocessing import StandardScaler
+# from sklearn.pipeline import make_pipeline
+# from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, r2_score, mean_absolute_error, mean_squared_error
+# from scipy.stats import shapiro
+
 import joblib
-import altair as alt
-import math
-from sklearn.linear_model import LogisticRegression, LinearRegression, Ridge, Lasso, ElasticNet
-from sklearn.tree import DecisionTreeClassifier, DecisionTreeRegressor
-from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor, GradientBoostingClassifier, GradientBoostingRegressor, AdaBoostClassifier, AdaBoostRegressor
-from sklearn.neighbors import KNeighborsClassifier, KNeighborsRegressor
-from sklearn.naive_bayes import GaussianNB
-from sklearn.discriminant_analysis import LinearDiscriminantAnalysis, QuadraticDiscriminantAnalysis
-from sklearn.neural_network import MLPClassifier
-from xgboost import XGBClassifier
-from lightgbm import LGBMClassifier
-from sklearn.preprocessing import StandardScaler
-from sklearn.pipeline import make_pipeline
-from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, r2_score, mean_absolute_error, mean_squared_error
-from scipy.stats import shapiro
+loaded_function = joblib.load("pickel_files/libraries.pkl")
+loaded_function()
 
 st.set_page_config(page_title="QuickML", layout="wide")
 st.title("QuickMl")
