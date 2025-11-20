@@ -184,7 +184,19 @@ if not df.empty:
             )
     
             st.altair_chart(chart, use_container_width=True)
-
+    with tab5:
+        st.title("Model Training & Prediction")
+        current_df = st.session_state.get("df", df)
+        target_column = st.selectbox("Select Target Column", current_df.columns)
+        if target_column:
+            y = current_df[target_column]
+            if y.dtype in ["int64", "float64"]:
+                problem_type = "Regression"
+            else:
+                problem_type = "Classification"
+            st.subheader("Problem Type Detected")
+            st.success(f"This is a **{problem_type}** problem based on the target column.")
+   
 
 
 
