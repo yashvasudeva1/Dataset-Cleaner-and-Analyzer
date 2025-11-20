@@ -271,9 +271,9 @@ if not df.empty:
                 from gradientboosting import tune_gradient_boosting
                 from adaboost import tune_adaboost
                 from knn import tune_knn
-                from svmclassifier import tune_svm_classifier
+                from svmclassifier import tune_svm
                 from naivebayes import tune_naive_bayes
-                from mlp import tune_mlp_classifier
+                from mlp import tune_mlp
                 from lightgbm import tune_lightgbm
     
                 model_options = [
@@ -292,13 +292,13 @@ if not df.empty:
                 model_map = {
                     "Logistic Regression": tune_logistic_regression,
                     "Decision Tree Classifier": tune_decision_tree,
-                    "Random Forest Classifier": tune_random_forest_classifier,
+                    "Random Forest Classifier": tune_random_forest,
                     "Gradient Boosting Classifier": tune_gradient_boosting,
                     "AdaBoost Classifier": tune_adaboost,
                     "KNN Classifier": tune_knn,
-                    "SVM Classifier": tune_svm_classifier,
-                    "Naive Bayes": tune_naive_bayes_model,
-                    "Neural Network (MLP)": tune_mlp_classifier,
+                    "SVM Classifier": tune_svm,
+                    "Naive Bayes": tune_naive_bayes,
+                    "Neural Network (MLP)": tune_mlp,
                     "LightGBM Classifier": tune_lightgbm
                 }
     
