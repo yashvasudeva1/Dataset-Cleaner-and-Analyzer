@@ -1,3 +1,6 @@
+import sys
+sys.path.append("backend functions/functionalities")
+from importlibraries import *
 def tune_decision_tree(x_train, y_train, x_test, y_test):
     model = DecisionTreeClassifier()
     params = {'max_depth': [3, 5, 10, None], 'min_samples_split': [2, 5, 10], 'criterion': ['gini', 'entropy']}
@@ -14,3 +17,4 @@ def tune_decision_tree(x_train, y_train, x_test, y_test):
         "F1-score": f1_score(y_test, y_pred, average='weighted')
     }
     return best_model, pd.DataFrame([metrics])
+
