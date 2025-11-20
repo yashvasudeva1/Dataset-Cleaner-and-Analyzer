@@ -1,3 +1,6 @@
+import sys
+sys.path.append("backend functions/functionalities")
+from importlibraries import *
 def tune_svm(x_train, y_train, x_test, y_test):
     model = SVC()
     params = {'C': [0.1, 1, 10], 'kernel': ['linear', 'rbf', 'poly'], 'gamma': ['scale', 'auto']}
@@ -14,3 +17,4 @@ def tune_svm(x_train, y_train, x_test, y_test):
         "F1-score": f1_score(y_test, y_pred, average='weighted')
     }
     return best_model, pd.DataFrame([metrics])
+
