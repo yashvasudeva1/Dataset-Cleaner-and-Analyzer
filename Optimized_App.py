@@ -96,38 +96,37 @@ if not df.empty:
 
             st.altair_chart(chart, width='stretch')
     with tab3:
-        def load_pickle(path):
-            with open(path, "rb") as f:
-                return pickle.load(f)
-        def total_null(df): pass
-        def total_outlier(df): pass
-        def duplicate_count(df): pass
+        # Import your functions directly (NO PICKLE REQUIRED)
+        from counts_null_duplicate_outlier import (
+            total_null,
+            total_outliers,
+            duplicate_count
+        )
         
-        nulls_func = load_pickle("pickel_files/nullcount.pkl")
-        outliers_func = load_pickle("pickel_files/totaloutliers.pkl")
-        duplicate_func = load_pickle("pickel_files/duplicatcount.pkl")
-        # Run functions
-        df_nulls = nulls_func(df)                     # DataFrame
-        df_outliers = outliers_func(df)               # DataFrame
-        duplicates_count = duplicate_func(df)         # integer
+        # Run functions (they run instantly because they are normal Python imports)
+        df_nulls = total_null(df)            # returns DataFrame
+        df_outliers = total_outliers(df)     # returns DataFrame
+        duplicates_count = duplicate_count(df)  # returns integer
         
-        # Convert duplicate count to DataFrame
+        # Convert integer to DataFrame
         df_duplicates = pd.DataFrame({"duplicate_count": [duplicates_count]})
         
-        # Reset index for safe concatenation
+        # Reset index to align rows before concatenation
         df_nulls.index = [0]
         df_outliers.index = [0]
         df_duplicates.index = [0]
         
-        # Combine summary reports
+        # Combine results horizontally
         combined_df = pd.concat(
             [df_nulls, df_outliers, df_duplicates],
             axis=1
         )
         
+        # Display
         col1, col2 = st.columns(2)
         
         with col1:
             st.subheader("Report before cleaning")
             st.dataframe(combined_df)
+        
 
