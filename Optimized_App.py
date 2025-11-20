@@ -1,28 +1,27 @@
-# import streamlit as st
-# import pandas as pd
-# import numpy as np
-# import joblib
-# import altair as alt
-# import math
-# from sklearn.linear_model import LogisticRegression, LinearRegression, Ridge, Lasso, ElasticNet
-# from sklearn.tree import DecisionTreeClassifier, DecisionTreeRegressor
-# from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor, GradientBoostingClassifier, GradientBoostingRegressor, AdaBoostClassifier, AdaBoostRegressor
-# from sklearn.neighbors import KNeighborsClassifier, KNeighborsRegressor
-# from sklearn.naive_bayes import GaussianNB
-# from sklearn.discriminant_analysis import LinearDiscriminantAnalysis, QuadraticDiscriminantAnalysis
-# from sklearn.neural_network import MLPClassifier
-# from xgboost import XGBClassifier
-# from lightgbm import LGBMClassifier
-# from sklearn.preprocessing import StandardScaler
-# from sklearn.pipeline import make_pipeline
-# from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, r2_score, mean_absolute_error, mean_squared_error
-# from scipy.stats import shapiro
-# import pickle
+import streamlit as st
+import pandas as pd
+import numpy as np
+import joblib
+import altair as alt
+import math
+from sklearn.linear_model import LogisticRegression, LinearRegression, Ridge, Lasso, ElasticNet
+from sklearn.tree import DecisionTreeClassifier, DecisionTreeRegressor
+from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor, GradientBoostingClassifier, GradientBoostingRegressor, AdaBoostClassifier, AdaBoostRegressor
+from sklearn.neighbors import KNeighborsClassifier, KNeighborsRegressor
+from sklearn.naive_bayes import GaussianNB
+from sklearn.discriminant_analysis import LinearDiscriminantAnalysis, QuadraticDiscriminantAnalysis
+from sklearn.neural_network import MLPClassifier
+from xgboost import XGBClassifier
+from lightgbm import LGBMClassifier
+from sklearn.preprocessing import StandardScaler
+from sklearn.pipeline import make_pipeline
+from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, r2_score, mean_absolute_error, mean_squared_error
+from scipy.stats import shapiro
+import pickle
 import sys
 sys.path.append("backend functions/functionalities")
 sys.path.append("backend functions/classification models")
 sys.path.append("backend functions/regression models")
-from importlibraries import *
 
 st.set_page_config(page_title="QuickML", layout="wide")
 logo_path = "logo.png"
