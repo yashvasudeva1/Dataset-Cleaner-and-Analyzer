@@ -100,10 +100,13 @@ if not df.empty:
         def load_pickle(path):
             with open(path, "rb") as f:
                 return pickle.load(f)
-        nulls_func = load_pickle("pickel_files/nullcount.pkl")          # returns DataFrame
-        outliers_func = load_pickle("pickel_files/totaloutlier.pkl")    # returns DataFrame
-        duplicate_func = load_pickle("pickel_files/duplicatcounts.pkl") # returns integer
+        def total_null(df): pass
+        def total_outlier(df): pass
+        def duplicate_count(df): pass
         
+        nulls_func = load_pickle("pickel_files/nullcount.pkl")
+        outliers_func = load_pickle("pickel_files/totaloutlier.pkl")
+        duplicate_func = load_pickle("pickel_files/duplicatcounts.pkl")
         # Run functions
         df_nulls = nulls_func(df)                     # DataFrame
         df_outliers = outliers_func(df)               # DataFrame
