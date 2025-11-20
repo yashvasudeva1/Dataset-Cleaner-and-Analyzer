@@ -1,3 +1,6 @@
+import sys
+sys.path.append("backend functions/functionalities")
+from importlibraries import *
 def ridge_regression_model(x_train, y_train, x_test, y_test):
     param_grid = {"alpha": [0.1, 1.0, 10.0, 100.0]}
     grid = GridSearchCV(Ridge(), param_grid, cv=5, scoring='r2', n_jobs=-1)
@@ -15,3 +18,4 @@ def ridge_regression_model(x_train, y_train, x_test, y_test):
         "R²": r2_score(y_test, y_pred)
     }
     return best_model, pd.DataFrame([metrics])
+
