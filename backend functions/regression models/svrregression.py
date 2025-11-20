@@ -1,3 +1,6 @@
+import sys
+sys.path.append("backend functions/functionalities")
+from importlibraries import *
 def svr_regression_model(x_train, y_train, x_test, y_test):
     param_grid = {
         "kernel": ["linear", "poly", "rbf"],
@@ -19,3 +22,4 @@ def svr_regression_model(x_train, y_train, x_test, y_test):
         "R²": r2_score(y_test, y_pred)
     }
     return best_model, pd.DataFrame([metrics])
+
