@@ -135,24 +135,22 @@ if not df.empty:
         
                 cleaned_df = handle_null_and_duplicates_and_outliers(current_df)
         
-                # Save cleaned df in session_state
                 st.session_state["df"] = cleaned_df
         
-                # Recalculate metrics
                 new_nulls = total_null(cleaned_df)["count"].sum()
                 new_outliers = total_outliers(cleaned_df)[0].sum()
                 new_duplicates = total_duplicates(cleaned_df)
         
-                st.session_state["after_df"] = pd.DataFrame({
+                after_df = pd.DataFrame({
                     "Metric": ["Total Null Values", "Total Outliers", "Total Duplicates"],
                     "Count": [new_nulls, new_outliers, new_duplicates]
                 })
         
-                # Save preview
-                st.session_state["clean_preview"] = cleaned_df.head()
                 st.session_state["after_df"] = after_df
-                
-                st.rerun()
+                st.session_state["clean_preview"] = cleaned_df.head()
+        
+                st.rerun() 
+
 
         
         # ========== AFTER CLEANING (right column) ==========
