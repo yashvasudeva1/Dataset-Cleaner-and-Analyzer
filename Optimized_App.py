@@ -133,7 +133,7 @@ if not df.empty:
     
                 current_df = st.session_state.get("df", df)
     
-                cleaned_df = clean_data(current_df)
+                cleaned_df = handle_null_and_duplicates_and_outliers(current_df)
     
                 st.session_state["df"] = cleaned_df
     
