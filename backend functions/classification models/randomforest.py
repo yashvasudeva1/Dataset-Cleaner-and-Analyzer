@@ -1,3 +1,6 @@
+import sys
+sys.path.append("backend functions/functionalities")
+from importlibraries import *
 def tune_random_forest(x_train, y_train, x_test, y_test):
     model = RandomForestClassifier()
     params = {'n_estimators': [100, 200, 300], 'max_depth': [None, 10, 20], 'min_samples_split': [2, 5, 10]}
@@ -15,3 +18,4 @@ def tune_random_forest(x_train, y_train, x_test, y_test):
     }
     return best_model, pd.DataFrame([metrics])
     
+
