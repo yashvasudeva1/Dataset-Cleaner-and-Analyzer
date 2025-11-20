@@ -1,3 +1,6 @@
+import sys
+sys.path.append("backend functions/functionalities")
+from importlibraries import *
 def tune_qda(x_train, y_train, x_test, y_test):
     model = QuadraticDiscriminantAnalysis()
     params = {'reg_param': [0.0, 0.1, 0.2, 0.5]}
@@ -14,3 +17,4 @@ def tune_qda(x_train, y_train, x_test, y_test):
         "F1-score": f1_score(y_test, y_pred, average='weighted')
     }
     return best_model, pd.DataFrame([metrics])
+
