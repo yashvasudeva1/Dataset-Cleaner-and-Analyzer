@@ -205,23 +205,23 @@ if not df.empty:
             st.success(f"This is a **{problem_type}** problem.")
     
             # ------------------------------
-            # IMPORT DATA SPLIT + PREPROCESS
+            # IMPORT SPLIT + PREPROCESS
             # ------------------------------
             from traintestsplit import create_train_test_split
             from preprocessdata import preprocess_data
     
-            # 1. Split (NO LEAK)
+            # Split
             X_train, X_test, y_train, y_test = create_train_test_split(
                 current_df, target_column, test_size=0.2
             )
     
-            # 2. Preprocess (NO LEAK)
+            # Preprocess safely (no-leak)
             X_train_prep, X_test_prep, y_train_prep, y_test_prep, encoders, scaler = preprocess_data(
                 X_train, X_test, y_train, y_test
             )
     
             # ----------------------------------------------------
-            # MODEL OPTIONS BASED ON PROBLEM TYPE
+            # REGRESSION MODELS
             # ----------------------------------------------------
             if problem_type == "Regression":
                 from linearregression import linear_regression_model
@@ -230,7 +230,7 @@ if not df.empty:
                 from elasticnetregression import elasticnet_regression_model
                 from decisiontreeregression import decision_tree_regression_model
                 from randomforestregression import random_forest_regression_model
-                from gradientboostregression import gradient_boosting_regression_model
+                from gradientboostregression import gradient_boost_regression_model
                 from adaboostregression import adaboost_regression_model
                 from knnregression import knn_regression_model
                 from svrregression import svr_regression_model
@@ -255,22 +255,26 @@ if not df.empty:
                     "ElasticNet Regression": elasticnet_regression_model,
                     "Decision Tree Regressor": decision_tree_regression_model,
                     "Random Forest Regressor": random_forest_regression_model,
-                    "Gradient Boosting Regressor": gradient_boosting_regression_model,
+                    "Gradient Boosting Regressor": gradient_boost_regression_model,
                     "AdaBoost Regressor": adaboost_regression_model,
                     "KNN Regressor": knn_regression_model,
                     "SVR Regressor": svr_regression_model
                 }
     
+            # ----------------------------------------------------
+            # CLASSIFICATION MODELS
+            # ----------------------------------------------------
             else:
-                from logisticregression import logistic_regression_model
-                from decisiontree import decision_tree_classifier_model
+                from logisticregression import tune_logistic_regression
+                from decisiontree import tune_decision_tree
                 from randomforest import random_forest_classifier_model
-                from gradientboostclassifier import gradient_boost_classifier_model
-                from adaboost import adaboost_classifier_model
-                from knnclassifier import knn_classifier_model
+                from gradientboosting import tune_gradient_boosting
+                from adaboost import tune_adaboost
+                from knn import tune_knn
                 from svmclassifier import svm_classifier_model
                 from naivebayes import naive_bayes_model
-                from neuralnetwork import mlp_classifier_model
+                from mlp import mlp_classifier_model
+                from lightgbm import tune_lightgbm
     
                 model_options = [
                     "Logistic Regression",
@@ -281,19 +285,21 @@ if not df.empty:
                     "KNN Classifier",
                     "SVM Classifier",
                     "Naive Bayes",
-                    "Neural Network (MLP)"
+                    "Neural Network (MLP)",
+                    "LightGBM Classifier"
                 ]
     
                 model_map = {
-                    "Logistic Regression": logistic_regression_model,
-                    "Decision Tree Classifier": decision_tree_classifier_model,
+                    "Logistic Regression": tune_logistic_regression,
+                    "Decision Tree Classifier": tune_decision_tree,
                     "Random Forest Classifier": random_forest_classifier_model,
-                    "Gradient Boosting Classifier": gradient_boost_classifier_model,
-                    "AdaBoost Classifier": adaboost_classifier_model,
-                    "KNN Classifier": knn_classifier_model,
+                    "Gradient Boosting Classifier": tune_gradient_boosting,
+                    "AdaBoost Classifier": tune_adaboost,
+                    "KNN Classifier": tune_knn,
                     "SVM Classifier": svm_classifier_model,
                     "Naive Bayes": naive_bayes_model,
-                    "Neural Network (MLP)": mlp_classifier_model
+                    "Neural Network (MLP)": mlp_classifier_model,
+                    "LightGBM Classifier": tune_lightgbm
                 }
     
             # ------------------------------
@@ -313,6 +319,7 @@ if not df.empty:
                 st.success("Model Trained Successfully!")
                 st.subheader("Model Performance")
                 st.dataframe(metrics_df, use_container_width=True)
+
     
 
 
