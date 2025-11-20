@@ -267,7 +267,7 @@ if not df.empty:
             else:
                 from logisticregression import tune_logistic_regression
                 from decisiontree import tune_decision_tree
-                from randomforest import tune_random_forest_classifier
+                from randomforest import tune_random_forest
                 from gradientboosting import tune_gradient_boosting
                 from adaboost import tune_adaboost
                 from knn import tune_knn
