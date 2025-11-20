@@ -17,11 +17,10 @@
 # from sklearn.pipeline import make_pipeline
 # from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, r2_score, mean_absolute_error, mean_squared_error
 # from scipy.stats import shapiro
-import importer
 import joblib
-loaded_function = joblib.load("pickel_files/libraries.pkl")
-loaded_function()
-
+from my_imports import import_all_libs   # MUST match name + module
+loaded_func = joblib.load("imports.pkl")
+loaded_func()
 st.set_page_config(page_title="QuickML", layout="wide")
 st.title("QuickMl")
 st.text("An app that enables you to clean, analyze & visualize your dataset and make predictions based on your preferred ML model")
