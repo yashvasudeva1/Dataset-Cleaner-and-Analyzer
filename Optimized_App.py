@@ -26,16 +26,14 @@ sys.path.append("backend functions/regression models")
 
 st.set_page_config(page_title="QuickML", layout="wide")
 logo_path = "logo.png"
-col2 = st.columns([1, 6])
-with col2:
-    st.markdown(
+st.markdown(
     """
     <div style='display: flex; align-items: center;'>
     <span style="font-size:120px; font-weight:bold; font-style: italic; color:#fff; font-family: Arial, Helvetica, sans-serif;">QuickML</span>
     </div>
     """,
     unsafe_allow_html=True
-    )
+)
 st.text("An app that enables you to clean, analyze & visualize your dataset and make predictions based on your preferred ML model")
 st.divider()
 uploaded_file = st.file_uploader("Upload a CSV or Excel file", type=["csv", "xlsx"])
