@@ -102,7 +102,7 @@ if not df.empty:
 
             st.altair_chart(chart, width='stretch')
     with tab3:
-        from counts of null duplicate and outlier import (
+        from countsofnullduplicateandoutlier import (
             total_null,
             total_outliers,
             duplicate_count
