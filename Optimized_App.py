@@ -356,19 +356,24 @@ if not df.empty:
                 # ----------------------- PREDICT BUTTON -----------------------
                 if st.button("Predict Value"):
                     raw_pred = model.predict(input_df)[0]
-            
-                    # ---- Decode prediction for classification ----
+                
                     if problem_type == "Classification":
-                        if target_column in encoders:
-                            decoded_pred = encoders[target_column].inverse_transform([raw_pred])[0]
-                        else:
-                            decoded_pred = raw_pred
-            
+                
+                        decoded_pred = raw_pred  # default
+                
+                        # --- NEW FIX: try decoding using any encoder that matches ---
+                        for col, encoder in encoders.items():
+                            if hasattr(encoder, "classes_"):
+                                # If predicted value exists inside this encoder's class list
+                                if raw_pred in range(len(encoder.classes_)):
+                                    decoded_pred = encoder.inverse_transform([raw_pred])[0]
+                                    break
+                
                         st.success(f"### 🎯 Predicted Class: **{decoded_pred}**")
-            
+                
                     else:
                         st.success(f"### 🎯 Predicted Value: **{raw_pred}**")
-
-
                 
                 
+                                
+                                
