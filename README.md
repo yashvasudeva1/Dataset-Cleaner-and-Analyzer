@@ -191,7 +191,7 @@ QuickML/
 
 ---
 
-# 🛠 **Tech Stack**
+# **Tech Stack**
 
 | Component     | Technology                      |
 | ------------- | ------------------------------- |
@@ -226,7 +226,7 @@ streamlit run Optimized_App.py
 
 ---
 
-# 🔑 **Using the AI Assistant**
+# **Using the AI Assistant**
 
 1. Go to **Tab 6 → AI Assistant**
 2. Enter your **Google API Key**
