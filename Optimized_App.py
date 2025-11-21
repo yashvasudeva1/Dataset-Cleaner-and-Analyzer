@@ -384,9 +384,9 @@ if not df.empty:
                             "Accuracy": [train_acc, test_acc]
                         })
                     
-                        st.write("### 🔍 Training vs Testing Accuracy")
+                        st.write("###Training vs Testing Accuracy")
                         st.dataframe(accuracy_df, width="stretch")
                     
                     else:
-                        st.info("Accuracy metrics are only available for classification models.")
+                        st.write("Train and Test Accuracy metrics are only available for classification models.")
 
