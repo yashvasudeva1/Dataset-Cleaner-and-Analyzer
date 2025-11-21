@@ -394,13 +394,7 @@ if not df.empty:
                 
                     summary_rows = []
                 
-                    # ------------------ ADD PREDICTION ROW ------------------
-                    if target_type == "Classification":
-                        summary_rows.append(["Prediction", "Predicted Class", prediction])
-                    else:
-                        summary_rows.append(["Prediction", "Predicted Value", prediction])
-                
-                    summary_rows.append(["Prediction", "Problem Type", target_type])
+                    
                 
                     # ------------------ METRICS ------------------
                     if not metrics_df.empty:
@@ -415,7 +409,15 @@ if not df.empty:
                     # ------------------ ORIGINAL USER INPUT VALUES ------------------
                     for col in input_df.columns:
                         summary_rows.append(["Input Values", col, input_df.iloc[0][col]])
+                        
+                    # ------------------ ADD PREDICTION ROW ------------------
+                    if target_type == "Classification":
+                        summary_rows.append(["Prediction", "Predicted Class", prediction])
+                    else:
+                        summary_rows.append(["Prediction", "Predicted Value", prediction])
                 
+                    summary_rows.append(["Prediction", "Problem Type", target_type])
+                    
                     # ------------------ FINAL EXPORT DF ------------------
                     export_df = pd.DataFrame(summary_rows, columns=["Section", "Name", "Value"])
                 
