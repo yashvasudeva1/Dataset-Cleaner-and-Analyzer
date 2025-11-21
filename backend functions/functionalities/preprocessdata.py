@@ -36,4 +36,14 @@ def preprocess_data(x_train, x_test, y_train=None, y_test=None):
             y_train_prep = y_train_prep.fillna(0)
         if isinstance(y_test_prep, pd.Series):
             y_test_prep = y_test_prep.fillna(0)
-    return x_train_prep, x_test_prep, y_train_prep, y_test_prep, encoders, scaler
+    return (
+        x_train_prep,
+        x_test_prep,
+        y_train_prep,
+        y_test_prep,
+        encoders,
+        scaler,
+        target_encoder,
+    )
+
+
