@@ -289,6 +289,7 @@ Perfect for documentation, reports, or dashboards.
 # **Screenshots (Add Your Images Here)**
 
 ### **Home Page**
+<img width="1919" height="910" alt="image" src="https://github.com/user-attachments/assets/e662f27e-4ca5-4223-a0af-0c02a35b3e70" />
 
 `<screenshot here>`
 
