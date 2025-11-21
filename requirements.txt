@@ -9,3 +9,4 @@ lightgbm
 xgboost
 requests
 pillow==11.3.0
+google-generativeai
