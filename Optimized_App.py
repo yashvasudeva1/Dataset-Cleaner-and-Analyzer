@@ -393,6 +393,44 @@ if not df.empty:
                     target_type = st.session_state.get("target_type", "")
                 
                     summary_rows = []
+    
+                
+                    
+                
+                    # ------------------ METRICS ------------------
+                    if not metrics_df.empty:
+                        for _, row in metrics_df.iterrows():
+                            summary_rows.append(["Metrics", row["Parameter"], row["Value"]])
+                
+                    # ------------------ ACCURACY (CLASSIFICATION ONLY) ------------------
+                    if accuracy_df is not None and not accuracy_df.empty:
+                        for _, row in accuracy_df.iterrows():
+                            summary_rows.append(["Accuracy", row["Set"], row["Accuracy"]])
+                
+                    # ------------------ ORIGINAL USER INPUT VALUES ------------------
+                    for col in input_df.columns:
+                        summary_rows.append(["Input Values", col, input_df.iloc[0][col]])
+                        
+                    # ------------------ ADD PREDICTION ROW ------------------
+                    if target_type == "Classification":
+                        summary_rows.append(["Prediction", "Predicted Class", prediction])
+                    else:
+                        summary_rows.append(["Prediction", "Predicted Value", prediction])
+                
+                    summary_rows.append(["Prediction", "Problem Type", target_type])
+                    
+                    # ------------------ FINAL EXPORT DF ------------------
+                    export_df = pd.DataFrame(summary_rows, columns=["Section", "Name", "Value"])
+                
+                    csv_bytes = export_df.to_csv(index=False).encode("utf-8")
+                
+                    st.download_button(
+                        label="Download Result (CSV)",
+                        data=csv_bytes,
+                        file_name="prediction_summary.csv",
+                        mime="text/csv",
+                    )
+               
     # =========================
     # TAB 6 – AI Assistant (Gemini)
     # =========================
@@ -455,45 +493,7 @@ if not df.empty:
                     st.error(f"Gemini API Error: {e}")
     
         else:
-            st.info("Please enter your Google API key to activate the AI Assistant.")
-                
-                    
-                
-                    # ------------------ METRICS ------------------
-                    if not metrics_df.empty:
-                        for _, row in metrics_df.iterrows():
-                            summary_rows.append(["Metrics", row["Parameter"], row["Value"]])
-                
-                    # ------------------ ACCURACY (CLASSIFICATION ONLY) ------------------
-                    if accuracy_df is not None and not accuracy_df.empty:
-                        for _, row in accuracy_df.iterrows():
-                            summary_rows.append(["Accuracy", row["Set"], row["Accuracy"]])
-                
-                    # ------------------ ORIGINAL USER INPUT VALUES ------------------
-                    for col in input_df.columns:
-                        summary_rows.append(["Input Values", col, input_df.iloc[0][col]])
-                        
-                    # ------------------ ADD PREDICTION ROW ------------------
-                    if target_type == "Classification":
-                        summary_rows.append(["Prediction", "Predicted Class", prediction])
-                    else:
-                        summary_rows.append(["Prediction", "Predicted Value", prediction])
-                
-                    summary_rows.append(["Prediction", "Problem Type", target_type])
-                    
-                    # ------------------ FINAL EXPORT DF ------------------
-                    export_df = pd.DataFrame(summary_rows, columns=["Section", "Name", "Value"])
-                
-                    csv_bytes = export_df.to_csv(index=False).encode("utf-8")
-                
-                    st.download_button(
-                        label="Download Result (CSV)",
-                        data=csv_bytes,
-                        file_name="prediction_summary.csv",
-                        mime="text/csv",
-                    )
-               
-                   
+            st.info("Please enter your Google API key to activate the AI Assistant.")               
 
 
 
