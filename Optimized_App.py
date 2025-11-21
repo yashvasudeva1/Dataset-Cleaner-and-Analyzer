@@ -367,15 +367,15 @@ if not df.empty:
 
                 # Metrics in sidebar
                 with st.sidebar:
-                    st.subheader(f"{selected_model_name} — Metrics")
+                    st.title("Metrics")
                 
-                    # Fix: rename the auto-generated column "0"
-                    metrics_df.columns = ["Value"]
+                    # Transpose to get a clean 2-column table
+                    metrics_clean = metrics_df.transpose().reset_index()
+                    metrics_clean.columns = ["Metric", "Value"]
                 
-                    # Show metrics cleanly
-                    st.dataframe(metrics_df, width="stretch")
+                    st.dataframe(metrics_clean, width="stretch")
                 
-                    # Training vs Testing Accuracy (classification only)
+                    # Training/Test Accuracy for Classification Only
                     if problem_type == "Classification":
                 
                         train_pred = model.predict(X_train_prep)
@@ -394,5 +394,6 @@ if not df.empty:
                 
                     else:
                         st.info("Train and Test Accuracy metrics are only available for classification models.")
-
-
+                
+                
+                
