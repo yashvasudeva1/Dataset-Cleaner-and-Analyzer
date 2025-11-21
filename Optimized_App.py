@@ -366,7 +366,8 @@ if not df.empty:
                 st.success("Model Trained Successfully!")
 
                 with st.sidebar:
-                    st.subheader("Metrics")
+                    st.title("Metrics")
+                    metrics_df.columns = ["Value"] 
                     st.dataframe(metrics_df.transpose(), width="stretch")
                     # --- Training & Testing Accuracy Section ---
                     if problem_type == "Classification":
