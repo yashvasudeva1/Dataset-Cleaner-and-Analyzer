@@ -365,7 +365,28 @@ if not df.empty:
 
                 st.success("Model Trained Successfully!")
 
-                # Metrics in sidebar
                 with st.sidebar:
-                    st.subheader(f"{selected_model_name} — Metrics")
+                    st.subheader("Metrics")
                     st.dataframe(metrics_df.transpose(), width="stretch")
+                    # --- Training & Testing Accuracy Section ---
+                    st.subheader("###Training vs Testing Accuracy")
+                    
+                    from sklearn.metrics import accuracy_score
+                    
+                    # Training Accuracy
+                    train_pred = model.predict(X_train_prep)
+                    train_acc = accuracy_score(y_train_prep, train_pred)
+                    
+                    # Testing Accuracy
+                    test_pred = model.predict(X_test_prep)
+                    test_acc = accuracy_score(y_test_prep, test_pred)
+                    
+                    # Create DataFrame
+                    accuracy_df = pd.DataFrame({
+                        "Set": ["Training Accuracy", "Testing Accuracy"],
+                        "Accuracy": [train_acc, test_acc]
+                    })
+                    
+                    # Show in Streamlit
+                    st.dataframe(accuracy_df, width="stretch")
+
