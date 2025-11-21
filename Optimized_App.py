@@ -385,43 +385,49 @@ if not df.empty:
                     and "model_metrics" in st.session_state
                 ):
                     st.subheader("Download Prediction Summary")
-            
+                
                     metrics_df = st.session_state.get("model_metrics", pd.DataFrame())
                     accuracy_df = st.session_state.get("accuracy_metrics", pd.DataFrame())
                     input_df = st.session_state.get("original_user_input", pd.DataFrame())
                     prediction = st.session_state.get("last_prediction", "")
-            
+                    target_type = st.session_state.get("target_type", "")
+                
                     summary_rows = []
-            
-                    # Prediction
-                    summary_rows.append(["Prediction", "Predicted Output", prediction])
-                    summary_rows.append(["Prediction", "Problem Type", problem_type])
-            
-                    # Metrics
+                
+                    # ------------------ ADD PREDICTION ROW ------------------
+                    if target_type == "Classification":
+                        summary_rows.append(["Prediction", "Predicted Class", prediction])
+                    else:
+                        summary_rows.append(["Prediction", "Predicted Value", prediction])
+                
+                    summary_rows.append(["Prediction", "Problem Type", target_type])
+                
+                    # ------------------ METRICS ------------------
                     if not metrics_df.empty:
                         for _, row in metrics_df.iterrows():
                             summary_rows.append(["Metrics", row["Parameter"], row["Value"]])
-            
-                    # Accuracy (classification only)
+                
+                    # ------------------ ACCURACY (CLASSIFICATION ONLY) ------------------
                     if accuracy_df is not None and not accuracy_df.empty:
                         for _, row in accuracy_df.iterrows():
                             summary_rows.append(["Accuracy", row["Set"], row["Accuracy"]])
-            
-                    # ORIGINAL user inputs (Not encoded / Not scaled)
+                
+                    # ------------------ ORIGINAL USER INPUT VALUES ------------------
                     for col in input_df.columns:
                         summary_rows.append(["Input Values", col, input_df.iloc[0][col]])
-            
-                    # Final summary dataframe
+                
+                    # ------------------ FINAL EXPORT DF ------------------
                     export_df = pd.DataFrame(summary_rows, columns=["Section", "Name", "Value"])
-            
+                
                     csv_bytes = export_df.to_csv(index=False).encode("utf-8")
-            
+                
                     st.download_button(
                         label="Download Result (CSV)",
                         data=csv_bytes,
                         file_name="prediction_summary.csv",
                         mime="text/csv",
                     )
+
 
 
 
