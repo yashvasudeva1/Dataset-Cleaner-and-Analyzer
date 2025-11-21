@@ -315,22 +315,22 @@ if not df.empty:
             
             # ----------------------- PREDICTION UI -----------------------
             if "trained_model" in st.session_state:
-            
-                st.write("##Make a Prediction")
-            
+
+                st.write("## Make a Prediction")
+
                 model = st.session_state["trained_model"]
                 encoders = st.session_state["trained_encoders"]
                 scaler = st.session_state["trained_scaler"]
                 feature_columns = st.session_state["trained_features"]
                 problem_type = st.session_state["target_type"]
                 target_column = st.session_state["target_column"]
-            
+
                 st.write("### Enter Input Values:")
-            
+
                 user_input = {}
                 cols = st.columns(3)
                 col_idx = 0
-            
+
                 for col in feature_columns:
                     with cols[col_idx]:
                         if col in X_train.select_dtypes(include=["float64", "int64"]).columns:
@@ -339,24 +339,78 @@ if not df.empty:
                             choices = current_df[col].dropna().unique().tolist()
                             user_input[col] = st.selectbox(col, choices)
                     col_idx = (col_idx + 1) % 3
-                input_df = pd.DataFrame([user_input])
+
+                # Save original input (before encoding/scaling) for download & debugging
+                input_df_original = pd.DataFrame([user_input])
+                st.session_state["last_input_df"] = input_df_original.copy()
+
+                # Prepare input for model (encode + scale)
+                input_df = input_df_original.copy()
+
+                # Apply encoders safely (map unseen -> unknown if encoder has that)
                 for col, encoder in encoders.items():
                     if col in input_df.columns:
-                        input_df[col] = encoder.transform(input_df[[col]])
+                        try:
+                            # encoder expects 1D array; many of your encoders were fitted on Series
+                            input_df[col] = encoder.transform(input_df[[col]])
+                        except Exception as e:
+                            # try map unseen values to '___unknown___' if available
+                            if hasattr(encoder, "classes_") and "___unknown___" in encoder.classes_:
+                                safe_val = input_df[col].map(lambda x: x if x in encoder.classes_ else "___unknown___")
+                                input_df[col] = encoder.transform(safe_val)
+                            else:
+                                st.error(f"Encoding failed for column '{col}': {e}")
+                                st.stop()
+
+                # Scale numerical columns if scaler exists
                 if scaler is not None:
-                    input_df = pd.DataFrame(scaler.transform(input_df), columns=input_df.columns)
+                    # Only scale numeric cols that the scaler expects
+                    numeric_cols = input_df.select_dtypes(include=["float64", "int64"]).columns
+                    if len(numeric_cols) > 0:
+                        try:
+                            input_df[numeric_cols] = scaler.transform(input_df[numeric_cols])
+                        except Exception as e:
+                            # If scaler expects additional columns or different order, align with training columns
+                            try:
+                                input_df = input_df[X_train_prep.columns]  # attempt align
+                                input_df[numeric_cols] = scaler.transform(input_df[numeric_cols])
+                            except Exception as e2:
+                                st.error(f"Scaler transform failed: {e} / {e2}")
+                                st.stop()
+
+                # Ensure column order matches model's training data (if possible)
+                try:
+                    input_df = input_df[X_train_prep.columns]
+                except Exception:
+                    # If X_train_prep not accessible here, just keep current order
+                    pass
+
+                # Predict button
                 if st.button("Predict Value"):
-                    raw_pred = model.predict(input_df)[0]
+                    try:
+                        raw_pred = model.predict(input_df)[0]
+                    except Exception as e:
+                        st.error(f"Prediction failed: {e}")
+                        st.stop()
+
                     if problem_type == "Classification":
                         target_encoder = st.session_state.get("target_encoder", None)
                         if target_encoder is not None:
-                            decoded_pred = target_encoder.inverse_transform([raw_pred])[0]
+                            try:
+                                decoded_pred = target_encoder.inverse_transform([raw_pred])[0]
+                            except Exception:
+                                # fallback if inverse_transform expects different dtype
+                                decoded_pred = raw_pred
                         else:
                             decoded_pred = raw_pred
+
+                        # show and store
                         st.success(f"### Predicted Class: **{decoded_pred}**")
-                
+                        st.session_state["last_prediction"] = decoded_pred
+
                     else:
                         st.success(f"### Predicted Value: **{raw_pred}**")
+                        st.session_state["last_prediction"] = raw_pred
 
                 
                 
