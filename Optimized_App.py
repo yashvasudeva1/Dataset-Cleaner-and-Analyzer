@@ -365,29 +365,34 @@ if not df.empty:
 
                 st.success("Model Trained Successfully!")
 
+                # Metrics in sidebar
                 with st.sidebar:
-                    st.title("Metrics")
-                    metrics_df.columns = ["Value"] 
-                    st.dataframe(metrics_df.transpose(), width="stretch")
-                    # --- Training & Testing Accuracy Section ---
+                    st.subheader(f"{selected_model_name} — Metrics")
+                
+                    # Fix: rename the auto-generated column "0"
+                    metrics_df.columns = ["Value"]
+                
+                    # Show metrics cleanly
+                    st.dataframe(metrics_df, width="stretch")
+                
+                    # Training vs Testing Accuracy (classification only)
                     if problem_type == "Classification":
-
-                        # Training Accuracy
+                
                         train_pred = model.predict(X_train_prep)
                         train_acc = accuracy_score(y_train_prep, train_pred)
-                    
-                        # Testing Accuracy
+                
                         test_pred = model.predict(X_test_prep)
                         test_acc = accuracy_score(y_test_prep, test_pred)
-                    
+                
                         accuracy_df = pd.DataFrame({
                             "Set": ["Training Accuracy", "Testing Accuracy"],
                             "Accuracy": [train_acc, test_acc]
                         })
-                    
-                        st.write("###Training vs Testing Accuracy")
+                
+                        st.write("### Train vs Test Accuracy")
                         st.dataframe(accuracy_df, width="stretch")
-                    
+                
                     else:
-                        st.write("Train and Test Accuracy metrics are only available for classification models.")
+                        st.info("Train and Test Accuracy metrics are only available for classification models.")
+
 
