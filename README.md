@@ -1,23 +1,4 @@
-Below is a **high-quality, extremely detailed, professional README.md** written exactly as it would appear on GitHub.
-
-It explains:
-
-✔ What the app does
-✔ Features
-✔ Tech stack
-✔ Full setup + installation
-✔ Folder structure
-✔ How the ML pipeline works
-✔ How the Assistant works (Gemini 2.5 Flash Lite)
-✔ Deployment instructions
-✔ Future improvements
-✔ Screenshots sections
-
-Fully ready to publish.
-
----
-
-# 📘 **QuickML – Dataset Cleaner, Analyzer, Visualizer & ML Prediction Suite**
+# **QuickML – Dataset Cleaner, Analyzer, Visualizer & ML Prediction Suite**
 
 QuickML is a powerful, end-to-end **Machine Learning workflow application** built with **Streamlit**, designed to help users:
 
@@ -34,9 +15,9 @@ This app is fully interactive and requires **zero coding**—making it perfect f
 
 ---
 
-## 🚀 **Key Features**
+## **Key Features**
 
-### 🔹 **1. Upload & Explore Datasets**
+### **1. Upload & Explore Datasets**
 
 * Supports `.csv`, `.xls`, `.xlsx`
 * Automatically sanitizes column names
@@ -48,7 +29,7 @@ This app is fully interactive and requires **zero coding**—making it perfect f
 
 ---
 
-### 🔹 **2. Data Visualization**
+### **2. Data Visualization**
 
 Perform bivariate analysis using Altair:
 
@@ -58,13 +39,13 @@ Perform bivariate analysis using Altair:
 
 ---
 
-### 🔹 **3. Automated Data Cleaning**
+### **3. Automated Data Cleaning**
 
 The app detects and handles:
 
 | Issue          | Action                |
 | -------------- | --------------------- |
-| Missing Values | Imputed or removed    |
+| Missing Values | Imputed               |
 | Duplicates     | Removed               |
 | Outliers       | Handled intelligently |
 
@@ -72,7 +53,7 @@ A before/after summary report is generated, along with a **download button** for
 
 ---
 
-### 🔹 **4. Normality Analysis**
+### **4. Normality Analysis**
 
 Using statistical tests + histograms:
 
@@ -82,7 +63,7 @@ Using statistical tests + histograms:
 
 ---
 
-### 🔹 **5. ML Prediction Suite**
+### **5. ML Prediction Suite**
 
 Automatically classifies the problem into:
 
@@ -91,7 +72,7 @@ Automatically classifies the problem into:
 
 Then provides a curated list of ML models.
 
-#### ✔ Regression Models:
+#### Regression Models:
 
 * Linear Regression
 * Ridge
@@ -104,7 +85,7 @@ Then provides a curated list of ML models.
 * KNN
 * SVR
 
-#### ✔ Classification Models:
+#### Classification Models:
 
 * Logistic Regression
 * Decision Tree
@@ -132,7 +113,7 @@ Metrics remain permanently visible in **sidebar** even after re-runs.
 
 ---
 
-### 🔹 **6. Predict on New Values**
+### **6. Predict on New Values**
 
 * Auto-generated input fields based on dataset features
 * Dropdowns for categorical columns
@@ -147,7 +128,7 @@ Metrics remain permanently visible in **sidebar** even after re-runs.
 
 ---
 
-### 🔹 **7. AI Assistant (Gemini 2.5 Flash Lite)**
+### **7. AI Assistant (Gemini 2.5 Flash Lite)**
 
 A built-in chatbot that:
 
@@ -167,7 +148,7 @@ The assistant responds using the dataset context.
 
 ---
 
-## 🏗 **Project Structure**
+## **Project Structure**
 
 ```
 QuickML/
@@ -216,13 +197,13 @@ QuickML/
 | ------------- | ------------------------------- |
 | Frontend      | Streamlit                       |
 | Backend       | Python                          |
-| ML Models     | Scikit-learn, XGBoost, LightGBM |
+| ML Models     | Scikit-learn                    |
 | AI Assistant  | Google Gemini 2.5 Flash Lite    |
 | Visualization | Altair                          |
 
 ---
 
-# 🧰 **Installation & Setup**
+# **Installation & Setup**
 
 ### **Clone the repository**
 
@@ -264,24 +245,24 @@ The assistant uses the first 20 rows of your uploaded dataset as context for dat
 
 ---
 
-# 🧮 **Machine Learning Workflow**
+# **Machine Learning Workflow**
 
-### ✔ Step 1: Train-test Split
+### Step 1: Train-test Split
 
 Uses a robust splitter to avoid leakage.
 
-### ✔ Step 2: Preprocessing
+### Step 2: Preprocessing
 
 * Encodes categorical columns
 * Handles unknown labels
 * Scales numeric columns
 * Saves encoders/scalers in `session_state`
 
-### ✔ Step 3: Model Training
+### Step 3: Model Training
 
 Each model is applied **without heavy GridSearch** to reduce computation time.
 
-### ✔ Step 4: Prediction
+### Step 4: Prediction
 
 * Inputs are encoded & scaled
 * Predictions are inverse-transformed
@@ -289,7 +270,7 @@ Each model is applied **without heavy GridSearch** to reduce computation time.
 
 ---
 
-# 📤 **Exportable Results**
+# **Exportable Results**
 
 The app generates a downloadable CSV containing:
 
@@ -305,27 +286,27 @@ Perfect for documentation, reports, or dashboards.
 
 ---
 
-# 🖼 **Screenshots (Add Your Images Here)**
+# **Screenshots (Add Your Images Here)**
 
-### **🏠 Home Page**
-
-`<screenshot here>`
-
-### **📊 Visualization**
+### **Home Page**
 
 `<screenshot here>`
 
-### **🧼 Cleaning Report**
+### **Visualization**
 
 `<screenshot here>`
 
-### **🤖 AI Assistant**
+### **Cleaning Report**
+
+`<screenshot here>`
+
+### **AI Assistant**
 
 `<screenshot here>`
 
 ---
 
-# 🌐 **Deploying the App**
+# **Deploying the App**
 
 ### Deploy on **Streamlit Cloud**
 
@@ -343,7 +324,7 @@ Coming soon (add Dockerfile).
 
 ---
 
-# 💡 **Future Improvements**
+# **Future Improvements**
 
 Here are some planned enhancements:
 
@@ -357,7 +338,7 @@ Here are some planned enhancements:
 
 ---
 
-# ❤️ **Acknowledgements**
+# **Acknowledgements**
 
 This project uses:
 
@@ -374,13 +355,4 @@ This project uses:
 
 Your support encourages more updates, optimizations, and new features 🚀
 
----
 
-If you want, I can also generate:
-
-📌 A professional **GitHub repository description**
-📌 A clean **project logo**
-📌 A **Contributing.md**, **License file**, or **Code of Conduct**
-📌 A complete **Wiki documentation**
-
-Just tell me!
