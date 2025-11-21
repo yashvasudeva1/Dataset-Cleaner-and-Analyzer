@@ -264,7 +264,7 @@ if not df.empty:
                 )
                 st.success("Model Trained Successfully!")
                 with st.sidebar:
-                    st.subheader(f"{model_name} — Metrics")
+                    st.subheader(f"{selected_model_name} — Metrics")
 
                 for key, value in metrics.items():
                     st.metric(label=key, value=value)
