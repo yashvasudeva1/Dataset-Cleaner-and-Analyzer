@@ -291,19 +291,15 @@ Perfect for documentation, reports, or dashboards.
 ### **Home Page**
 <img width="1919" height="910" alt="image" src="https://github.com/user-attachments/assets/e662f27e-4ca5-4223-a0af-0c02a35b3e70" />
 
-`<screenshot here>`
 
 ### **Visualization**
-
-`<screenshot here>`
+<img width="1905" height="840" alt="image" src="https://github.com/user-attachments/assets/b4e37b0b-5490-43ca-afef-816795a8c926" />
 
 ### **Cleaning Report**
-
-`<screenshot here>`
+<img width="1900" height="848" alt="image" src="https://github.com/user-attachments/assets/4bfd04df-9aaa-437b-8407-22bf57f15f5c" />
 
 ### **AI Assistant**
-
-`<screenshot here>`
+<img width="1909" height="888" alt="image" src="https://github.com/user-attachments/assets/8c37ffaa-b23e-4b14-970f-be7d9178401c" />
 
 ---
 
