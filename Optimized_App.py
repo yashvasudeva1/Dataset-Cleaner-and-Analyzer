@@ -288,45 +288,72 @@ if not df.empty:
                     else:
                         st.write("Train and Test Accuracy metrics are only available for classification models.")
                 # -----------------------------
-                # USER INPUT FOR PREDICTION
+                # CUSTOM USER INPUT FOR PREDICTION
                 # -----------------------------
-                st.write("### 🔮 Make a Prediction Using Custom Input")
+                st.write("### 🔮 Predict Using Custom Inputs")
                 
-                # Get feature columns
-                feature_columns = X_train.columns.tolist()
+                # All features except target
+                feature_cols = [col for col in current_df.columns if col != target_column]
                 
-                user_input = {}
+                user_inputs = {}
+                st.write("#### Enter Feature Values:")
                 
-                st.write("Enter values for each feature:")
+                # Create 3 columns layout for clean UI
+                cols = st.columns(3)
                 
-                # Create input widgets dynamically
-                for col in feature_columns:
-                    if col in X_train.select_dtypes(include=['float64', 'int64']).columns:
-                        # Numeric input
-                        user_input[col] = st.number_input(f"{col}", value=float(X_train[col].mean()))
-                    else:
-                        # Categorical input
-                        unique_vals = current_df[col].dropna().unique().tolist()
-                        user_input[col] = st.selectbox(f"{col}", unique_vals)
+                for i, col in enumerate(feature_cols):
+                    with cols[i % 3]:
+                        if col in X_train.select_dtypes(include=['float64', 'int64']).columns:
+                            # Numeric feature → Number input
+                            default_val = float(X_train[col].median()) if not X_train[col].isna().all() else 0.0
+                            user_inputs[col] = st.number_input(
+                                f"{col}",
+                                value=default_val
+                            )
+                        else:
+                            # Categorical feature → Dropdown
+                            unique_vals = current_df[col].dropna().unique().tolist()
+                            if len(unique_vals) == 0:
+                                unique_vals = ["Unknown"]
+                            user_inputs[col] = st.selectbox(
+                                f"{col}",
+                                unique_vals
+                            )
                 
-                # Convert input to DataFrame
-                input_df = pd.DataFrame([user_input])
+                # Convert user input into DataFrame
+                input_df = pd.DataFrame([user_inputs])
                 
-                # Apply preprocessing: encoding + scaling
-                # Encode categorical features
+                # -----------------------------
+                # APPLY SAME PREPROCESSING
+                # -----------------------------
+                
+                # Apply encoders
                 for col, encoder in encoders.items():
                     if col in input_df.columns:
-                        transformed = encoder.transform(input_df[[col]])
-                        input_df[col] = transformed
+                        try:
+                            input_df[col] = encoder.transform(input_df[[col]])
+                        except:
+                            st.error(f"Invalid value for '{col}'. Please choose a valid category.")
+                            st.stop()
                 
-                # Apply scaler
+                # Apply scaler (only numerical)
                 if scaler is not None:
-                    input_df = pd.DataFrame(scaler.transform(input_df), columns=input_df.columns)
+                    numeric_cols = input_df.select_dtypes(include=['float64', 'int64']).columns
+                    input_df[numeric_cols] = scaler.transform(input_df[numeric_cols])
                 
-                # Predict button
+                # Ensure column order exactly matches training data
+                input_df = input_df[X_train_prep.columns]
+                
+                # -----------------------------
+                # PREDICT BUTTON
+                # -----------------------------
                 if st.button("Predict Value"):
-                    prediction = model.predict(input_df)[0]
-                    st.success(f"### 🎯 Predicted Value: **{prediction}**")
+                    try:
+                        prediction = model.predict(input_df)[0]
+                        st.success(f"### 🎯 Predicted Value: **{prediction}**")
+                    except Exception as e:
+                        st.error(f"Prediction failed: {e}")
+
 
                 
                 
