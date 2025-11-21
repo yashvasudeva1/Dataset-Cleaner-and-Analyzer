@@ -393,6 +393,69 @@ if not df.empty:
                     target_type = st.session_state.get("target_type", "")
                 
                     summary_rows = []
+    # =========================
+    # TAB 6 – AI Assistant (Gemini)
+    # =========================
+    with tab6:
+        st.title("AI Assistant (Gemini 2.5 Flash Lite)")
+    
+        # Step 1 — User enters Google API Key
+        st.write("### Enter your Google API Key")
+        google_api_key = st.text_input("Google API Key", type="password")
+    
+        if google_api_key:
+    
+            # Initialize chat history
+            if "gemini_chat" not in st.session_state:
+                st.session_state["gemini_chat"] = []
+    
+            from google.generativeai import GenerativeModel
+            import google.generativeai as genai
+    
+            # Configure
+            try:
+                genai.configure(api_key=google_api_key)
+                model = GenerativeModel("gemini-2.5-flash-lite")
+            except Exception as e:
+                st.error(f"API Key Error: {e}")
+                st.stop()
+    
+            st.write("### Chat")
+    
+            # Display existing chat messages
+            for msg in st.session_state["gemini_chat"]:
+                st.chat_message(msg["role"]).markdown(msg["content"])
+    
+            # Chat input
+            user_text = st.chat_input("Type your message...")
+    
+            if user_text:
+                # Store user message
+                st.session_state["gemini_chat"].append({"role": "user", "content": user_text})
+                st.chat_message("user").markdown(user_text)
+    
+                # Prepare Gemini messages in correct format
+                formatted_history = [
+                    {"role": "user" if m["role"] == "user" else "model", "parts": m["content"]}
+                    for m in st.session_state["gemini_chat"]
+                ]
+    
+                # Gemini response
+                try:
+                    response = model.generate_content(
+                        formatted_history
+                    )
+                    reply = response.text
+    
+                    # Store Gemini reply
+                    st.session_state["gemini_chat"].append({"role": "assistant", "content": reply})
+                    st.chat_message("assistant").markdown(reply)
+    
+                except Exception as e:
+                    st.error(f"Gemini API Error: {e}")
+    
+        else:
+            st.info("Please enter your Google API key to activate the AI Assistant.")
                 
                     
                 
@@ -429,8 +492,8 @@ if not df.empty:
                         file_name="prediction_summary.csv",
                         mime="text/csv",
                     )
-
-
+               
+                   
 
 
 
