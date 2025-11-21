@@ -432,9 +432,9 @@ if not df.empty:
                     )
                
     with tab6:
-        st.title("AI Assistant")
+        st.title("AI Assistant 🤖")
     
-        # --------- CUSTOM CSS TO FIX INPUT BAR AT BOTTOM ----------
+        # ======== CUSTOM CSS TO FIX INPUT BAR AT BOTTOM ===========
         st.markdown("""
         <style>
         .chat-input-container {
@@ -454,13 +454,24 @@ if not df.empty:
         </style>
         """, unsafe_allow_html=True)
     
-        # --------- API KEY INPUT ----------
+        # ======== AUTO SCROLL JS ===========
+        st.markdown("""
+        <script>
+            function scrollToBottom() {
+                window.scrollTo(0, document.body.scrollHeight);
+            }
+            setTimeout(scrollToBottom, 50);
+        </script>
+        """, unsafe_allow_html=True)
+    
+        # ======== API KEY INPUT ===========
         api_key = st.text_input("Enter your Google API Key", type="password")
     
         if not api_key:
             st.warning("Please enter your Google API key to start chatting.")
             st.stop()
     
+        # ======== INITIALIZE GEMINI ===========
         try:
             import google.generativeai as genai
             genai.configure(api_key=api_key)
@@ -471,35 +482,67 @@ if not df.empty:
             st.error(f"Error initializing Gemini: {e}")
             st.stop()
     
-        # --------- INITIALIZE CHAT HISTORY ----------
+        # ======== LOAD DATASET CONTEXT ===========
+        df_context = st.session_state.get("df")
+        dataset_text = ""
+    
+        if df_context is not None:
+            dataset_text = (
+                "Here is the dataset the user uploaded:\n\n"
+                + df_context.head(20).to_string()
+                + "\n\nOnly use this data for reference. "
+                  "If user specifically asks questions about the dataset, answer using this context."
+            )
+    
+        # ======== CHAT HISTORY ===========
         if "chat_history" not in st.session_state:
             st.session_state["chat_history"] = []
     
         st.write("### Chat With Gemini")
     
-        # --------- DISPLAY CHAT HISTORY ----------
+        # Show chat history
         for msg in st.session_state["chat_history"]:
             if msg["role"] == "user":
                 st.chat_message("user").markdown(msg["content"])
             else:
                 st.chat_message("assistant").markdown(msg["content"])
     
-        # --------- FIXED INPUT BAR ----------
+        # ======== FIXED INPUT BAR AT BOTTOM ===========
         st.markdown('<div class="chat-input-container">', unsafe_allow_html=True)
         user_msg = st.chat_input("Type your message…")
         st.markdown('</div>', unsafe_allow_html=True)
     
-        # --------- PROCESS USER MESSAGE ----------
+        # ======== HANDLE MESSAGE ===========
         if user_msg:
             st.session_state["chat_history"].append({"role": "user", "content": user_msg})
     
+            # Prepare prompt with dataset context
+            full_prompt = f"""
+    The user asked: {user_msg}
+    
+    Below is the dataset context (if helpful):
+    {dataset_text}
+    
+    If the question is *about the dataset*, use the dataset to answer.
+    If not, answer normally.
+    """
+    
             try:
-                response = model.generate_content(user_msg)
+                response = model.generate_content(full_prompt)
                 bot_reply = response.text
             except Exception as e:
                 bot_reply = f"Error generating response: {str(e)}"
     
             st.session_state["chat_history"].append({"role": "assistant", "content": bot_reply})
+    
+            # Auto scroll trigger
+            st.markdown("""
+            <script>
+                setTimeout(function() {
+                    window.scrollTo(0, document.body.scrollHeight);
+                }, 100);
+            </script>
+            """, unsafe_allow_html=True)
     
             st.rerun()
 
