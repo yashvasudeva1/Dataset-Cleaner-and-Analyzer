@@ -153,7 +153,7 @@ if not df.empty:
                 .interactive()
             )
 
-            st.altair_chart(chart, use_container_width=True)
+            st.altair_chart(chart, width='stretch')
 
     # -----------------------------------------------------------
     # TAB 3: Cleaning
@@ -243,7 +243,7 @@ if not df.empty:
                 .properties(height=300)
             )
 
-            st.altair_chart(chart, use_container_width=True)
+            st.altair_chart(chart, width='stretch')
 
     # -----------------------------------------------------------
     # TAB 5: Prediction
