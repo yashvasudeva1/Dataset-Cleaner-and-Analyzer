@@ -315,22 +315,22 @@ if not df.empty:
             
             # ----------------------- PREDICTION UI -----------------------
             if "trained_model" in st.session_state:
-
+            
                 st.write("## Make a Prediction")
-
+            
                 model = st.session_state["trained_model"]
                 encoders = st.session_state["trained_encoders"]
                 scaler = st.session_state["trained_scaler"]
                 feature_columns = st.session_state["trained_features"]
                 problem_type = st.session_state["target_type"]
                 target_column = st.session_state["target_column"]
-
+            
                 st.write("### Enter Input Values:")
-
+            
                 user_input = {}
                 cols = st.columns(3)
                 col_idx = 0
-
+            
                 for col in feature_columns:
                     with cols[col_idx]:
                         if col in X_train.select_dtypes(include=["float64", "int64"]).columns:
@@ -339,61 +339,28 @@ if not df.empty:
                             choices = current_df[col].dropna().unique().tolist()
                             user_input[col] = st.selectbox(col, choices)
                     col_idx = (col_idx + 1) % 3
-
-                # Save original input (before encoding/scaling) for download & debugging
-                input_df_original = pd.DataFrame([user_input])
-                st.session_state["last_input_df"] = input_df_original.copy()
-
-                # Prepare input for model (encode + scale)
-                input_df = input_df_original.copy()
-
-                # Apply encoders safely (map unseen -> unknown if encoder has that)
+            
+                # ORIGINAL, HUMAN READABLE VALUES (saved before encoding/scaling)
+                original_input_df = pd.DataFrame([user_input])
+                st.session_state["original_user_input"] = original_input_df.copy()
+            
+                # Now create model-ready input
+                input_df = pd.DataFrame([user_input])
+            
+                # Encode categorical features
                 for col, encoder in encoders.items():
                     if col in input_df.columns:
-                        try:
-                            # encoder expects 1D array; many of your encoders were fitted on Series
-                            input_df[col] = encoder.transform(input_df[[col]])
-                        except Exception as e:
-                            # try map unseen values to '___unknown___' if available
-                            if hasattr(encoder, "classes_") and "___unknown___" in encoder.classes_:
-                                safe_val = input_df[col].map(lambda x: x if x in encoder.classes_ else "___unknown___")
-                                input_df[col] = encoder.transform(safe_val)
-                            else:
-                                st.error(f"Encoding failed for column '{col}': {e}")
-                                st.stop()
-
-                # Scale numerical columns if scaler exists
+                        input_df[col] = encoder.transform(input_df[[col]])
+            
+                # Scale numeric features
                 if scaler is not None:
-                    # Only scale numeric cols that the scaler expects
-                    numeric_cols = input_df.select_dtypes(include=["float64", "int64"]).columns
-                    if len(numeric_cols) > 0:
-                        try:
-                            input_df[numeric_cols] = scaler.transform(input_df[numeric_cols])
-                        except Exception as e:
-                            # If scaler expects additional columns or different order, align with training columns
-                            try:
-                                input_df = input_df[X_train_prep.columns]  # attempt align
-                                input_df[numeric_cols] = scaler.transform(input_df[numeric_cols])
-                            except Exception as e2:
-                                st.error(f"Scaler transform failed: {e} / {e2}")
-                                st.stop()
-
-                # Ensure column order matches model's training data (if possible)
-                try:
-                    input_df = input_df[X_train_prep.columns]
-                except Exception:
-                    # If X_train_prep not accessible here, just keep current order
-                    pass
-
-                # Predict button
+                    input_df = pd.DataFrame(scaler.transform(input_df), columns=input_df.columns)
+            
+                # ----------------------- PREDICT BUTTON -----------------------
                 if st.button("Predict Value"):
-                    try:
-                        raw_pred = model.predict(input_df)[0]
-                    except Exception as e:
-                        st.error(f"Prediction failed: {e}")
-                        st.stop()
-                
-                    # Decode classification prediction
+                    raw_pred = model.predict(input_df)[0]
+            
+                    # Classification → decode prediction
                     if problem_type == "Classification":
                         target_encoder = st.session_state.get("target_encoder", None)
                         if target_encoder is not None:
@@ -403,66 +370,59 @@ if not df.empty:
                                 decoded_pred = raw_pred
                         else:
                             decoded_pred = raw_pred
-                
+            
                         st.success(f"### Predicted Class: **{decoded_pred}**")
                         st.session_state["last_prediction"] = decoded_pred
-                
+            
                     else:
-                        # Regression
                         st.success(f"### Predicted Value: **{raw_pred}**")
                         st.session_state["last_prediction"] = raw_pred
-                
-                    # Save user input for download
-                    st.session_state["last_input_df"] = input_df.copy()
-                
-                
-                
-                # ----------------------- DOWNLOAD RESULT SUMMARY -----------------------
-                # Show download section AFTER prediction
+            
+                # ----------------------- DOWNLOAD SUMMARY -----------------------
                 if (
                     "last_prediction" in st.session_state
-                    and "last_input_df" in st.session_state
+                    and "original_user_input" in st.session_state
                     and "model_metrics" in st.session_state
                 ):
                     st.subheader("Download Prediction Summary")
-                
+            
                     metrics_df = st.session_state.get("model_metrics", pd.DataFrame())
                     accuracy_df = st.session_state.get("accuracy_metrics", pd.DataFrame())
-                    input_df = st.session_state.get("last_input_df", pd.DataFrame())
+                    input_df = st.session_state.get("original_user_input", pd.DataFrame())
                     prediction = st.session_state.get("last_prediction", "")
-                
+            
                     summary_rows = []
-                
+            
                     # Prediction
                     summary_rows.append(["Prediction", "Predicted Output", prediction])
-                    summary_rows.append(["Prediction", "Problem Type", st.session_state.get("target_type", "")])
-                
+                    summary_rows.append(["Prediction", "Problem Type", problem_type])
+            
                     # Metrics
                     if not metrics_df.empty:
                         for _, row in metrics_df.iterrows():
                             summary_rows.append(["Metrics", row["Parameter"], row["Value"]])
-                
+            
                     # Accuracy (classification only)
                     if accuracy_df is not None and not accuracy_df.empty:
                         for _, row in accuracy_df.iterrows():
                             summary_rows.append(["Accuracy", row["Set"], row["Accuracy"]])
-                
-                    # Input values
-                    if not input_df.empty:
-                        for col in input_df.columns:
-                            summary_rows.append(["Input Values", col, input_df.iloc[0][col]])
-                
-                    # Final summary DF
+            
+                    # ORIGINAL user inputs (Not encoded / Not scaled)
+                    for col in input_df.columns:
+                        summary_rows.append(["Input Values", col, input_df.iloc[0][col]])
+            
+                    # Final summary dataframe
                     export_df = pd.DataFrame(summary_rows, columns=["Section", "Name", "Value"])
-                
+            
                     csv_bytes = export_df.to_csv(index=False).encode("utf-8")
-                
+            
                     st.download_button(
                         label="⬇️ Download Result Summary (CSV)",
                         data=csv_bytes,
                         file_name="prediction_summary.csv",
                         mime="text/csv",
                     )
+
 
 
 
