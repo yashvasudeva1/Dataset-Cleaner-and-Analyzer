@@ -4,7 +4,7 @@ from importlibraries import *
 
 def tune_lda(x_train, y_train, x_test, y_test):
 
-    # Simple Linear Discriminant Analysis model (no tuning)
+    # Simple LDA model (default solver='svd')
     model = LinearDiscriminantAnalysis()
     model.fit(x_train, y_train)
 
