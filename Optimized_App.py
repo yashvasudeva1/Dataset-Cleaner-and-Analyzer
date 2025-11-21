@@ -189,8 +189,6 @@ if not df.empty:
             )
             X_train_prep, X_test_prep, y_train_prep, y_test_prep, encoders, scaler, target_encoder = preprocess_data(...)
             st.session_state["target_encoder"] = target_encoder
-
-            )
             if problem_type == "Regression":
                 from linearregression import linear_regression_model
                 from ridgeregression import ridge_regression_model
