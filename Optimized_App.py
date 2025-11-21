@@ -259,73 +259,115 @@ if not df.empty:
                 }
             selected_model_name = st.selectbox("Select Model", model_options)
             model_function = model_map[selected_model_name]
+           # ----------------------- TRAIN MODEL -----------------------
             if st.button("Train Model"):
                 model, metrics_df = model_function(
                     X_train_prep, y_train_prep, X_test_prep, y_test_prep
                 )
+            
                 st.success("Model Trained Successfully!")
+            
+                # Save to session_state so they persist after rerun
                 st.session_state["trained_model"] = model
                 st.session_state["trained_encoders"] = encoders
                 st.session_state["trained_scaler"] = scaler
                 st.session_state["trained_features"] = X_train.columns.tolist()
                 st.session_state["target_type"] = problem_type
-                with st.sidebar:
-                    st.title("Metrics")
-                    metrics_clean = metrics_df.transpose().reset_index()
-                    metrics_clean.columns = ["Parameter", "Value"]
-                    st.dataframe(metrics_clean, width="stretch")
-                    if problem_type == "Classification":
-                
-                        train_pred = model.predict(X_train_prep)
-                        train_acc = accuracy_score(y_train_prep, train_pred)
-                
-                        test_pred = model.predict(X_test_prep)
-                        test_acc = accuracy_score(y_test_prep, test_pred)
-                
-                        accuracy_df = pd.DataFrame({
-                            "Set": ["Training Accuracy", "Testing Accuracy"],
-                            "Accuracy": [train_acc, test_acc]
-                        })
-                
+                st.session_state["target_column"] = target_column
+            
+                # ---- Clean Metrics ----
+                metrics_clean = metrics_df.transpose().reset_index()
+                metrics_clean.columns = ["Parameter", "Value"]
+            
+                # Save metrics for persistent sidebar
+                st.session_state["model_metrics"] = metrics_clean
+            
+                # ---- Add Train/Test Accuracy for Classification ----
+                if problem_type == "Classification":
+                    train_pred = model.predict(X_train_prep)
+                    test_pred = model.predict(X_test_prep)
+            
+                    train_acc = accuracy_score(y_train_prep, train_pred)
+                    test_acc = accuracy_score(y_test_prep, test_pred)
+            
+                    acc_df = pd.DataFrame({
+                        "Set": ["Training Accuracy", "Testing Accuracy"],
+                        "Accuracy": [train_acc, test_acc]
+                    })
+            
+                    st.session_state["accuracy_metrics"] = acc_df
+                else:
+                    st.session_state["accuracy_metrics"] = None
+            
+            
+            # ----------------------- ALWAYS SHOW SIDEBAR METRICS -----------------------
+            with st.sidebar:
+                st.title("Metrics")
+                if "model_metrics" in st.session_state:
+                    st.dataframe(st.session_state["model_metrics"], width="stretch")
+            
+                    # Show accuracy only for classification
+                    if st.session_state["accuracy_metrics"] is not None:
                         st.write("### Train vs Test Accuracy")
-                        st.dataframe(accuracy_df, width="stretch")
-                
-                    else:
-                        st.write("Train and Test Accuracy metrics are only available for classification models.")
+                        st.dataframe(st.session_state["accuracy_metrics"], width="stretch")
+                else:
+                    st.info("Train a model to view metrics.")
+            
+            
+            # ----------------------- PREDICTION UI -----------------------
             if "trained_model" in st.session_state:
+            
                 st.write("## 🔮 Make a Prediction")
+            
                 model = st.session_state["trained_model"]
                 encoders = st.session_state["trained_encoders"]
                 scaler = st.session_state["trained_scaler"]
                 feature_columns = st.session_state["trained_features"]
-                problem_type = st.session_state["target_type"]               
+                problem_type = st.session_state["target_type"]
+                target_column = st.session_state["target_column"]
+            
+                st.write("### Enter Input Values:")
+            
                 user_input = {}
-                st.write("### Enter Input Values:")    
                 cols = st.columns(3)
-                col_idx = 0                
+                col_idx = 0
+            
                 for col in feature_columns:
                     with cols[col_idx]:
-                        if col in X_train.select_dtypes(include=['float64', 'int64']).columns:
+                        if col in X_train.select_dtypes(include=["float64", "int64"]).columns:
                             user_input[col] = st.number_input(col, value=float(X_train[col].mean()))
                         else:
                             choices = current_df[col].dropna().unique().tolist()
                             user_input[col] = st.selectbox(col, choices)
                     col_idx = (col_idx + 1) % 3
+            
+                # Convert to DataFrame
                 input_df = pd.DataFrame([user_input])
+            
+                # Encode input
                 for col, encoder in encoders.items():
-                    if col in input_df:
+                    if col in input_df.columns:
                         input_df[col] = encoder.transform(input_df[[col]])
+            
+                # Scale input
                 if scaler is not None:
-                    input_df = pd.DataFrame(
-                        scaler.transform(input_df), columns=input_df.columns
-                    )
-                
+                    input_df = pd.DataFrame(scaler.transform(input_df), columns=input_df.columns)
+            
+                # ----------------------- PREDICT BUTTON -----------------------
                 if st.button("Predict Value"):
-                    pred = model.predict(input_df)[0]                
+                    raw_pred = model.predict(input_df)[0]
+            
+                    # ---- Decode prediction for classification ----
                     if problem_type == "Classification":
-                        st.success(f"###Predicted Class: **{pred}**")
+                        if target_column in encoders:
+                            decoded_pred = encoders[target_column].inverse_transform([raw_pred])[0]
+                        else:
+                            decoded_pred = raw_pred
+            
+                        st.success(f"### 🎯 Predicted Class: **{decoded_pred}**")
+            
                     else:
-                        st.success(f"###Predicted Value: **{pred}**")
+                        st.success(f"### 🎯 Predicted Value: **{raw_pred}**")
 
 
                 
