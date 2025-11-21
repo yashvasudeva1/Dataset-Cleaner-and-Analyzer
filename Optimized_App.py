@@ -431,69 +431,78 @@ if not df.empty:
                         mime="text/csv",
                     )
                
-    # =========================
-    # TAB 6 – AI Assistant (Gemini)
-    # =========================
     with tab6:
-        st.title("AI Assistant (Gemini 2.5 Flash Lite)")
+        st.title("AI Assistant 🤖")
     
-        # Step 1 — User enters Google API Key
-        st.write("### Enter your Google API Key")
-        google_api_key = st.text_input("Google API Key", type="password")
+        # --------- CUSTOM CSS TO FIX INPUT BAR AT BOTTOM ----------
+        st.markdown("""
+        <style>
+        .chat-input-container {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: 12px;
+            background-color: #1e1e1e;
+            border-top: 1px solid #333;
+            z-index: 9999;
+        }
+        .chat-input-container .stChatInput textarea {
+            height: 50px !important;
+            resize: none !important;
+        }
+        </style>
+        """, unsafe_allow_html=True)
     
-        if google_api_key:
+        # --------- API KEY INPUT ----------
+        api_key = st.text_input("Enter your Google API Key", type="password")
     
-            # Initialize chat history
-            if "gemini_chat" not in st.session_state:
-                st.session_state["gemini_chat"] = []
+        if not api_key:
+            st.warning("Please enter your Google API key to start chatting.")
+            st.stop()
     
-            from google.generativeai import GenerativeModel
+        try:
             import google.generativeai as genai
+            genai.configure(api_key=api_key)
     
-            # Configure
+            model = genai.GenerativeModel("gemini-2.5-flash-lite")
+    
+        except Exception as e:
+            st.error(f"Error initializing Gemini: {e}")
+            st.stop()
+    
+        # --------- INITIALIZE CHAT HISTORY ----------
+        if "chat_history" not in st.session_state:
+            st.session_state["chat_history"] = []
+    
+        st.write("### Chat With Gemini")
+    
+        # --------- DISPLAY CHAT HISTORY ----------
+        for msg in st.session_state["chat_history"]:
+            if msg["role"] == "user":
+                st.chat_message("user").markdown(msg["content"])
+            else:
+                st.chat_message("assistant").markdown(msg["content"])
+    
+        # --------- FIXED INPUT BAR ----------
+        st.markdown('<div class="chat-input-container">', unsafe_allow_html=True)
+        user_msg = st.chat_input("Type your message…")
+        st.markdown('</div>', unsafe_allow_html=True)
+    
+        # --------- PROCESS USER MESSAGE ----------
+        if user_msg:
+            st.session_state["chat_history"].append({"role": "user", "content": user_msg})
+    
             try:
-                genai.configure(api_key=google_api_key)
-                model = GenerativeModel("gemini-2.5-flash-lite")
+                response = model.generate_content(user_msg)
+                bot_reply = response.text
             except Exception as e:
-                st.error(f"API Key Error: {e}")
-                st.stop()
+                bot_reply = f"Error generating response: {str(e)}"
     
-            st.write("### Chat")
+            st.session_state["chat_history"].append({"role": "assistant", "content": bot_reply})
     
-            # Display existing chat messages
-            for msg in st.session_state["gemini_chat"]:
-                st.chat_message(msg["role"]).markdown(msg["content"])
-    
-            # Chat input
-            user_text = st.chat_input("Type your message...")
-    
-            if user_text:
-                # Store user message
-                st.session_state["gemini_chat"].append({"role": "user", "content": user_text})
-                st.chat_message("user").markdown(user_text)
-    
-                # Prepare Gemini messages in correct format
-                formatted_history = [
-                    {"role": "user" if m["role"] == "user" else "model", "parts": m["content"]}
-                    for m in st.session_state["gemini_chat"]
-                ]
-    
-                # Gemini response
-                try:
-                    response = model.generate_content(
-                        formatted_history
-                    )
-                    reply = response.text
-    
-                    # Store Gemini reply
-                    st.session_state["gemini_chat"].append({"role": "assistant", "content": reply})
-                    st.chat_message("assistant").markdown(reply)
-    
-                except Exception as e:
-                    st.error(f"Gemini API Error: {e}")
-    
-        else:
-            st.info("Please enter your Google API key to activate the AI Assistant.")               
+            st.rerun()
+                
 
 
 
