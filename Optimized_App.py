@@ -9,13 +9,20 @@ from sklearn.tree import DecisionTreeClassifier, DecisionTreeRegressor
 from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor, GradientBoostingClassifier, GradientBoostingRegressor, AdaBoostClassifier, AdaBoostRegressor
 from sklearn.neighbors import KNeighborsClassifier, KNeighborsRegressor
 from sklearn.naive_bayes import GaussianNB
-from sklearn.discriminant_analysis import LinearDiscriminantAnalysis, QuadraticDiscriminantAnalysis
 from sklearn.neural_network import MLPClassifier
 from xgboost import XGBClassifier
 from lightgbm import LGBMClassifier
 from sklearn.preprocessing import StandardScaler
 from sklearn.pipeline import make_pipeline
-from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, r2_score, mean_absolute_error, mean_squared_error
+from sklearn.metrics import (
+    accuracy_score,
+    precision_score,
+    recall_score,
+    f1_score,
+    r2_score,
+    mean_absolute_error,
+    mean_squared_error,
+)
 from scipy.stats import shapiro
 import pickle
 import sys
@@ -24,10 +31,24 @@ sys.path.append("backend functions/functionalities")
 sys.path.append("backend functions/classification models")
 sys.path.append("backend functions/regression models")
 
-# STREAMLIT SETTINGS
+# ----------------------------------------------------
+# FIX: ALTAR / COLUMN SANITIZATION
+# ----------------------------------------------------
+def sanitize_columns(df):
+    df = df.copy()
+    df.columns = (
+        df.columns.astype(str)
+        .str.strip()
+        .str.replace(":", "_", regex=False)
+        .str.replace(" ", "_", regex=False)
+    )
+    return df
+
+
+# Streamlit settings
 st.set_page_config(page_title="QuickML", layout="wide")
 
-# APP HEADER
+# App header
 st.markdown(
     """
     <div style='display: flex; align-items: center;'>
@@ -43,7 +64,7 @@ st.divider()
 uploaded_file = st.file_uploader("Upload a CSV or Excel file", type=["csv", "xlsx"])
 
 
-# LOAD CSV WITH CACHING
+# Load CSV with caching
 @st.cache_data
 def load_csv(uploaded_file):
     try:
@@ -56,19 +77,12 @@ def load_csv(uploaded_file):
         return pd.DataFrame()
 
 
-# --- FILE LOAD ---
+# --- File load ---
 if uploaded_file is not None:
     df = load_csv(uploaded_file)
 
     if not df.empty:
-        # CLEAN COLUMN NAMES (fix Altair crash)
-        df.columns = (
-            df.columns
-            .str.strip()
-            .str.replace(":", "_")
-            .str.replace(" ", "_")
-        )
-
+        df = sanitize_columns(df)  # FIX: clean columns globally
         st.success(f"File '{uploaded_file.name}' uploaded successfully!")
         st.session_state["df"] = df
     else:
@@ -76,6 +90,7 @@ if uploaded_file is not None:
 else:
     st.info("Please upload a dataset to begin.")
     df = pd.DataFrame()
+
 
 # -----------------------------------------------------------
 # ----------------------- TABS ------------------------------
@@ -88,7 +103,7 @@ if not df.empty:
     ])
 
     # -----------------------------------------------------------
-    # ----------------------- TAB 1: OVERVIEW -------------------
+    # TAB 1: Overview
     # -----------------------------------------------------------
     with tab1:
         st.title("Data Overview")
@@ -96,17 +111,17 @@ if not df.empty:
 
         with col_a:
             st.write("### First 5 Rows")
-            st.dataframe(df.head())
+            st.dataframe(df.head(), width="stretch")
 
         with col_b:
             st.write("### Data Types")
-            st.dataframe(df.dtypes.astype(str), height=200)
+            st.dataframe(df.dtypes.astype(str), height=200, width="stretch")
 
         st.write("### Summary Statistics")
-        st.dataframe(df.describe(include='all'))
+        st.dataframe(df.describe(include='all'), width="stretch")
 
     # -----------------------------------------------------------
-    # ---------------- TAB 2: VISUALIZATION ---------------------
+    # TAB 2: Visualization
     # -----------------------------------------------------------
     with tab2:
         st.title("Bivariate Analysis")
@@ -114,18 +129,22 @@ if not df.empty:
         numeric_columns = df.select_dtypes(include='number').columns.tolist()
 
         if len(numeric_columns) >= 2:
-            col1, col2 = st.columns(2)
 
+            col1, col2 = st.columns(2)
             x_col = col1.selectbox("X Axis", numeric_columns, index=0)
             y_col = col2.selectbox("Y Axis", numeric_columns, index=1)
 
             plot_df = df.copy()
+
             if len(plot_df) > 5000:
-                st.warning("Dataset > 5000 rows. Using random sample of 5000 for plotting.")
+                st.warning("Dataset > 5000 rows. Using random sample of 5000 for performance.")
                 plot_df = plot_df.sample(n=5000, random_state=42)
 
+            # FIX: sanitize for Altair
+            clean_plot_df = sanitize_columns(plot_df)
+
             chart = (
-                alt.Chart(plot_df)
+                alt.Chart(clean_plot_df)
                 .mark_circle(size=40)
                 .encode(
                     x=alt.X(x_col, type="quantitative"),
@@ -137,7 +156,7 @@ if not df.empty:
             st.altair_chart(chart, use_container_width=True)
 
     # -----------------------------------------------------------
-    # ------------------------ TAB 3: CLEANING -----------------
+    # TAB 3: Cleaning
     # -----------------------------------------------------------
     with tab3:
         from countsofnullduplicateandoutlier import total_null, total_outliers, total_duplicates
@@ -158,10 +177,12 @@ if not df.empty:
 
         with col1:
             st.subheader("Report Before Cleaning")
-            st.dataframe(summary_df)
+            st.dataframe(summary_df, width="stretch")
 
             if st.button("Clean Data"):
                 cleaned_df = handle_null_and_duplicates_and_outliers(current_df)
+                cleaned_df = sanitize_columns(cleaned_df)  # FIX: sanitize after cleaning
+
                 st.session_state["df"] = cleaned_df
 
                 after_nulls = total_null(cleaned_df)["count"].sum()
@@ -179,21 +200,21 @@ if not df.empty:
         with col2:
             st.subheader("Report After Cleaning")
             if "after_df" in st.session_state:
-                st.dataframe(st.session_state["after_df"])
+                st.dataframe(st.session_state["after_df"], width="stretch")
             else:
                 st.info("Click Clean Data to generate the report.")
 
         if "clean_preview" in st.session_state:
             st.success("Dataset Cleaned Successfully!")
             st.write("### Preview of Cleaned Data")
-            st.dataframe(st.session_state["clean_preview"])
+            st.dataframe(st.session_state["clean_preview"], width="stretch")
 
             cleaned_df = st.session_state["df"]
             csv = cleaned_df.to_csv(index=False).encode("utf-8")
             st.download_button("Download Cleaned Dataset", csv, "cleaned_dataset.csv", "text/csv")
 
     # -----------------------------------------------------------
-    # ---------------------- TAB 4: NORMALITY ------------------
+    # TAB 4: Normality
     # -----------------------------------------------------------
     with tab4:
         st.title("Normality Check")
@@ -202,15 +223,18 @@ if not df.empty:
         current_df = st.session_state.get("df", df)
         result_df = analyze_distribution(current_df)
 
-        st.dataframe(result_df, use_container_width=True)
+        st.dataframe(result_df, width="stretch")
 
-        # Histogram
         numeric_cols = current_df.select_dtypes(include=['int64', 'float64']).columns
+
         if len(numeric_cols) > 0:
-            selected_hist = st.selectbox("Select Column for Histogram", numeric_cols)
+
+            selected_hist = st.selectbox("Select Column", numeric_cols)
+
+            clean_hist_df = sanitize_columns(current_df)
 
             chart = (
-                alt.Chart(current_df)
+                alt.Chart(clean_hist_df)
                 .mark_bar()
                 .encode(
                     x=alt.X(selected_hist, bin=alt.Bin(maxbins=30)),
@@ -222,7 +246,7 @@ if not df.empty:
             st.altair_chart(chart, use_container_width=True)
 
     # -----------------------------------------------------------
-    # ---------------------- TAB 5: PREDICTION ------------------
+    # TAB 5: Prediction
     # -----------------------------------------------------------
     with tab5:
         st.title("Prediction")
@@ -255,6 +279,7 @@ if not df.empty:
 
             # MODEL SELECTION
             if problem_type == "Regression":
+
                 from linearregression import linear_regression_model
                 from ridgeregression import ridge_regression_model
                 from lassoregression import lasso_regression_model
@@ -293,6 +318,7 @@ if not df.empty:
                 }
 
             else:
+
                 from logisticregression import tune_logistic_regression
                 from decisiontree import tune_decision_tree
                 from randomforest import tune_random_forest
@@ -330,15 +356,16 @@ if not df.empty:
             selected_model_name = st.selectbox("Select Model", model_options)
             model_function = model_map[selected_model_name]
 
-            # TRAIN MODEL
+            # Train model
             if st.button("Train Model"):
+                
                 model, metrics_df = model_function(
                     X_train_prep, y_train_prep, X_test_prep, y_test_prep
                 )
 
                 st.success("Model Trained Successfully!")
 
-                # SHOW METRICS IN SIDEBAR
+                # Metrics in sidebar
                 with st.sidebar:
                     st.subheader(f"{selected_model_name} — Metrics")
-                    st.dataframe(metrics_df, use_container_width=True)
+                    st.dataframe(metrics_df, width="stretch")
