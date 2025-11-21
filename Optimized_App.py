@@ -61,18 +61,14 @@ def load_csv(uploaded_file):
     except Exception as e:
         st.error(f"Error loading file: {e}")
         return pd.DataFrame()
-MAX_ROWS = 200000      
-SAMPLE_ROWS = 10000     
-
 if uploaded_file is not None:
     df = load_csv(uploaded_file)
     if not df.empty:
-        df = sanitize_columns(df) 
+        df = sanitize_columns(df)  # FIX: clean columns globally
         st.success(f"File '{uploaded_file.name}' uploaded successfully!")
         st.session_state["df"] = df
     else:
         st.warning("Uploaded file could not be processed.")
-
 else:
     st.info("Please upload a dataset to begin.")
     df = pd.DataFrame()
@@ -332,71 +328,55 @@ if not df.empty:
                 st.write("### Enter Input Values:")
             
                 user_input = {}
-                original_input = {}
                 cols = st.columns(3)
                 col_idx = 0
             
-                # ONLY show the feature columns used during training
                 for col in feature_columns:
                     with cols[col_idx]:
-            
-                        # numeric column
                         if col in X_train.select_dtypes(include=["float64", "int64"]).columns:
-                            default_val = float(X_train[col].mean())
-                            val = st.number_input(col, value=default_val)
+                            user_input[col] = st.number_input(col, value=float(X_train[col].mean()))
                         else:
-                            # categorical column
                             choices = current_df[col].dropna().unique().tolist()
-                            val = st.selectbox(col, choices)
-            
-                        user_input[col] = val      # encoded/scaled version later
-                        original_input[col] = val  # raw values for download
-            
+                            user_input[col] = st.selectbox(col, choices)
                     col_idx = (col_idx + 1) % 3
             
-                # Save original input
-                st.session_state["original_user_input"] = pd.DataFrame([original_input])
+                # ORIGINAL, HUMAN READABLE VALUES (saved before encoding/scaling)
+                original_input_df = pd.DataFrame([user_input])
+                st.session_state["original_user_input"] = original_input_df.copy()
             
-                # Build input df with only trained columns
+                # Now create model-ready input
                 input_df = pd.DataFrame([user_input])
             
-                # Encode categorical columns
+                # Encode categorical features
                 for col, encoder in encoders.items():
                     if col in input_df.columns:
                         input_df[col] = encoder.transform(input_df[[col]])
             
-                # Scale numeric columns (ONLY those that scaler saw)
-                numeric_cols = input_df.columns[input_df.dtypes != "object"]
-            
+                # Scale numeric features
                 if scaler is not None:
-                    try:
-                        input_df[numeric_cols] = scaler.transform(input_df[numeric_cols])
-                    except Exception as e:
-                        st.error(f"Scaling error: {e}")
-                        st.stop()
+                    input_df = pd.DataFrame(scaler.transform(input_df), columns=input_df.columns)
             
                 # ----------------------- PREDICT BUTTON -----------------------
                 if st.button("Predict Value"):
+                    raw_pred = model.predict(input_df)[0]
             
-                    try:
-                        raw_pred = model.predict(input_df)[0]
-                    except Exception as e:
-                        st.error(f"Prediction error: {e}")
-                        st.stop()
-            
+                    # Classification → decode prediction
                     if problem_type == "Classification":
-                        target_encoder = st.session_state.get("target_encoder")
-                        decoded = (
-                            target_encoder.inverse_transform([raw_pred])[0]
-                            if target_encoder is not None else raw_pred
-                        )
-                        st.success(f"### Predicted Class: **{decoded}**")
-                        st.session_state["last_prediction"] = decoded
+                        target_encoder = st.session_state.get("target_encoder", None)
+                        if target_encoder is not None:
+                            try:
+                                decoded_pred = target_encoder.inverse_transform([raw_pred])[0]
+                            except Exception:
+                                decoded_pred = raw_pred
+                        else:
+                            decoded_pred = raw_pred
+            
+                        st.success(f"### Predicted Class: **{decoded_pred}**")
+                        st.session_state["last_prediction"] = decoded_pred
             
                     else:
                         st.success(f"### Predicted Value: **{raw_pred}**")
                         st.session_state["last_prediction"] = raw_pred
-
             
                 # ----------------------- DOWNLOAD SUMMARY -----------------------
                 if (
