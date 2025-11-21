@@ -187,8 +187,9 @@ if not df.empty:
             X_train, X_test, y_train, y_test = create_train_test_split(
                 current_df, target_column, test_size=0.2
             )
-            X_train_prep, X_test_prep, y_train_prep, y_test_prep, encoders, scaler = preprocess_data(
-                X_train, X_test, y_train, y_test
+            X_train_prep, X_test_prep, y_train_prep, y_test_prep, encoders, scaler, target_encoder = preprocess_data(...)
+            st.session_state["target_encoder"] = target_encoder
+
             )
             if problem_type == "Regression":
                 from linearregression import linear_regression_model
@@ -358,21 +359,18 @@ if not df.empty:
                     raw_pred = model.predict(input_df)[0]
                 
                     if problem_type == "Classification":
+                        target_encoder = st.session_state.get("target_encoder", None)
                 
-                        decoded_pred = raw_pred  # default
-                
-                        # --- NEW FIX: try decoding using any encoder that matches ---
-                        for col, encoder in encoders.items():
-                            if hasattr(encoder, "classes_"):
-                                # If predicted value exists inside this encoder's class list
-                                if raw_pred in range(len(encoder.classes_)):
-                                    decoded_pred = encoder.inverse_transform([raw_pred])[0]
-                                    break
+                        if target_encoder is not None:
+                            decoded_pred = target_encoder.inverse_transform([raw_pred])[0]
+                        else:
+                            decoded_pred = raw_pred  # fallback
                 
                         st.success(f"### 🎯 Predicted Class: **{decoded_pred}**")
                 
                     else:
                         st.success(f"### 🎯 Predicted Value: **{raw_pred}**")
+
                 
                 
                                 
