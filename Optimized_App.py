@@ -316,7 +316,7 @@ if not df.empty:
             # ----------------------- PREDICTION UI -----------------------
             if "trained_model" in st.session_state:
             
-                st.write("## 🔮 Make a Prediction")
+                st.write("##Make a Prediction")
             
                 model = st.session_state["trained_model"]
                 encoders = st.session_state["trained_encoders"]
@@ -339,35 +339,24 @@ if not df.empty:
                             choices = current_df[col].dropna().unique().tolist()
                             user_input[col] = st.selectbox(col, choices)
                     col_idx = (col_idx + 1) % 3
-            
-                # Convert to DataFrame
                 input_df = pd.DataFrame([user_input])
-            
-                # Encode input
                 for col, encoder in encoders.items():
                     if col in input_df.columns:
                         input_df[col] = encoder.transform(input_df[[col]])
-            
-                # Scale input
                 if scaler is not None:
                     input_df = pd.DataFrame(scaler.transform(input_df), columns=input_df.columns)
-            
-                # ----------------------- PREDICT BUTTON -----------------------
                 if st.button("Predict Value"):
                     raw_pred = model.predict(input_df)[0]
-                
                     if problem_type == "Classification":
                         target_encoder = st.session_state.get("target_encoder", None)
-                
                         if target_encoder is not None:
                             decoded_pred = target_encoder.inverse_transform([raw_pred])[0]
                         else:
-                            decoded_pred = raw_pred  # fallback
-                
-                        st.success(f"### 🎯 Predicted Class: **{decoded_pred}**")
+                            decoded_pred = raw_pred
+                        st.success(f"###Predicted Class: **{decoded_pred}**")
                 
                     else:
-                        st.success(f"### 🎯 Predicted Value: **{raw_pred}**")
+                        st.success(f"###Predicted Value: **{raw_pred}**")
 
                 
                 
