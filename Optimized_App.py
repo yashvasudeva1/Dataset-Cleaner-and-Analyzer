@@ -366,7 +366,7 @@ if not df.empty:
                 
                 if scaler is not None:
                     input_df[numeric_cols] = scaler.transform(input_df[numeric_cols])
-            
+                st.session_state["trained_features"] = X_train.columns.tolist()
                 # ----------------------- PREDICT BUTTON -----------------------
                 if st.button("Predict Value"):
                     raw_pred = model.predict(input_df)[0]
