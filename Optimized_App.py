@@ -219,7 +219,7 @@ if not df.empty:
                     "ElasticNet Regression": elasticnet_regression_model,
                     "Decision Tree Regressor": decision_tree_regression_model,
                     "Random Forest Regressor": random_forest_regression_model,
-                    "Gradient Boosting Regressor": gradient_boost_regression_model,
+                    "Gradient Boosting Regressor": gradient_boosting_regression_model,
                     "AdaBoost Regressor": adaboost_regression_model,
                     "KNN Regressor": knn_regression_model,
                     "SVR Regressor": svr_regression_model
