@@ -264,6 +264,11 @@ if not df.empty:
                     X_train_prep, y_train_prep, X_test_prep, y_test_prep
                 )
                 st.success("Model Trained Successfully!")
+                st.session_state["trained_model"] = model
+                st.session_state["trained_encoders"] = encoders
+                st.session_state["trained_scaler"] = scaler
+                st.session_state["trained_features"] = X_train.columns.tolist()
+                st.session_state["target_type"] = problem_type
                 with st.sidebar:
                     st.title("Metrics")
                     metrics_clean = metrics_df.transpose().reset_index()
@@ -287,72 +292,40 @@ if not df.empty:
                 
                     else:
                         st.write("Train and Test Accuracy metrics are only available for classification models.")
-                # -----------------------------
-                # CUSTOM USER INPUT FOR PREDICTION
-                # -----------------------------
-                st.write("### 🔮 Predict Using Custom Inputs")
-                
-                # All features except target
-                feature_cols = [col for col in current_df.columns if col != target_column]
-                
-                user_inputs = {}
-                st.write("#### Enter Feature Values:")
-                
-                # Create 3 columns layout for clean UI
+            if "trained_model" in st.session_state:
+                st.write("## 🔮 Make a Prediction")
+                model = st.session_state["trained_model"]
+                encoders = st.session_state["trained_encoders"]
+                scaler = st.session_state["trained_scaler"]
+                feature_columns = st.session_state["trained_features"]
+                problem_type = st.session_state["target_type"]               
+                user_input = {}
+                st.write("### Enter Input Values:")    
                 cols = st.columns(3)
-                
-                for i, col in enumerate(feature_cols):
-                    with cols[i % 3]:
+                col_idx = 0                
+                for col in feature_columns:
+                    with cols[col_idx]:
                         if col in X_train.select_dtypes(include=['float64', 'int64']).columns:
-                            # Numeric feature → Number input
-                            default_val = float(X_train[col].median()) if not X_train[col].isna().all() else 0.0
-                            user_inputs[col] = st.number_input(
-                                f"{col}",
-                                value=default_val
-                            )
+                            user_input[col] = st.number_input(col, value=float(X_train[col].mean()))
                         else:
-                            # Categorical feature → Dropdown
-                            unique_vals = current_df[col].dropna().unique().tolist()
-                            if len(unique_vals) == 0:
-                                unique_vals = ["Unknown"]
-                            user_inputs[col] = st.selectbox(
-                                f"{col}",
-                                unique_vals
-                            )
-                
-                # Convert user input into DataFrame
-                input_df = pd.DataFrame([user_inputs])
-                
-                # -----------------------------
-                # APPLY SAME PREPROCESSING
-                # -----------------------------
-                
-                # Apply encoders
+                            choices = current_df[col].dropna().unique().tolist()
+                            user_input[col] = st.selectbox(col, choices)
+                    col_idx = (col_idx + 1) % 3
+                input_df = pd.DataFrame([user_input])
                 for col, encoder in encoders.items():
-                    if col in input_df.columns:
-                        try:
-                            input_df[col] = encoder.transform(input_df[[col]])
-                        except:
-                            st.error(f"Invalid value for '{col}'. Please choose a valid category.")
-                            st.stop()
-                
-                # Apply scaler (only numerical)
+                    if col in input_df:
+                        input_df[col] = encoder.transform(input_df[[col]])
                 if scaler is not None:
-                    numeric_cols = input_df.select_dtypes(include=['float64', 'int64']).columns
-                    input_df[numeric_cols] = scaler.transform(input_df[numeric_cols])
+                    input_df = pd.DataFrame(
+                        scaler.transform(input_df), columns=input_df.columns
+                    )
                 
-                # Ensure column order exactly matches training data
-                input_df = input_df[X_train_prep.columns]
-                
-                # -----------------------------
-                # PREDICT BUTTON
-                # -----------------------------
                 if st.button("Predict Value"):
-                    try:
-                        prediction = model.predict(input_df)[0]
-                        st.success(f"### 🎯 Predicted Value: **{prediction}**")
-                    except Exception as e:
-                        st.error(f"Prediction failed: {e}")
+                    pred = model.predict(input_df)[0]                
+                    if problem_type == "Classification":
+                        st.success(f"###Predicted Class: **{pred}**")
+                    else:
+                        st.success(f"###Predicted Value: **{pred}**")
 
 
                 
