@@ -334,31 +334,38 @@ if not df.empty:
                 user_input = {}
                 cols = st.columns(3)
                 col_idx = 0
-            
-                for col in feature_columns:
+                
+                # Store raw original values FIRST — for export
+                original_input_values = {}
+                
+                for col in feature_columns:   # <-- CRITICAL: only these columns!!
                     with cols[col_idx]:
                         if col in X_train.select_dtypes(include=["float64", "int64"]).columns:
-                            user_input[col] = st.number_input(col, value=float(X_train[col].mean()))
+                            val = st.number_input(col, value=float(X_train[col].mean()))
                         else:
                             choices = current_df[col].dropna().unique().tolist()
-                            user_input[col] = st.selectbox(col, choices)
+                            val = st.selectbox(col, choices)
+                
+                        user_input[col] = val
+                        original_input_values[col] = val
+                
                     col_idx = (col_idx + 1) % 3
-            
-                # ORIGINAL, HUMAN READABLE VALUES (saved before encoding/scaling)
-                original_input_df = pd.DataFrame([user_input])
-                st.session_state["original_user_input"] = original_input_df.copy()
-            
-                # Now create model-ready input
+                
+                # Save original input before encoding/scaling
+                st.session_state["original_user_input"] = pd.DataFrame([original_input_values])
+                
+                # --- Encode using SAVED encoders ---
                 input_df = pd.DataFrame([user_input])
-            
-                # Encode categorical features
+                
                 for col, encoder in encoders.items():
                     if col in input_df.columns:
                         input_df[col] = encoder.transform(input_df[[col]])
-            
-                # Scale numeric features
+                
+                # --- Scale using SAVED scaler ---
+                numeric_cols = input_df.select_dtypes(include=[np.number]).columns
+                
                 if scaler is not None:
-                    input_df = pd.DataFrame(scaler.transform(input_df), columns=input_df.columns)
+                    input_df[numeric_cols] = scaler.transform(input_df[numeric_cols])
             
                 # ----------------------- PREDICT BUTTON -----------------------
                 if st.button("Predict Value"):
