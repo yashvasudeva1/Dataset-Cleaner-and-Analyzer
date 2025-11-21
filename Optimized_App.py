@@ -93,7 +93,7 @@ if not df.empty:
                 alt.Chart(df)
                 .mark_bar()
                 .encode(
-                    x=alt.X(f"{selected_column}:Q"),   # Q = quantitative
+                    x=alt.X(f"{x_col}:Q"),   # Q = quantitative
                     y=alt.Y("count():Q")
                 )
             )
