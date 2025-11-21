@@ -187,7 +187,7 @@ if not df.empty:
             X_train, X_test, y_train, y_test = create_train_test_split(
                 current_df, target_column, test_size=0.2
             )
-            X_train_prep, X_test_prep, y_train_prep, y_test_prep, encoders, scaler, target_encoder = preprocess_data(...)
+            X_train_prep, X_test_prep, y_train_prep, y_test_prep, encoders, scaler, target_encoder = preprocess_data(X_train, X_test, y_train, y_test)
             st.session_state["target_encoder"] = target_encoder
             if problem_type == "Regression":
                 from linearregression import linear_regression_model
