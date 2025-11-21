@@ -90,17 +90,13 @@ if not df.empty:
                 st.warning("Dataset > 5000 rows. Plotting a random sample of 5000 points for performance.")
                 plot_df = plot_df.sample(n=5000, random_state=42)
             chart = (
-                alt.Chart(plot_df)
-                .mark_line()
+                alt.Chart(df)
+                .mark_bar()
                 .encode(
-                    x=x_col,
-                    y=y_col,
-                    tooltip=[x_col, y_col]
+                    x=alt.X(f"{selected_column}:Q"),   # Q = quantitative
+                    y=alt.Y("count():Q")
                 )
-                .interactive()
-                .properties(height=400)
             )
-            st.altair_chart(chart, width='stretch')
     with tab3:
         from countsofnullduplicateandoutlier import total_null,total_outliers,total_duplicates
         from handlenullduplicateoutlier import handle_null_and_duplicates_and_outliers
