@@ -1,20 +1,23 @@
 import sys
 sys.path.append("backend functions/functionalities")
 from importlibraries import *
+
 def tune_logistic_regression(x_train, y_train, x_test, y_test):
-    model = LogisticRegression(max_iter=10000)
-    params = {'C': [0.01, 0.1, 1, 10, 100], 'solver': ['liblinear', 'saga']}
-    grid = GridSearchCV(model, params, cv=5, scoring='accuracy', n_jobs=-1)
-    grid.fit(x_train, y_train)
-    best_model = grid.best_estimator_
-    y_pred = best_model.predict(x_test)
+
+    # Simple Logistic Regression Model
+    model = LogisticRegression(max_iter=10000, random_state=42)
+    model.fit(x_train, y_train)
+
+    # Predictions
+    y_pred = model.predict(x_test)
+
+    # Metrics
     metrics = {
         "Model": "Logistic Regression",
-        "Best Params": grid.best_params_,
         "Accuracy": accuracy_score(y_test, y_pred),
         "Precision": precision_score(y_test, y_pred, average='weighted'),
         "Recall": recall_score(y_test, y_pred, average='weighted'),
         "F1-score": f1_score(y_test, y_pred, average='weighted')
     }
-    return best_model, pd.DataFrame([metrics])
 
+    return model, pd.DataFrame([metrics])
