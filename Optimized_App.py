@@ -263,7 +263,11 @@ if not df.empty:
                     X_train_prep, y_train_prep, X_test_prep, y_test_prep
                 )
                 st.success("Model Trained Successfully!")
-                st.subheader("Model Performance")
+                with st.sidebar:
+                    st.subheader(f"{model_name} — Metrics")
+
+                for key, value in metrics.items():
+                    st.metric(label=key, value=value)
                 st.dataframe(metrics_df, use_container_width=True)
 
     
