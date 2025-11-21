@@ -432,7 +432,7 @@ if not df.empty:
                     )
                
     with tab6:
-        st.title("AI Assistant 🤖")
+        st.title("AI Assistant")
     
         # --------- CUSTOM CSS TO FIX INPUT BAR AT BOTTOM ----------
         st.markdown("""
@@ -502,6 +502,7 @@ if not df.empty:
             st.session_state["chat_history"].append({"role": "assistant", "content": bot_reply})
     
             st.rerun()
+
                 
 
 
