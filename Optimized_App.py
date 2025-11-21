@@ -368,4 +368,4 @@ if not df.empty:
                 # Metrics in sidebar
                 with st.sidebar:
                     st.subheader(f"{selected_model_name} — Metrics")
-                    st.dataframe(metrics_df, width="stretch")
+                    st.dataframe(metrics_df.transpose(), width="stretch")
