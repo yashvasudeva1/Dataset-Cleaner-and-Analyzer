@@ -2,6 +2,10 @@
 
 QuickML is a powerful, end-to-end **Machine Learning workflow application** built with **Streamlit**, designed to help users:
 
+## Live Demo
+Try the app here: [https://your-streamlit-link.streamlit.app
+](https://dataset-cleaner-and-analyzer-mfkutrba9g8edaexgwyadd.streamlit.app/)
+
 * Clean datasets
 * Analyze statistics
 * Visualize data
