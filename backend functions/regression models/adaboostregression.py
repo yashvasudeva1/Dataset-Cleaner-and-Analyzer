@@ -1,24 +1,23 @@
 import sys
 sys.path.append("backend functions/functionalities")
 from importlibraries import *
+
 def adaboost_regression_model(x_train, y_train, x_test, y_test):
-    param_grid = {
-        "n_estimators": [50, 100, 200],
-        "learning_rate": [0.01, 0.05, 0.1, 1.0]
-    }
-    grid = GridSearchCV(AdaBoostRegressor(random_state=42), param_grid, cv=3, scoring='r2', n_jobs=-1)
-    grid.fit(x_train, y_train)
+    
+    # Simple AdaBoost Regression Model (default parameters)
+    model = AdaBoostRegressor(random_state=42)
+    model.fit(x_train, y_train)
 
-    best_model = grid.best_estimator_
-    y_pred = best_model.predict(x_test)
+    # Predictions
+    y_pred = model.predict(x_test)
 
+    # Metrics
     metrics = {
-        "Model": "AdaBoost Regression",
-        "Best Params": grid.best_params_,
+        "Model": "AdaBoost Regressor",
         "MAE": mean_absolute_error(y_test, y_pred),
         "MSE": mean_squared_error(y_test, y_pred),
         "RMSE": np.sqrt(mean_squared_error(y_test, y_pred)),
         "R²": r2_score(y_test, y_pred)
     }
-    return best_model, pd.DataFrame([metrics])
 
+    return model, pd.DataFrame([metrics])
