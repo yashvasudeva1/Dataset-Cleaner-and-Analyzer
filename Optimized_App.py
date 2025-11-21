@@ -371,7 +371,7 @@ if not df.empty:
                 
                     # Transpose to get a clean 2-column table
                     metrics_clean = metrics_df.transpose().reset_index()
-                    metrics_clean.columns = ["Metric", "Value"]
+                    metrics_clean.columns = ["Parameter", "Value"]
                 
                     st.dataframe(metrics_clean, width="stretch")
                 
