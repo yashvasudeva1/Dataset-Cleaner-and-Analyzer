@@ -332,62 +332,71 @@ if not df.empty:
                 st.write("### Enter Input Values:")
             
                 user_input = {}
+                original_input = {}
                 cols = st.columns(3)
                 col_idx = 0
-                
-                # Store raw original values FIRST — for export
-                original_input_values = {}
-                
-                for col in feature_columns:   # <-- CRITICAL: only these columns!!
+            
+                # ONLY show the feature columns used during training
+                for col in feature_columns:
                     with cols[col_idx]:
+            
+                        # numeric column
                         if col in X_train.select_dtypes(include=["float64", "int64"]).columns:
-                            val = st.number_input(col, value=float(X_train[col].mean()))
+                            default_val = float(X_train[col].mean())
+                            val = st.number_input(col, value=default_val)
                         else:
+                            # categorical column
                             choices = current_df[col].dropna().unique().tolist()
                             val = st.selectbox(col, choices)
-                
-                        user_input[col] = val
-                        original_input_values[col] = val
-                
+            
+                        user_input[col] = val      # encoded/scaled version later
+                        original_input[col] = val  # raw values for download
+            
                     col_idx = (col_idx + 1) % 3
-                
-                # Save original input before encoding/scaling
-                st.session_state["original_user_input"] = pd.DataFrame([original_input_values])
-                
-                # --- Encode using SAVED encoders ---
+            
+                # Save original input
+                st.session_state["original_user_input"] = pd.DataFrame([original_input])
+            
+                # Build input df with only trained columns
                 input_df = pd.DataFrame([user_input])
-                
+            
+                # Encode categorical columns
                 for col, encoder in encoders.items():
                     if col in input_df.columns:
                         input_df[col] = encoder.transform(input_df[[col]])
-                
-                # --- Scale using SAVED scaler ---
-                numeric_cols = input_df.select_dtypes(include=[np.number]).columns
-                
+            
+                # Scale numeric columns (ONLY those that scaler saw)
+                numeric_cols = input_df.columns[input_df.dtypes != "object"]
+            
                 if scaler is not None:
-                    input_df[numeric_cols] = scaler.transform(input_df[numeric_cols])
-                st.session_state["trained_features"] = X_train.columns.tolist()
+                    try:
+                        input_df[numeric_cols] = scaler.transform(input_df[numeric_cols])
+                    except Exception as e:
+                        st.error(f"Scaling error: {e}")
+                        st.stop()
+            
                 # ----------------------- PREDICT BUTTON -----------------------
                 if st.button("Predict Value"):
-                    raw_pred = model.predict(input_df)[0]
             
-                    # Classification → decode prediction
+                    try:
+                        raw_pred = model.predict(input_df)[0]
+                    except Exception as e:
+                        st.error(f"Prediction error: {e}")
+                        st.stop()
+            
                     if problem_type == "Classification":
-                        target_encoder = st.session_state.get("target_encoder", None)
-                        if target_encoder is not None:
-                            try:
-                                decoded_pred = target_encoder.inverse_transform([raw_pred])[0]
-                            except Exception:
-                                decoded_pred = raw_pred
-                        else:
-                            decoded_pred = raw_pred
-            
-                        st.success(f"### Predicted Class: **{decoded_pred}**")
-                        st.session_state["last_prediction"] = decoded_pred
+                        target_encoder = st.session_state.get("target_encoder")
+                        decoded = (
+                            target_encoder.inverse_transform([raw_pred])[0]
+                            if target_encoder is not None else raw_pred
+                        )
+                        st.success(f"### Predicted Class: **{decoded}**")
+                        st.session_state["last_prediction"] = decoded
             
                     else:
                         st.success(f"### Predicted Value: **{raw_pred}**")
                         st.session_state["last_prediction"] = raw_pred
+
             
                 # ----------------------- DOWNLOAD SUMMARY -----------------------
                 if (
