@@ -417,7 +417,7 @@ if not df.empty:
                     csv_bytes = export_df.to_csv(index=False).encode("utf-8")
             
                     st.download_button(
-                        label="⬇️ Download Result Summary (CSV)",
+                        label="Download Result (CSV)",
                         data=csv_bytes,
                         file_name="prediction_summary.csv",
                         mime="text/csv",
