@@ -411,6 +411,53 @@ if not df.empty:
                     else:
                         st.success(f"### Predicted Value: **{raw_pred}**")
                         st.session_state["last_prediction"] = raw_pred
+                        # ----------------------- DOWNLOAD RESULT SUMMARY -----------------------
+                        if (
+                            "last_prediction" in st.session_state
+                            and "last_input_df" in st.session_state
+                            and "model_metrics" in st.session_state
+                        ):
+                        
+                            st.subheader("Download Prediction Summary")
+                        
+                            metrics_df = st.session_state.get("model_metrics", pd.DataFrame())
+                            accuracy_df = st.session_state.get("accuracy_metrics", pd.DataFrame())
+                            input_df = st.session_state.get("last_input_df", pd.DataFrame())
+                            prediction = st.session_state.get("last_prediction", "")
+                        
+                            summary_rows = []
+                        
+                            # Prediction
+                            summary_rows.append(["Prediction", "Predicted Value", prediction])
+                            summary_rows.append(["Prediction", "Problem Type", st.session_state.get("target_type", "")])
+                        
+                            # Metrics
+                            if not metrics_df.empty:
+                                for _, row in metrics_df.iterrows():
+                                    summary_rows.append(["Metrics", row["Parameter"], row["Value"]])
+                        
+                            # Accuracy
+                            if accuracy_df is not None and not accuracy_df.empty:
+                                for _, row in accuracy_df.iterrows():
+                                    summary_rows.append(["Accuracy", row["Set"], row["Accuracy"]])
+                        
+                            # Input values
+                            if not input_df.empty:
+                                for col in input_df.columns:
+                                    summary_rows.append(["Input Values", col, input_df.iloc[0][col]])
+                        
+                            # Final summary DF
+                            export_df = pd.DataFrame(summary_rows, columns=["Section", "Name", "Value"])
+                        
+                            csv_bytes = export_df.to_csv(index=False).encode("utf-8")
+                        
+                            st.download_button(
+                                label="⬇️ Download Result Summary (CSV)",
+                                data=csv_bytes,
+                                file_name="prediction_summary.csv",
+                                mime="text/csv",
+                            )
+
 
                 
                 
