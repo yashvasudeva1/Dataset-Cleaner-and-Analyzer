@@ -65,33 +65,13 @@ MAX_ROWS = 200000
 SAMPLE_ROWS = 10000     
 
 if uploaded_file is not None:
-    try:
-        df = load_csv(uploaded_file)
-        row_count = len(df)
-        if row_count > MAX_ROWS:
-            st.warning(f"""
-            Large Dataset Detected  
-            Your file has **{row_count:,} rows**, which is too large to fully load into memory.
-
-            QuickML will use a **{SAMPLE_ROWS:,} row sample** for:
-            - Overview  
-            - Visualizations  
-            - Statistics  
-
-            Full dataset will still be used for ML prediction.
-            """)
-
-            df_sample = df.sample(SAMPLE_ROWS, random_state=42)
-            st.session_state["df"] = df_sample
-            st.session_state["df_full"] = df
-
-        else:
-            st.success(f"File '{uploaded_file.name}' uploaded successfully!")
-            st.session_state["df"] = df
-            st.session_state["df_full"] = df 
-
-    except Exception as e:
-        st.error(f"Dataset loading failed: {e}")
+    df = load_csv(uploaded_file)
+    if not df.empty:
+        df = sanitize_columns(df) 
+        st.success(f"File '{uploaded_file.name}' uploaded successfully!")
+        st.session_state["df"] = df
+    else:
+        st.warning("Uploaded file could not be processed.")
 
 else:
     st.info("Please upload a dataset to begin.")
