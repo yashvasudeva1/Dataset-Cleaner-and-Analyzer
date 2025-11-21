@@ -353,10 +353,10 @@ if not df.empty:
                             decoded_pred = target_encoder.inverse_transform([raw_pred])[0]
                         else:
                             decoded_pred = raw_pred
-                        st.success(f"###Predicted Class: **{decoded_pred}**")
+                        st.success(f"### Predicted Class: **{decoded_pred}**")
                 
                     else:
-                        st.success(f"###Predicted Value: **{raw_pred}**")
+                        st.success(f"### Predicted Value: **{raw_pred}**")
 
                 
                 
