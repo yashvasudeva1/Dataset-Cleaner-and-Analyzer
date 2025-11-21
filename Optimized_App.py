@@ -196,7 +196,7 @@ if not df.empty:
                 from elasticnetregression import elasticnet_regression_model
                 from decisiontreeregression import decision_tree_regression_model
                 from randomforestregression import random_forest_regression_model
-                from gradientboostregression import gradient_boost_regression_model
+                from gradientboostregression import gradient_boosting_regression_model
                 from adaboostregression import adaboost_regression_model
                 from knnregression import knn_regression_model
                 from svrregression import svr_regression_model
