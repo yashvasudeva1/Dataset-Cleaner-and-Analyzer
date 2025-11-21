@@ -30,10 +30,6 @@ import sys
 sys.path.append("backend functions/functionalities")
 sys.path.append("backend functions/classification models")
 sys.path.append("backend functions/regression models")
-
-# ----------------------------------------------------
-# FIX: ALTAR / COLUMN SANITIZATION
-# ----------------------------------------------------
 def sanitize_columns(df):
     df = df.copy()
     df.columns = (
@@ -43,12 +39,7 @@ def sanitize_columns(df):
         .str.replace(" ", "_", regex=False)
     )
     return df
-
-
-# Streamlit settings
 st.set_page_config(page_title="QuickML", layout="wide")
-
-# App header
 st.markdown(
     """
     <div style='display: flex; align-items: center;'>
@@ -57,14 +48,9 @@ st.markdown(
     """,
     unsafe_allow_html=True
 )
-
 st.subheader("An app that enables you to clean, analyze & visualize your dataset and make predictions based on your preferred ML model")
 st.divider()
-
 uploaded_file = st.file_uploader("Upload a CSV or Excel file", type=["csv", "xlsx"])
-
-
-# Load CSV with caching
 @st.cache_data
 def load_csv(uploaded_file):
     try:
@@ -75,12 +61,8 @@ def load_csv(uploaded_file):
     except Exception as e:
         st.error(f"Error loading file: {e}")
         return pd.DataFrame()
-
-
-# --- File load ---
 if uploaded_file is not None:
     df = load_csv(uploaded_file)
-
     if not df.empty:
         df = sanitize_columns(df)  # FIX: clean columns globally
         st.success(f"File '{uploaded_file.name}' uploaded successfully!")
@@ -90,59 +72,33 @@ if uploaded_file is not None:
 else:
     st.info("Please upload a dataset to begin.")
     df = pd.DataFrame()
-
-
-# -----------------------------------------------------------
-# ----------------------- TABS ------------------------------
-# -----------------------------------------------------------
-
 if not df.empty:
-
     tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs([
         "Overview", "Visualization", "Cleaning", "Normality", "Prediction", "AI Assistant"
     ])
-
-    # -----------------------------------------------------------
-    # TAB 1: Overview
-    # -----------------------------------------------------------
     with tab1:
         st.title("Data Overview")
         col_a, col_b = st.columns(2)
-
         with col_a:
             st.write("### First 5 Rows")
             st.dataframe(df.head(), width="stretch")
-
         with col_b:
             st.write("### Data Types")
             st.dataframe(df.dtypes.astype(str), height=200, width="stretch")
-
         st.write("### Summary Statistics")
         st.dataframe(df.describe(include='all'), width="stretch")
-
-    # -----------------------------------------------------------
-    # TAB 2: Visualization
-    # -----------------------------------------------------------
     with tab2:
         st.title("Bivariate Analysis")
-
         numeric_columns = df.select_dtypes(include='number').columns.tolist()
-
         if len(numeric_columns) >= 2:
-
             col1, col2 = st.columns(2)
             x_col = col1.selectbox("X Axis", numeric_columns, index=0)
             y_col = col2.selectbox("Y Axis", numeric_columns, index=1)
-
             plot_df = df.copy()
-
             if len(plot_df) > 5000:
                 st.warning("Dataset > 5000 rows. Using random sample of 5000 for performance.")
                 plot_df = plot_df.sample(n=5000, random_state=42)
-
-            # FIX: sanitize for Altair
             clean_plot_df = sanitize_columns(plot_df)
-
             chart = (
                 alt.Chart(clean_plot_df)
                 .mark_circle(size=40)
@@ -152,87 +108,58 @@ if not df.empty:
                 )
                 .interactive()
             )
-
             st.altair_chart(chart, width='stretch')
-
-    # -----------------------------------------------------------
-    # TAB 3: Cleaning
-    # -----------------------------------------------------------
     with tab3:
         from countsofnullduplicateandoutlier import total_null, total_outliers, total_duplicates
         from handlenullduplicateoutlier import handle_null_and_duplicates_and_outliers
-
         current_df = st.session_state.get("df", df)
-
         before_nulls = total_null(current_df)["count"].sum()
         before_outliers = total_outliers(current_df)[0].sum()
         before_duplicates = total_duplicates(current_df)
-
         summary_df = pd.DataFrame({
             "Metric": ["Total Null Values", "Total Outliers", "Total Duplicates"],
             "Count": [before_nulls, before_outliers, before_duplicates]
         })
-
         col1, col2 = st.columns(2)
-
         with col1:
             st.subheader("Report Before Cleaning")
             st.dataframe(summary_df, width="stretch")
-
             if st.button("Clean Data"):
                 cleaned_df = handle_null_and_duplicates_and_outliers(current_df)
                 cleaned_df = sanitize_columns(cleaned_df)  # FIX: sanitize after cleaning
-
                 st.session_state["df"] = cleaned_df
-
                 after_nulls = total_null(cleaned_df)["count"].sum()
                 after_outliers = total_outliers(cleaned_df)[0].sum()
                 after_duplicates = total_duplicates(cleaned_df)
-
                 st.session_state["after_df"] = pd.DataFrame({
                     "Metric": ["Total Null Values", "Total Outliers", "Total Duplicates"],
                     "Count": [after_nulls, after_outliers, after_duplicates]
                 })
-
                 st.session_state["clean_preview"] = cleaned_df.head()
                 st.rerun()
-
         with col2:
             st.subheader("Report After Cleaning")
             if "after_df" in st.session_state:
                 st.dataframe(st.session_state["after_df"], width="stretch")
             else:
                 st.info("Click Clean Data to generate the report.")
-
         if "clean_preview" in st.session_state:
             st.success("Dataset Cleaned Successfully!")
             st.write("### Preview of Cleaned Data")
             st.dataframe(st.session_state["clean_preview"], width="stretch")
-
             cleaned_df = st.session_state["df"]
             csv = cleaned_df.to_csv(index=False).encode("utf-8")
             st.download_button("Download Cleaned Dataset", csv, "cleaned_dataset.csv", "text/csv")
-
-    # -----------------------------------------------------------
-    # TAB 4: Normality
-    # -----------------------------------------------------------
     with tab4:
         st.title("Normality Check")
         from typeofdata import analyze_distribution
-
         current_df = st.session_state.get("df", df)
         result_df = analyze_distribution(current_df)
-
         st.dataframe(result_df, width="stretch")
-
         numeric_cols = current_df.select_dtypes(include=['int64', 'float64']).columns
-
         if len(numeric_cols) > 0:
-
             selected_hist = st.selectbox("Select Column", numeric_cols)
-
             clean_hist_df = sanitize_columns(current_df)
-
             chart = (
                 alt.Chart(clean_hist_df)
                 .mark_bar()
@@ -242,44 +169,28 @@ if not df.empty:
                 )
                 .properties(height=300)
             )
-
             st.altair_chart(chart, width='stretch')
-
-    # -----------------------------------------------------------
-    # TAB 5: Prediction
-    # -----------------------------------------------------------
     with tab5:
         st.title("Prediction")
-
         current_df = st.session_state.get("df", df)
         target_column = st.selectbox("Select Target Column", current_df.columns)
-
         if target_column:
-
             y = current_df[target_column]
-
             if y.dtype in ["int64", "float64"]:
                 problem_type = "Regression"
             else:
                 problem_type = "Classification"
-
             st.subheader("Problem Type Detected")
             st.success(f"This is a **{problem_type}** problem.")
-
             from traintestsplit import create_train_test_split
             from preprocessdata import preprocess_data
-
             X_train, X_test, y_train, y_test = create_train_test_split(
                 current_df, target_column, test_size=0.2
             )
-
             X_train_prep, X_test_prep, y_train_prep, y_test_prep, encoders, scaler = preprocess_data(
                 X_train, X_test, y_train, y_test
             )
-
-            # MODEL SELECTION
             if problem_type == "Regression":
-
                 from linearregression import linear_regression_model
                 from ridgeregression import ridge_regression_model
                 from lassoregression import lasso_regression_model
@@ -290,7 +201,6 @@ if not df.empty:
                 from adaboostregression import adaboost_regression_model
                 from knnregression import knn_regression_model
                 from svrregression import svr_regression_model
-
                 model_options = [
                     "Linear Regression",
                     "Ridge Regression",
@@ -303,7 +213,6 @@ if not df.empty:
                     "KNN Regressor",
                     "SVR Regressor"
                 ]
-
                 model_map = {
                     "Linear Regression": linear_regression_model,
                     "Ridge Regression": ridge_regression_model,
@@ -316,9 +225,7 @@ if not df.empty:
                     "KNN Regressor": knn_regression_model,
                     "SVR Regressor": svr_regression_model
                 }
-
             else:
-
                 from logisticregression import tune_logistic_regression
                 from decisiontree import tune_decision_tree
                 from randomforest import tune_random_forest
@@ -328,7 +235,6 @@ if not df.empty:
                 from svm import tune_svm
                 from naivebayes import tune_naive_bayes
                 from mlp import tune_mlp
-
                 model_options = [
                     "Logistic Regression",
                     "Decision Tree Classifier",
@@ -340,7 +246,6 @@ if not df.empty:
                     "Naive Bayes",
                     "Neural Network (MLP)"
                 ]
-
                 model_map = {
                     "Logistic Regression": tune_logistic_regression,
                     "Decision Tree Classifier": tune_decision_tree,
@@ -352,30 +257,18 @@ if not df.empty:
                     "Naive Bayes": tune_naive_bayes,
                     "Neural Network (MLP)": tune_mlp
                 }
-
             selected_model_name = st.selectbox("Select Model", model_options)
             model_function = model_map[selected_model_name]
-
-            # Train model
             if st.button("Train Model"):
-                
                 model, metrics_df = model_function(
                     X_train_prep, y_train_prep, X_test_prep, y_test_prep
                 )
-
                 st.success("Model Trained Successfully!")
-
-                # Metrics in sidebar
                 with st.sidebar:
                     st.title("Metrics")
-                
-                    # Transpose to get a clean 2-column table
                     metrics_clean = metrics_df.transpose().reset_index()
                     metrics_clean.columns = ["Parameter", "Value"]
-                
                     st.dataframe(metrics_clean, width="stretch")
-                
-                    # Training/Test Accuracy for Classification Only
                     if problem_type == "Classification":
                 
                         train_pred = model.predict(X_train_prep)
@@ -393,7 +286,47 @@ if not df.empty:
                         st.dataframe(accuracy_df, width="stretch")
                 
                     else:
-                        st.info("Train and Test Accuracy metrics are only available for classification models.")
+                        st.write("Train and Test Accuracy metrics are only available for classification models.")
+                # -----------------------------
+                # USER INPUT FOR PREDICTION
+                # -----------------------------
+                st.write("### 🔮 Make a Prediction Using Custom Input")
                 
+                # Get feature columns
+                feature_columns = X_train.columns.tolist()
+                
+                user_input = {}
+                
+                st.write("Enter values for each feature:")
+                
+                # Create input widgets dynamically
+                for col in feature_columns:
+                    if col in X_train.select_dtypes(include=['float64', 'int64']).columns:
+                        # Numeric input
+                        user_input[col] = st.number_input(f"{col}", value=float(X_train[col].mean()))
+                    else:
+                        # Categorical input
+                        unique_vals = current_df[col].dropna().unique().tolist()
+                        user_input[col] = st.selectbox(f"{col}", unique_vals)
+                
+                # Convert input to DataFrame
+                input_df = pd.DataFrame([user_input])
+                
+                # Apply preprocessing: encoding + scaling
+                # Encode categorical features
+                for col, encoder in encoders.items():
+                    if col in input_df.columns:
+                        transformed = encoder.transform(input_df[[col]])
+                        input_df[col] = transformed
+                
+                # Apply scaler
+                if scaler is not None:
+                    input_df = pd.DataFrame(scaler.transform(input_df), columns=input_df.columns)
+                
+                # Predict button
+                if st.button("Predict Value"):
+                    prediction = model.predict(input_df)[0]
+                    st.success(f"### 🎯 Predicted Value: **{prediction}**")
+
                 
                 
