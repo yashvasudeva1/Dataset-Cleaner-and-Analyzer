@@ -369,24 +369,24 @@ if not df.empty:
                     st.subheader("Metrics")
                     st.dataframe(metrics_df.transpose(), width="stretch")
                     # --- Training & Testing Accuracy Section ---
-                    st.subheader("###Training vs Testing Accuracy")
+                    if problem_type == "Classification":
+
+                        # Training Accuracy
+                        train_pred = model.predict(X_train_prep)
+                        train_acc = accuracy_score(y_train_prep, train_pred)
                     
-                    from sklearn.metrics import accuracy_score
+                        # Testing Accuracy
+                        test_pred = model.predict(X_test_prep)
+                        test_acc = accuracy_score(y_test_prep, test_pred)
                     
-                    # Training Accuracy
-                    train_pred = model.predict(X_train_prep)
-                    train_acc = accuracy_score(y_train_prep, train_pred)
+                        accuracy_df = pd.DataFrame({
+                            "Set": ["Training Accuracy", "Testing Accuracy"],
+                            "Accuracy": [train_acc, test_acc]
+                        })
                     
-                    # Testing Accuracy
-                    test_pred = model.predict(X_test_prep)
-                    test_acc = accuracy_score(y_test_prep, test_pred)
+                        st.write("### 🔍 Training vs Testing Accuracy")
+                        st.dataframe(accuracy_df, width="stretch")
                     
-                    # Create DataFrame
-                    accuracy_df = pd.DataFrame({
-                        "Set": ["Training Accuracy", "Testing Accuracy"],
-                        "Accuracy": [train_acc, test_acc]
-                    })
-                    
-                    # Show in Streamlit
-                    st.dataframe(accuracy_df, width="stretch")
+                    else:
+                        st.info("Accuracy metrics are only available for classification models.")
 
