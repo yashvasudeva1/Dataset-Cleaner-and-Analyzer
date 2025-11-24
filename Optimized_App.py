@@ -64,7 +64,7 @@ def load_csv(uploaded_file):
 if uploaded_file is not None:
     df = load_csv(uploaded_file)
     if not df.empty:
-        df = sanitize_columns(df)  # FIX: clean columns globally
+        df = sanitize_columns(df)
         st.success(f"File '{uploaded_file.name}' uploaded successfully!")
         st.session_state["df"] = df
     else:
@@ -126,7 +126,7 @@ if not df.empty:
             st.dataframe(summary_df, width="stretch")
             if st.button("Clean Data"):
                 cleaned_df = handle_null_and_duplicates_and_outliers(current_df)
-                cleaned_df = sanitize_columns(cleaned_df)  # FIX: sanitize after cleaning
+                cleaned_df = sanitize_columns(cleaned_df)
                 st.session_state["df"] = cleaned_df
                 after_nulls = total_null(cleaned_df)["count"].sum()
                 after_outliers = total_outliers(cleaned_df)[0].sum()
@@ -258,34 +258,24 @@ if not df.empty:
                 }
             selected_model_name = st.selectbox("Select Model", model_options)
             model_function = model_map[selected_model_name]
-           # ----------------------- TRAIN MODEL -----------------------
             if st.button("Train Model"):
                 model, metrics_df = model_function(
                     X_train_prep, y_train_prep, X_test_prep, y_test_prep
                 )
             
                 st.success("Model Trained Successfully!")
-            
-                # Save to session_state so they persist after rerun
                 st.session_state["trained_model"] = model
                 st.session_state["trained_encoders"] = encoders
                 st.session_state["trained_scaler"] = scaler
                 st.session_state["trained_features"] = X_train.columns.tolist()
                 st.session_state["target_type"] = problem_type
                 st.session_state["target_column"] = target_column
-            
-                # ---- Clean Metrics ----
                 metrics_clean = metrics_df.transpose().reset_index()
                 metrics_clean.columns = ["Parameter", "Value"]
-            
-                # Save metrics for persistent sidebar
                 st.session_state["model_metrics"] = metrics_clean
-            
-                # ---- Add Train/Test Accuracy for Classification ----
                 if problem_type == "Classification":
                     train_pred = model.predict(X_train_prep)
                     test_pred = model.predict(X_test_prep)
-            
                     train_acc = accuracy_score(y_train_prep, train_pred)
                     test_acc = accuracy_score(y_test_prep, test_pred)
             
@@ -293,44 +283,30 @@ if not df.empty:
                         "Set": ["Training Accuracy", "Testing Accuracy"],
                         "Accuracy": [train_acc, test_acc]
                     })
-            
                     st.session_state["accuracy_metrics"] = acc_df
                 else:
                     st.session_state["accuracy_metrics"] = None
-            
-            
-            # ----------------------- ALWAYS SHOW SIDEBAR METRICS -----------------------
             with st.sidebar:
                 st.title("Metrics")
                 if "model_metrics" in st.session_state:
                     st.dataframe(st.session_state["model_metrics"], width="stretch")
-            
-                    # Show accuracy only for classification
                     if st.session_state["accuracy_metrics"] is not None:
                         st.write("### Train vs Test Accuracy")
                         st.dataframe(st.session_state["accuracy_metrics"], width="stretch")
                 else:
                     st.info("Train a model to view metrics.")
-            
-            
-            # ----------------------- PREDICTION UI -----------------------
             if "trained_model" in st.session_state:
-            
                 st.write("## Make a Prediction")
-            
                 model = st.session_state["trained_model"]
                 encoders = st.session_state["trained_encoders"]
                 scaler = st.session_state["trained_scaler"]
                 feature_columns = st.session_state["trained_features"]
                 problem_type = st.session_state["target_type"]
                 target_column = st.session_state["target_column"]
-            
                 st.write("### Enter Input Values:")
-            
                 user_input = {}
                 cols = st.columns(3)
                 col_idx = 0
-            
                 for col in feature_columns:
                     with cols[col_idx]:
                         if col in X_train.select_dtypes(include=["float64", "int64"]).columns:
@@ -339,28 +315,16 @@ if not df.empty:
                             choices = current_df[col].dropna().unique().tolist()
                             user_input[col] = st.selectbox(col, choices)
                     col_idx = (col_idx + 1) % 3
-            
-                # ORIGINAL, HUMAN READABLE VALUES (saved before encoding/scaling)
                 original_input_df = pd.DataFrame([user_input])
                 st.session_state["original_user_input"] = original_input_df.copy()
-            
-                # Now create model-ready input
                 input_df = pd.DataFrame([user_input])
-            
-                # Encode categorical features
                 for col, encoder in encoders.items():
                     if col in input_df.columns:
                         input_df[col] = encoder.transform(input_df[[col]])
-            
-                # Scale numeric features
                 if scaler is not None:
                     input_df = pd.DataFrame(scaler.transform(input_df), columns=input_df.columns)
-            
-                # ----------------------- PREDICT BUTTON -----------------------
                 if st.button("Predict Value"):
                     raw_pred = model.predict(input_df)[0]
-            
-                    # Classification → decode prediction
                     if problem_type == "Classification":
                         target_encoder = st.session_state.get("target_encoder", None)
                         if target_encoder is not None:
@@ -370,15 +334,11 @@ if not df.empty:
                                 decoded_pred = raw_pred
                         else:
                             decoded_pred = raw_pred
-            
                         st.success(f"### Predicted Class: **{decoded_pred}**")
                         st.session_state["last_prediction"] = decoded_pred
-            
                     else:
                         st.success(f"### Predicted Value: **{raw_pred}**")
                         st.session_state["last_prediction"] = raw_pred
-            
-                # ----------------------- DOWNLOAD SUMMARY -----------------------
                 if (
                     "last_prediction" in st.session_state
                     and "original_user_input" in st.session_state
@@ -391,50 +351,31 @@ if not df.empty:
                     input_df = st.session_state.get("original_user_input", pd.DataFrame())
                     prediction = st.session_state.get("last_prediction", "")
                     target_type = st.session_state.get("target_type", "")
-                
                     summary_rows = []
-    
-                
-                    
-                
-                    # ------------------ METRICS ------------------
                     if not metrics_df.empty:
                         for _, row in metrics_df.iterrows():
                             summary_rows.append(["Metrics", row["Parameter"], row["Value"]])
-                
-                    # ------------------ ACCURACY (CLASSIFICATION ONLY) ------------------
                     if accuracy_df is not None and not accuracy_df.empty:
                         for _, row in accuracy_df.iterrows():
                             summary_rows.append(["Accuracy", row["Set"], row["Accuracy"]])
-                
-                    # ------------------ ORIGINAL USER INPUT VALUES ------------------
                     for col in input_df.columns:
                         summary_rows.append(["Input Values", col, input_df.iloc[0][col]])
-                        
-                    # ------------------ ADD PREDICTION ROW ------------------
                     if target_type == "Classification":
                         summary_rows.append(["Prediction", "Predicted Class", prediction])
                     else:
                         summary_rows.append(["Prediction", "Predicted Value", prediction])
                 
                     summary_rows.append(["Prediction", "Problem Type", target_type])
-                    
-                    # ------------------ FINAL EXPORT DF ------------------
                     export_df = pd.DataFrame(summary_rows, columns=["Section", "Name", "Value"])
-                
                     csv_bytes = export_df.to_csv(index=False).encode("utf-8")
-                
                     st.download_button(
                         label="Download Result (CSV)",
                         data=csv_bytes,
                         file_name="prediction_summary.csv",
                         mime="text/csv",
                     )
-               
     with tab6:
-        st.title("AI Assistant 🤖")
-    
-        # ======== CUSTOM CSS TO FIX INPUT BAR AT BOTTOM ===========
+        st.title("AI Assistant")
         st.markdown("""
         <style>
         .chat-input-container {
@@ -453,8 +394,6 @@ if not df.empty:
         }
         </style>
         """, unsafe_allow_html=True)
-    
-        # ======== AUTO SCROLL JS ===========
         st.markdown("""
         <script>
             function scrollToBottom() {
@@ -463,29 +402,19 @@ if not df.empty:
             setTimeout(scrollToBottom, 50);
         </script>
         """, unsafe_allow_html=True)
-    
-        # ======== API KEY INPUT ===========
         api_key = st.text_input("Enter your Google API Key", type="password")
-    
         if not api_key:
             st.warning("Please enter your Google API key to start chatting.")
             st.stop()
-    
-        # ======== INITIALIZE GEMINI ===========
         try:
             import google.generativeai as genai
             genai.configure(api_key=api_key)
-    
             model = genai.GenerativeModel("gemini-2.5-flash-lite")
-    
         except Exception as e:
             st.error(f"Error initializing Gemini: {e}")
             st.stop()
-    
-        # ======== LOAD DATASET CONTEXT ===========
         df_context = st.session_state.get("df")
         dataset_text = ""
-    
         if df_context is not None:
             dataset_text = (
                 "Here is the dataset the user uploaded:\n\n"
@@ -493,40 +422,26 @@ if not df.empty:
                 + "\n\nOnly use this data for reference. "
                   "If user specifically asks questions about the dataset, answer using this context."
             )
-    
-        # ======== CHAT HISTORY ===========
         if "chat_history" not in st.session_state:
             st.session_state["chat_history"] = []
-    
         st.write("### Chat With Gemini")
-    
-        # Show chat history
         for msg in st.session_state["chat_history"]:
             if msg["role"] == "user":
                 st.chat_message("user").markdown(msg["content"])
             else:
                 st.chat_message("assistant").markdown(msg["content"])
-    
-        # ======== FIXED INPUT BAR AT BOTTOM ===========
         st.markdown('<div class="chat-input-container">', unsafe_allow_html=True)
         user_msg = st.chat_input("Type your message…")
         st.markdown('</div>', unsafe_allow_html=True)
-    
-        # ======== HANDLE MESSAGE ===========
         if user_msg:
             st.session_state["chat_history"].append({"role": "user", "content": user_msg})
-    
-            # Prepare prompt with dataset context
             full_prompt = f"""
     The user asked: {user_msg}
-    
     Below is the dataset context (if helpful):
     {dataset_text}
-    
     If the question is *about the dataset*, use the dataset to answer.
     If not, answer normally.
     """
-    
             try:
                 response = model.generate_content(full_prompt)
                 bot_reply = response.text
@@ -534,8 +449,6 @@ if not df.empty:
                 bot_reply = f"Error generating response: {str(e)}"
     
             st.session_state["chat_history"].append({"role": "assistant", "content": bot_reply})
-    
-            # Auto scroll trigger
             st.markdown("""
             <script>
                 setTimeout(function() {
@@ -543,7 +456,6 @@ if not df.empty:
                 }, 100);
             </script>
             """, unsafe_allow_html=True)
-    
             st.rerun()
 
                 
