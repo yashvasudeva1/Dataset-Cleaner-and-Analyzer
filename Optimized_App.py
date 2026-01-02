@@ -458,7 +458,102 @@ if not df.empty:
             """, unsafe_allow_html=True)
             st.rerun()
 
-                
+def about_the_coder():
+    # We use a non-indented string to prevent Markdown from treating it as code
+    html_code = """
+    <style>
+    .coder-card {
+        background-color: transparent;
+        border: 1px solid rgba(49, 51, 63, 0.2);
+        border-radius: 10px;
+        padding: 20px;
+        display: flex;
+        align-items: center;
+        margin-top: 20px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    .coder-img {
+        width: 100px; /* Slightly larger for better visibility */
+        height: 100px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 3px solid #FF4B4B; /* Streamlit Red */
+        margin-right: 25px;
+        flex-shrink: 0; /* Prevents image from shrinking */
+    }
+    .coder-info h3 {
+        margin: 0;
+        font-family: 'Source Sans Pro', sans-serif;
+        color: inherit;
+        font-size: 1.4rem;
+        font-weight: 600;
+    }
+    .coder-info p {
+        margin: 10px 0;
+        font-size: 1rem;
+        opacity: 0.9;
+        line-height: 1.5;
+    }
+    .social-links {
+        margin-top: 12px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 15px;
+    }
+    .social-links a {
+        text-decoration: none;
+        color: #FF4B4B;
+        font-weight: bold;
+        font-size: 0.95rem;
+        transition: color 0.3s;
+    }
+    .social-links a:hover {
+        color: #ff2b2b;
+        text-decoration: underline;
+    }
+    /* Mobile responsiveness */
+    @media (max-width: 600px) {
+        .coder-card {
+            flex-direction: column;
+            text-align: center;
+            padding: 15px;
+        }
+        .coder-img {
+            margin-right: 0;
+            margin-bottom: 15px;
+            width: 80px;
+            height: 80px;
+        }
+        .social-links {
+            justify-content: center;
+        }
+    }
+    </style>  
+    <div class="coder-card">
+        <img src="https://ui-avatars.com/api/?name=Yash+Vasudeva&size=120&background=FF4B4B&color=fff&bold=true&rounded=true" class="coder-img" alt="Yash Vasudeva"/>
+        <div class="coder-info">
+            <h3>Developed by Yash Vasudeva</h3>
+            <p>
+                Results-driven Data & AI Professional skilled in <b>Data Analytics</b>, 
+                <b>Machine Learning</b>, and <b>Deep Learning</b>. 
+                Passionate about transforming raw data into business value and building intelligent solutions.
+            </p>
+            <div class="social-links">
+                <a href="https://www.linkedin.com/in/yash-vasudeva/" target="_blank">LinkedIn</a>
+                <a href="https://github.com/yashvasudeva1" target="_blank">GitHub</a>
+                <a href="mailto:vasudevyash@gmail.com">Contact</a>
+                <a href="https://yashvasudeva.vercel.app/" target="_blank">Portfolio</a>
+            </div>
+        </div>
+    </div>
+    """
+        
+    st.markdown(html_code, unsafe_allow_html=True)
+
+st.divider()
+
+if __name__ == "__main__":
+    about_the_coder()
 
 
 
